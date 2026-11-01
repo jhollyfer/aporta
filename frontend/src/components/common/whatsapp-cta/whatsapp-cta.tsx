@@ -31,7 +31,7 @@ export function WhatsAppCta({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        'inline-flex h-12 items-center justify-center gap-2 rounded-full bg-sun px-6 text-base font-extrabold text-ink transition-colors hover:bg-sun-deep motion-reduce:transition-none',
+        'inline-flex h-12 items-center justify-center gap-2 rounded-full bg-sun px-6 text-base font-extrabold text-on-sun transition-colors hover:bg-sun-deep motion-reduce:transition-none',
         className,
       )}
     >

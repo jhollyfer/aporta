@@ -30,7 +30,7 @@ export function SiteHeader(): React.JSX.Element {
           </Link>
           <Link
             to="/list-your-place"
-            className="ml-1 hidden rounded-full bg-sun px-4 py-2 text-sm font-extrabold text-ink hover:bg-sun-deep sm:inline-flex"
+            className="ml-1 hidden rounded-full bg-sun px-4 py-2 text-sm font-extrabold text-on-sun hover:bg-sun-deep sm:inline-flex"
           >
             {m.nav_list_your_place()}
           </Link>

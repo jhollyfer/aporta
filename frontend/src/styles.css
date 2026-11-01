@@ -26,6 +26,8 @@
   --clay-wash: #f1e3d6;
   --sun: #f2b134;
   --sun-deep: #d99a1d;
+  /* Texto sobre o amarelo: escuro nos dois temas. `--ink` vira claro no escuro, e claro sobre amarelo dá 1,64:1. */
+  --on-sun: #1f2a22;
   --river: #4f7f86;
   --danger: #b3412f;
 
@@ -87,6 +89,7 @@
   --color-clay-wash: var(--clay-wash);
   --color-sun: var(--sun);
   --color-sun-deep: var(--sun-deep);
+  --color-on-sun: var(--on-sun);
   --color-river: var(--river);
   --color-danger: var(--danger);
   --radius-card: var(--radius-card);

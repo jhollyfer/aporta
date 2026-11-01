@@ -11,12 +11,15 @@ type StepperNavProps = {
    */
   onBeforeNext: () => Promise<boolean>
   onSubmit: () => void
+  /** Envio em andamento: desabilita o botão e o anuncia, para o toque duplo não enviar duas vezes. */
+  pending?: boolean
 }
 
 /** Voltar nunca valida (não se pune quem corrige o passo anterior); avançar, sim. */
 export function StepperNav({
   onBeforeNext,
   onSubmit,
+  pending = false,
 }: StepperNavProps): React.JSX.Element {
   const { steps, current, go } = useStepper()
   const last = current === steps.length - 1
@@ -46,10 +49,13 @@ export function StepperNav({
       <button
         type="button"
         onClick={() => void handleNext()}
-        className="h-12 rounded-full bg-moss px-7 text-sm font-extrabold text-paper hover:bg-moss-deep"
+        disabled={pending}
+        aria-busy={pending}
+        className="h-12 rounded-full bg-moss px-7 text-sm font-extrabold text-paper hover:bg-moss-deep disabled:opacity-60"
       >
-        {last && m.stepper_submit()}
-        {!last && m.stepper_next()}
+        {pending && m.stepper_sending()}
+        {!pending && last && m.stepper_submit()}
+        {!pending && !last && m.stepper_next()}
       </button>
     </div>
   )

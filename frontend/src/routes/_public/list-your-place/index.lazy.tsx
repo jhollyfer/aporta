@@ -173,7 +173,11 @@ function RouteComponent(): React.JSX.Element {
             <ContactStep control={form.control} />
           </Stepper.Step>
           {tips !== undefined && <Stepper.Tips items={tips()} />}
-          <Stepper.Nav onBeforeNext={validateStep} onSubmit={handleSubmit} />
+          <Stepper.Nav
+            onBeforeNext={validateStep}
+            onSubmit={handleSubmit}
+            pending={submit.isPending}
+          />
         </form>
       </Stepper>
     </div>

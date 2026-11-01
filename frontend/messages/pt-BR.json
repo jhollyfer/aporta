@@ -161,5 +161,6 @@
   "field_rules_hint": "Uma por linha: animais, visitas, silêncio, horário.",
   "field_owner_name": "Seu nome",
   "field_whatsapp": "WhatsApp",
-  "field_whatsapp_hint": "Com DDD, só números. É para onde chegam as conversas."
+  "field_whatsapp_hint": "Com DDD, só números. É para onde chegam as conversas.",
+  "stepper_sending": "Enviando…"
 }

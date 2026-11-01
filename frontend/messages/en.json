@@ -161,5 +161,6 @@
   "field_rules_hint": "One per line: pets, visitors, quiet hours, schedule.",
   "field_owner_name": "Your name",
   "field_whatsapp": "WhatsApp",
-  "field_whatsapp_hint": "With area code, numbers only. This is where chats arrive."
+  "field_whatsapp_hint": "With area code, numbers only. This is where chats arrive.",
+  "stepper_sending": "Sending…"
 }

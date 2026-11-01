@@ -23,7 +23,7 @@ const pillVariants = cva(
     variants: {
       tone: {
         moss: 'bg-moss text-paper hover:bg-moss-deep',
-        sun: 'bg-sun text-ink hover:bg-sun-deep',
+        sun: 'bg-sun text-on-sun hover:bg-sun-deep',
         outline: 'border-2 border-ink text-ink hover:bg-ink hover:text-paper',
       },
       scale: {

@@ -161,5 +161,6 @@
   "field_rules_hint": "Una por línea: animales, visitas, silencio, horario.",
   "field_owner_name": "Su nombre",
   "field_whatsapp": "WhatsApp",
-  "field_whatsapp_hint": "Con código de área, solo números. Es donde llegan las conversaciones."
+  "field_whatsapp_hint": "Con código de área, solo números. Es donde llegan las conversaciones.",
+  "stepper_sending": "Enviando…"
 }

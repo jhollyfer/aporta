@@ -27,14 +27,15 @@ build, `check-cycles`) e `shared/` (lint, typecheck, 86 testes, build) verdes; b
 typecheck, `pattern:check`, `authz:check`, `depcruise`, `openapi:check`, `test:unit` (201) e
 `di:check` verdes. No E2E do backend, 176 testes passam e os 42 de storage **não foram
 verificados** por falta de MinIO. O CI nunca rodou no GitHub. O próximo trabalho é o domínio de
-anúncios no backend (`TASKS.md` fase 3).
+anúncios no backend (`TASKS.md` fase 3). O E2E do frontend (35 testes, com axe nos dois temas e
+rolagem horizontal em 320 px) passa contra o build e o backend locais.
 
 ## Próximos passos
 
 1. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono, a política de
    anúncio parado e como nasce a conta `OWNER`: elas destravam a fase 5.
-2. Corrigir antes do primeiro push o job de E2E do frontend no CI, que aponta para uma pasta
-   inexistente (`TASKS.md` 8.1), e o contraste do botão de WhatsApp no escuro (7.1).
+2. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
+   (9.1). O E2E do frontend existe e passa localmente (`TASKS.md` 8.1).
 3. Fase 3: entidade de anúncio, bairros, vitrine pública e `POST` do dono, com o validator VineJS par
    do `OwnerListingCreateValidator`.
 4. Trocar `frontend/src/lib/data` por `queryOptions` quando a vitrine existir (3.6).
@@ -73,7 +74,6 @@ anúncios no backend (`TASKS.md` fase 3).
 
 | Problema | Onde | Contorno |
 |---|---|---|
-| O job "Frontend - E2E (Playwright)" do CI roda uma config que não existe e o frontend não tem Playwright instalado | `.github/workflows/main-check-frontend.yml` | retirar o job ou criar `frontend/e2e/` antes do primeiro pull request (8.1) |
 | 42 testes E2E de storage sem verificação (sem MinIO neste ambiente) | `backend/app/features/storage/` | subir `docker compose up -d` em `backend/` e rodar `pnpm test:e2e` (8.3) |
 | `VITE_API_URL` declarada e nunca lida; o comentário do `.env.example` sugere que ela liga a API | `frontend/src/env.ts`, `frontend/.env.example` | tratar como inativa até a fase 3 (3.6, 7.7) |
 | O validator do WhatsApp só confere o tamanho (10 a 13), não exige dígitos | `shared/src/validators/owner/listings.validator.ts` | o campo da tela filtra dígitos; a API precisa recusar o resto (7.5) |

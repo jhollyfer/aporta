@@ -54,6 +54,9 @@ boot quando falta, conforme o schema.
 | `VITE_SITE_URL` | web | não (tem default local) | não | endereço público do site, sem barra no fim; vira canônico, sitemap e `og:url`. Entra no bundle em tempo de build | `http://localhost:3000` |
 | `VITE_API_URL` | web | não | não | base da API AdonisJS. **Declarada, mas nenhuma tela a lê hoje**: o frontend usa os dados de `src/lib/data`. O comentário do `.env.example` diz que, sem ela, o frontend usa esses dados, o que hoje vale também com ela. Entra no bundle em tempo de build | `http://localhost:3333` |
 | `PORT` | web | não | não | porta do servidor Nitro; o `Dockerfile-production` fixa `3000` | `3000` |
+| `E2E_BASE_URL` | e2e | sim, para rodar o E2E | não | o app sob teste; sem default, `e2e/support/env.ts` para dizendo qual falta | `http://localhost:3000` |
+| `E2E_API_URL` | e2e | sim, para rodar o E2E | não | a API sob teste, cujo `/health-check` o E2E confere | `http://localhost:3333` |
+| `E2E_CHROMIUM_PATH` | e2e | não | não | caminho de um Chromium já instalado, para quem não usa o do `playwright install`; no CI fica vazia | `/opt/pw-browsers/chromium` |
 
 Regras (detalhe em `backend.md` §6):
 

@@ -107,12 +107,12 @@ O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `sha
 | 7.11 | Escrever o procedimento de rotação de `APP_KEY` e das credenciais | Média | A fazer | `SECURITY.md` §6 |
 | 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | A fazer | o link mandado por WhatsApp sai sem prévia |
 
-## Fase 8 · E2E, só na fase final (0/3)
+## Fase 8 · E2E (1/3)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 8.1 | Playwright no frontend com `e2e/playwright.config.ts`, ou retirar o job do workflow até lá | Alta | A fazer | o job existe e a pasta não: o CI do primeiro pull request falha |
-| 8.2 | Specs dos fluxos críticos de `USER-FLOWS.md` | Alta | A fazer | depende das fases 3 a 5 |
+| 8.1 | Playwright no frontend com `e2e/playwright.config.ts` | Alta | Feita | 35 testes verdes localmente (25 s): health-check, busca, detalhe, guia, cadastro, idiomas e axe nos dois temas; o job do CI ainda não rodou no GitHub |
+| 8.2 | Specs dos fluxos críticos de `USER-FLOWS.md` que dependem da API | Alta | A fazer | os fluxos públicos com mocks já têm spec (8.1); faltam os que dependem das fases 3 a 5 |
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 
 ## Fase 9 · Deploy e produção (0/9)

@@ -21,26 +21,28 @@
 | `shared/` | Vitest | `shared/src/**/*.test.ts` | pull request e push na `main` |
 | Unitário do frontend | Vitest, ambiente `node` por padrão | `frontend/src/**/*.test.ts(x)` e `frontend/scripts/*.test.ts` | pull request e push na `main` |
 | Guarda de ciclo de chunk | `frontend/scripts/check-chunk-cycles.mjs`, depois do build | `.output/` | pull request e push na `main` |
-| E2E do frontend | Playwright, contra o backend real | `frontend/e2e/` | **Não existe**: ver "Lacuna do CI" abaixo |
+| E2E do frontend | Playwright (Chromium), contra o build do app e o backend reais | `frontend/e2e/*.spec.ts` | pull request e push na `main`, job "Frontend - E2E (Playwright)"; localmente `pnpm --filter ./frontend test:e2e` com `E2E_BASE_URL` e `E2E_API_URL` |
 
-**Lacuna do CI.** O workflow `main-check-frontend.yml` tem um job "Frontend - E2E (Playwright)" que
-roda `playwright test --config e2e/playwright.config.ts`, mas o repositório não tem a pasta
-`frontend/e2e/` nem `@playwright/test` no `package.json` do frontend. O job vai falhar no primeiro
-pull request. O E2E do frontend roda só na fase final (`TASKS.md` fase 8); até lá o job precisa sair
-do workflow ou ser protegido, decisão a tomar antes do primeiro push que dispare o CI.
+**E2E do frontend.** 35 testes, todos verdes localmente em 25 s contra `.output/server` e o
+`node ace serve`: `health.spec.ts` (app e API, `200`, `no-store`), `search.spec.ts`,
+`listing-detail.spec.ts`, `guide.spec.ts`, `owner-draft.spec.ts`, `locale.spec.ts` e `a11y.spec.ts`
+(axe sem violação `serious` ou `critical` nos dois temas, e sem rolagem horizontal em 320 px com
+movimento reduzido). O fixture automático `errors` reprova `pageerror` e `console.error` da própria
+origem. Os ladrilhos do OpenStreetMap são de terceiro e ficam fora dessa checagem. O job do CI com
+este mesmo comando ainda não rodou no GitHub.
 
 Comandos: `pnpm check` na raiz roda os `check` de cada pacote; `pnpm test:unit` roda os unitários.
 
 ## 2. Fluxos críticos
 
-Cada fluxo de `USER-FLOWS.md` marcado aqui terá spec E2E de ponta a ponta na fase final. Hoje nenhum
-tem E2E de navegador.
+Os fluxos públicos, que hoje rodam com dados de exemplo, têm spec E2E de navegador. Os que dependem da
+API de anúncios terão o deles quando ela existir.
 
 | Fluxo | Caminho feliz | Caminhos de erro | Teste |
 |---|---|---|---|
-| Procuro onde morar | home, busca, detalhe, toque no WhatsApp | filtro sem resultado, URL inválida, anúncio inexistente (404) | Falta (`e2e/search.spec.ts` na fase final); a lógica de filtro tem unitário (§3) |
-| Guia da cidade | troca de aba, WhatsApp do lugar | categoria inválida | Falta |
-| Tenho um imóvel para anunciar | seis etapas, envio, confirmação | campo inválido, volta à etapa com erro, rascunho restaurado | Falta; só o validator do cadastro tem teste (§3) |
+| Procuro onde morar | home, busca, detalhe, toque no WhatsApp | filtro sem resultado, URL inválida, anúncio inexistente (404) | `e2e/search.spec.ts` e `e2e/listing-detail.spec.ts`; a lógica de filtro tem unitário (§3) |
+| Guia da cidade | troca de aba, WhatsApp do lugar | categoria inválida | `e2e/guide.spec.ts` |
+| Tenho um imóvel para anunciar | seis etapas, envio, confirmação | campo inválido, volta à etapa com erro, rascunho restaurado | `e2e/owner-draft.spec.ts` (erro em português, rascunho restaurado e corrompido, fluxo completo); o validator do cadastro tem unitário (§3). O envio é um stub |
 | Entrada da equipe | `sign-in`, perfil, `sign-out` | credencial errada, limite de tentativas | Backend com E2E (§3.1); sem tela ainda |
 | Upload de arquivo (equipe) | `POST /storages`, partes, `complete` | tipo fora da lista, tamanho divergente, assinatura falsa | Backend com E2E, **não verificado nesta data** (sem MinIO) |
 | Moderação | aprovar, arquivar, verificar dono | dono de outro anúncio (404) | Falta: o domínio não existe |

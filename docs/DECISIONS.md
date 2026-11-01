@@ -6,7 +6,7 @@
 > Só entra o que cumpre os três critérios: difícil de reverter, surpreendente para quem chega sem
 > contexto, e com troca real (`_standards/documentation.md` §5).
 > Regra que vale para todo projeto não fica aqui: vai para `_standards/DECISIONS.md` (upstream).
-> Decisão ainda aberta fica na issue ou em o `context.md` da feature em `.specs/features/`; fechada, vira linha aqui.
+> Decisão ainda aberta fica na issue ou no `context.md` da feature em `.specs/features/`; fechada, vira linha aqui.
 
 | # | Data | Tema | Decisão | Por quê | Alternativas descartadas | Custo aceito |
 |---|---|---|---|---|---|---|

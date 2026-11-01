@@ -20,8 +20,9 @@
 
 ## Parou em
 
-Fundação e frontend com mocks prontos, na branch `feat/fundacao-plataforma-moradia`, já enviada ao
-remoto (sem PR aberto). Os doze arquivos de `docs/` foram preenchidos a partir do código
+A fundação foi mesclada na `main` pelo [PR #1](https://github.com/jhollyfer/aporta/pull/1). O trabalho
+seguinte, a passada de design e responsividade do frontend, está na branch
+`feat/refino-visual-e-responsividade`. Os doze arquivos de `docs/` foram preenchidos a partir do código
 em 2026-11-01. Verificado nesta data: frontend (typecheck, ESLint, Vitest com 34 testes, Prettier,
 build, `check-cycles`) e `shared/` (lint, typecheck, 86 testes, build) verdes; backend com lint,
 typecheck, `pattern:check`, `authz:check`, `depcruise`, `openapi:check`, `test:unit` (201) e
@@ -74,6 +75,7 @@ rolagem horizontal em 320 px) passa contra o build e o backend locais.
 
 | Problema | Onde | Contorno |
 |---|---|---|
+| A tela do cadastro diz "Anúncio recebido", mas o envio é um stub e nada é gravado | `frontend/src/integrations/tanstack-query/mutations/listings.ts` | trocar o texto por um estado honesto ou tirar a rota do ar até a API existir (7.15) |
 | 42 testes E2E de storage sem verificação (sem MinIO neste ambiente) | `backend/app/features/storage/` | subir `docker compose up -d` em `backend/` e rodar `pnpm test:e2e` (8.3) |
 | `VITE_API_URL` declarada e nunca lida; o comentário do `.env.example` sugere que ela liga a API | `frontend/src/env.ts`, `frontend/.env.example` | tratar como inativa até a fase 3 (3.6, 7.7) |
 | O validator do WhatsApp só confere o tamanho (10 a 13), não exige dígitos | `shared/src/validators/owner/listings.validator.ts` | o campo da tela filtra dígitos; a API precisa recusar o resto (7.5) |

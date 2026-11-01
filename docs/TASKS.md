@@ -90,7 +90,7 @@ O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `sha
 | 6.2 | Fila com Redis e worker, e segundo serviço no Coolify | Média | A fazer | `ARCHITECTURE.md` §9.1 |
 | 6.3 | Confirmação de e-mail e aviso ao dono | Média | A fazer | depende de 5.1, 6.1 e 6.2 |
 
-## Fase 7 · Correções e dívida conhecida (0/12)
+## Fase 7 · Correções e dívida conhecida (4/15)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -106,6 +106,9 @@ O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `sha
 | 7.10 | Conferir telefones, coordenadas e lugares de exemplo antes de abrir ao público | Alta | Bloqueada | exige o dono e quem conhece a cidade |
 | 7.11 | Escrever o procedimento de rotação de `APP_KEY` e das credenciais | Média | A fazer | `SECURITY.md` §6 |
 | 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | A fazer | o link mandado por WhatsApp sai sem prévia |
+| 7.13 | Fotos reais da cidade (acervos abertos com crédito, ou fotos do dono) no hero e no guia | Alta | Bloqueada | o inspetor de design reprova página só com ilustração; sem rede nesta sessão para buscar no Openverse e no Wikimedia |
+| 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
+| 7.15 | A tela do cadastro diz "Anúncio recebido", mas o envio é um stub e nada é gravado: trocar o texto por um estado honesto, ou tirar a rota do ar, até a API de anúncios existir | Alta | A fazer | `frontend/src/integrations/tanstack-query/mutations/listings.ts`; com o deploy no Coolify configurado, o visitante veria uma confirmação falsa |
 
 ## Fase 8 · E2E (1/3)
 

@@ -2,7 +2,7 @@
 # (`_standards/tooling.md` §8.4). The `minio/minio` image left Docker Hub and the
 # community repository only distributes source code: `minio` and `mc` are
 # built from a pinned release.
-FROM golang:1.24-alpine AS build
+FROM golang:1.27-alpine AS build
 ARG MINIO_RELEASE=RELEASE.2025-10-15T17-29-55Z
 ARG MC_RELEASE=RELEASE.2025-08-13T08-35-41Z
 RUN apk add --no-cache git

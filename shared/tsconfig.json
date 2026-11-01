@@ -1,0 +1,32 @@
+{
+  // `shared/` without a preset: `NodeNext` with relative imports and the `.js` extension. What
+  // compiles under `NodeNext` also compiles under the frontend's `bundler`, so the package
+  // serves both consumers (`_standards/tooling.md` §3).
+  "include": [
+    "src/**/*.ts",
+    "vitest.config.ts",
+    "eslint.config.js",
+    "prettier.config.js"
+  ],
+
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "noEmit": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": []
+  }
+}

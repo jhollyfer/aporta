@@ -1,0 +1,17 @@
+{
+  // What goes to `dist/`: only `src/`, no tests. `.js` + `.d.ts`, because Node
+  // refuses TypeScript inside `node_modules`, and that is where `pnpm deploy` puts the
+  // package in the backend image (`_standards/tooling.md` §1).
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/*-fixtures.ts"],
+  "compilerOptions": {
+    "noEmit": false,
+    "allowJs": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}

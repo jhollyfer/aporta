@@ -1,6 +1,6 @@
 [
   {
-    "AllowedOrigins": ["https://aporta.com.br"],
+    "AllowedOrigins": ["https://aporta.maiyu.com.br"],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
     "AllowedHeaders": ["content-type"],
     "ExposeHeaders": ["ETag"],

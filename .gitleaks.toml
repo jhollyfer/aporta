@@ -1,0 +1,17 @@
+# CI secret scan (`_standards/tooling.md` §7), with gitleaks'
+# default rules.
+[extend]
+useDefault = true
+
+# Only what is a mirror of `maiyu-pattern` stays out of the scan (`_doc-lib/`,
+# `_standards/`, `.claude/skills/`): it is not edited here, the sync overwrites it, and
+# it carries third-party documentation examples (`curl -H "Authorization: Bearer
+# {token}"`, `sk_live_abc123` as an example of what not to do). The project's
+# code stays fully covered.
+[allowlist]
+description = "copy of the upstream standard"
+paths = [
+  '''^_doc-lib/''',
+  '''^_standards/''',
+  '''^\.claude/skills/''',
+]

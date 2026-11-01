@@ -1,0 +1,10 @@
+{
+  "CURRENT_PASSWORD_INVALID": "Current password is not valid",
+  "INVALID_CREDENTIALS": "The sign-in details are not valid",
+  "PASSWORD_SAME_AS_CURRENT": "The new password must be different from the current one",
+  "PROFILE_USER_ALREADY_EXISTS": "User already exists",
+  "STORAGE_CONTENT_MISMATCH": "The uploaded file content is not { declared }.",
+  "STORAGE_IN_USE": "The file is in use in: { references }. Unlink it before deleting it.",
+  "STORAGE_NOT_FOUND": "File not found",
+  "STORAGE_SIZE_MISMATCH": "The uploaded file is { received } bytes, but { declared } were declared."
+}

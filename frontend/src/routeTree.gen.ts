@@ -9,51 +9,267 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
+import { Route as HealthCheckRouteImport } from './routes/health-check'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicSplatRouteImport } from './routes/_public/$'
+import { Route as PublicGuideIndexRouteImport } from './routes/_public/guide/index'
+import { Route as PublicListYourPlaceIndexRouteImport } from './routes/_public/list-your-place/index'
+import { Route as PublicListingsIndexRouteImport } from './routes/_public/listings/index'
+import { Route as PublicListingsSlugRouteImport } from './routes/_public/listings/$slug'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PublicLayoutRoute = PublicLayoutRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HealthCheckRoute = HealthCheckRouteImport.update({
+  id: '/health-check',
+  path: '/health-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicLayoutRoute,
+} as any).lazy(() => import('./routes/_public/index.lazy').then((d) => d.Route))
+const PublicSplatRoute = PublicSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => PublicLayoutRoute,
+} as any)
+const PublicGuideIndexRoute = PublicGuideIndexRouteImport.update({
+  id: '/guide/',
+  path: '/guide/',
+  getParentRoute: () => PublicLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_public/guide/index.lazy').then((d) => d.Route),
+)
+const PublicListYourPlaceIndexRoute =
+  PublicListYourPlaceIndexRouteImport.update({
+    id: '/list-your-place/',
+    path: '/list-your-place/',
+    getParentRoute: () => PublicLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_public/list-your-place/index.lazy').then((d) => d.Route),
+  )
+const PublicListingsIndexRoute = PublicListingsIndexRouteImport.update({
+  id: '/listings/',
+  path: '/listings/',
+  getParentRoute: () => PublicLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_public/listings/index.lazy').then((d) => d.Route),
+)
+const PublicListingsSlugRoute = PublicListingsSlugRouteImport.update({
+  id: '/listings/$slug',
+  path: '/listings/$slug',
+  getParentRoute: () => PublicLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_public/listings/$slug.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof PublicIndexRoute
+  '/health-check': typeof HealthCheckRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$': typeof PublicSplatRoute
+  '/listings/$slug': typeof PublicListingsSlugRoute
+  '/guide/': typeof PublicGuideIndexRoute
+  '/list-your-place/': typeof PublicListYourPlaceIndexRoute
+  '/listings/': typeof PublicListingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/health-check': typeof HealthCheckRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$': typeof PublicSplatRoute
+  '/': typeof PublicIndexRoute
+  '/listings/$slug': typeof PublicListingsSlugRoute
+  '/guide': typeof PublicGuideIndexRoute
+  '/list-your-place': typeof PublicListYourPlaceIndexRoute
+  '/listings': typeof PublicListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_public': typeof PublicLayoutRouteWithChildren
+  '/health-check': typeof HealthCheckRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_public/$': typeof PublicSplatRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_public/listings/$slug': typeof PublicListingsSlugRoute
+  '/_public/guide/': typeof PublicGuideIndexRoute
+  '/_public/list-your-place/': typeof PublicListYourPlaceIndexRoute
+  '/_public/listings/': typeof PublicListingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/health-check'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/$'
+    | '/listings/$slug'
+    | '/guide/'
+    | '/list-your-place/'
+    | '/listings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/health-check'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/$'
+    | '/'
+    | '/listings/$slug'
+    | '/guide'
+    | '/list-your-place'
+    | '/listings'
+  id:
+    | '__root__'
+    | '/_public'
+    | '/health-check'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/_public/$'
+    | '/_public/'
+    | '/_public/listings/$slug'
+    | '/_public/guide/'
+    | '/_public/list-your-place/'
+    | '/_public/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
+  HealthCheckRoute: typeof HealthCheckRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health-check': {
+      id: '/health-check'
+      path: '/health-check'
+      fullPath: '/health-check'
+      preLoaderRoute: typeof HealthCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_public/$': {
+      id: '/_public/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof PublicSplatRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_public/guide/': {
+      id: '/_public/guide/'
+      path: '/guide'
+      fullPath: '/guide/'
+      preLoaderRoute: typeof PublicGuideIndexRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_public/list-your-place/': {
+      id: '/_public/list-your-place/'
+      path: '/list-your-place'
+      fullPath: '/list-your-place/'
+      preLoaderRoute: typeof PublicListYourPlaceIndexRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_public/listings/': {
+      id: '/_public/listings/'
+      path: '/listings'
+      fullPath: '/listings/'
+      preLoaderRoute: typeof PublicListingsIndexRouteImport
+      parentRoute: typeof PublicLayoutRoute
+    }
+    '/_public/listings/$slug': {
+      id: '/_public/listings/$slug'
+      path: '/listings/$slug'
+      fullPath: '/listings/$slug'
+      preLoaderRoute: typeof PublicListingsSlugRouteImport
+      parentRoute: typeof PublicLayoutRoute
     }
   }
 }
 
+interface PublicLayoutRouteChildren {
+  PublicSplatRoute: typeof PublicSplatRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+  PublicListingsSlugRoute: typeof PublicListingsSlugRoute
+  PublicGuideIndexRoute: typeof PublicGuideIndexRoute
+  PublicListYourPlaceIndexRoute: typeof PublicListYourPlaceIndexRoute
+  PublicListingsIndexRoute: typeof PublicListingsIndexRoute
+}
+
+const PublicLayoutRouteChildren: PublicLayoutRouteChildren = {
+  PublicSplatRoute: PublicSplatRoute,
+  PublicIndexRoute: PublicIndexRoute,
+  PublicListingsSlugRoute: PublicListingsSlugRoute,
+  PublicGuideIndexRoute: PublicGuideIndexRoute,
+  PublicListYourPlaceIndexRoute: PublicListYourPlaceIndexRoute,
+  PublicListingsIndexRoute: PublicListingsIndexRoute,
+}
+
+const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(
+  PublicLayoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PublicLayoutRoute: PublicLayoutRouteWithChildren,
+  HealthCheckRoute: HealthCheckRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

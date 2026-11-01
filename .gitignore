@@ -1,0 +1,50 @@
+# Dependencies: pnpm recreates them from the root `pnpm-lock.yaml`.
+node_modules/
+
+# Secrets: `.env.example` and `backend/.env.test` stay versioned, with an example
+# or test value; each machine's `.env` never does (`backend.md` §6).
+.env
+.env.local
+.env.*.local
+
+# Build output that every build regenerates (`tooling.md` §9): backend (`build/`,
+# Adonis `tmp/`), frontend (Nitro, Vite and TanStack) and `shared/` (`dist/`).
+build/
+dist/
+dist-ssr/
+.output/
+.nitro/
+.tanstack/
+.vinxi/
+.wrangler/
+backend/tmp/
+backend/public/assets/
+__unconfig*
+# Messages compiled by Paraglide (`i18n:compile`): compiler output, never
+# versioned (`tooling.md` §9, `i18n.md`).
+frontend/src/paraglide/
+
+# Revision stamp that CI writes before the frontend build.
+frontend/public/revision.txt
+
+# Test and Playwright report: comes out on every run.
+coverage/
+**/playwright/.auth/
+playwright-report/
+test-results/
+blob-report/
+
+# IDE and system configuration, which belongs to each person and not to the project. It
+# leaked into a commit once for being outside here.
+.idea/
+.vscode/
+.fleet/
+.DS_Store
+npm-debug.log*
+
+# Agent worktree: a local working copy, never repository content.
+.claude/worktrees/
+
+# The security scan report carries an exploitation scenario; it does not go into
+# the history (`tooling.md` §10.4).
+CLAUDE-SECURITY-*/

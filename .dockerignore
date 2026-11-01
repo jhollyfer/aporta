@@ -1,0 +1,26 @@
+# One for both images, which build from the root (`_standards/tooling.md`
+# §8.2), with the list from the pnpm page (_doc-lib/pnpm.md#docker): the local
+# machine's dependency tree (wrong architecture), git, documentation and the previous
+# build output. `dist` stays out so the image compiles `shared/` from the code.
+node_modules
+.git
+.gitignore
+.github
+*.md
+dist
+build
+coverage
+backend/tmp
+
+# The machine's `.output` does not go in; the frontend's does because it is the build
+# job's artifact, downloaded into `frontend/.output/` before `docker build`.
+.output
+!frontend/.output
+
+# A secret never goes into the build context.
+.env
+.env.*
+
+.vscode
+.idea
+.DS_Store

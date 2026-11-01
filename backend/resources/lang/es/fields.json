@@ -1,0 +1,10 @@
+{
+  "CURRENT_PASSWORD_INVALID": "La contraseña actual no es válida",
+  "INVALID_CREDENTIALS": "Los datos de acceso no son válidos",
+  "PASSWORD_SAME_AS_CURRENT": "La nueva contraseña debe ser distinta de la actual",
+  "PROFILE_USER_ALREADY_EXISTS": "El usuario ya existe",
+  "STORAGE_CONTENT_MISMATCH": "El contenido del archivo enviado no es { declared }.",
+  "STORAGE_IN_USE": "El archivo está en uso en: { references }. Desvincúlalo antes de eliminarlo.",
+  "STORAGE_NOT_FOUND": "Archivo no encontrado",
+  "STORAGE_SIZE_MISMATCH": "El archivo enviado tiene { received } bytes y se declararon { declared }."
+}

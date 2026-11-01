@@ -21,10 +21,14 @@ server.errorHandler(() => import('#exceptions/handler'))
  * The server middleware stack runs middleware on all the HTTP
  * requests, even if there is no route registered for
  * the request URL.
+ *
+ * The language is first: the message of any error, even one that happens before
+ * the route exists, comes out in the requested language.
  */
 server.use([
-  () => import('#middleware/force_json_response_middleware'),
-  () => import('#middleware/container_bindings_middleware'),
+  () => import('#middleware/detect-user-locale.middleware'),
+  () => import('#middleware/force-json-response.middleware'),
+  () => import('#middleware/container-bindings.middleware'),
   () => import('@adonisjs/cors/cors_middleware'),
 ])
 
@@ -33,11 +37,20 @@ server.use([
  * requests with a registered route.
  */
 router.use([
+  /**
+   * Before the bodyparser, on purpose.
+   *
+   * The barrier decides by method and `Content-Type`, which are headers - it
+   * needs the body for nothing. After the bodyparser, a `multipart` from a forbidden
+   * origin would be read whole, written to temporary disk and only then
+   * refused: all the work, for a request that never had permission.
+   */
+  () => import('#middleware/origin.middleware'),
   () => import('@adonisjs/core/bodyparser_middleware'),
-  () => import('@adonisjs/session/session_middleware'),
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/auth/initialize_auth_middleware'),
-  () => import('#middleware/silent_auth_middleware'),
+  () => import('#middleware/silent-auth.middleware'),
+  () => import('#middleware/initialize-bouncer.middleware'),
 ])
 
 /**
@@ -45,5 +58,7 @@ router.use([
  * the routes or the routes group.
  */
 export const middleware = router.named({
-  auth: () => import('#middleware/auth_middleware'),
+  documentation: () => import('#middleware/documentation.middleware'),
+  auth: () => import('#middleware/auth.middleware'),
+  role: () => import('#middleware/role.middleware'),
 })

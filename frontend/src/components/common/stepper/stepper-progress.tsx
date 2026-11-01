@@ -1,0 +1,51 @@
+import * as React from 'react'
+
+import { m } from '#/paraglide/messages'
+import { cn } from '#/lib/cn'
+
+import { useStepper } from './stepper-context'
+
+/**
+ * O indicador de progresso: a barra mostra o quanto falta, a lista nomeia as
+ * etapas. `aria-current="step"` marca a atual para o leitor de tela, e o texto
+ * "Etapa 2 de 6" diz o mesmo para quem não vê a barra.
+ */
+export function StepperProgress(): React.JSX.Element {
+  const { steps, current } = useStepper()
+  const percent = Math.round(((current + 1) / steps.length) * 100)
+
+  return (
+    <div data-slot="stepper-progress" className="flex flex-col gap-3">
+      <p className="text-sm font-bold text-ink">
+        {m.stepper_status({ current: current + 1, total: steps.length })}
+      </p>
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-label={m.stepper_progress_label()}
+        className="h-2 overflow-hidden rounded-full bg-moss-wash"
+      >
+        <div
+          className="h-full rounded-full bg-moss transition-[width] duration-300 motion-reduce:transition-none"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <ol className="rail hidden gap-4 overflow-x-auto sm:flex">
+        {steps.map((step, index) => (
+          <li
+            key={step.id}
+            aria-current={index === current && 'step'}
+            className={cn(
+              'shrink-0 text-sm text-ink-soft',
+              index === current && 'font-bold text-ink',
+            )}
+          >
+            {step.label}
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}

@@ -4,7 +4,65 @@
  */
 
 export const controllers = {
-  AccessTokens: () => import('#controllers/access_tokens_controller'),
-  NewAccount: () => import('#controllers/new_account_controller'),
-  Profile: () => import('#controllers/profile_controller'),
+  account: {
+    profile: {
+      show: {
+        Show: () => import('#features/account/profile/show/show.controller'),
+      },
+      update: {
+        Update: () => import('#features/account/profile/update/update.controller'),
+      },
+    },
+  },
+  authentication: {
+    session: {
+      refresh: {
+        Refresh: () => import('#features/authentication/session/refresh/refresh.controller'),
+      },
+      signIn: {
+        SignIn: () => import('#features/authentication/session/sign-in/sign-in.controller'),
+      },
+      signOut: {
+        SignOut: () => import('#features/authentication/session/sign-out/sign-out.controller'),
+      },
+    },
+  },
+  documentation: {
+    openapi: {
+      show: {
+        Show: () => import('#features/documentation/openapi/show/show.controller'),
+      },
+    },
+    reference: {
+      show: {
+        Show: () => import('#features/documentation/reference/show/show.controller'),
+      },
+    },
+  },
+  HealthCheck: () => import('#features/health-check.controller'),
+  storage: {
+    files: {
+      complete: {
+        Complete: () => import('#features/storage/files/complete/complete.controller'),
+      },
+      create: {
+        Create: () => import('#features/storage/files/create/create.controller'),
+      },
+      delete: {
+        Delete: () => import('#features/storage/files/delete/delete.controller'),
+      },
+      download: {
+        Download: () => import('#features/storage/files/download/download.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/storage/files/paginate/paginate.controller'),
+      },
+      parts: {
+        Parts: () => import('#features/storage/files/parts/parts.controller'),
+      },
+      show: {
+        Show: () => import('#features/storage/files/show/show.controller'),
+      },
+    },
+  },
 }

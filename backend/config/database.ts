@@ -1,146 +1,56 @@
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/lucid'
 
+import env from '#start/env'
+
 const dbConfig = defineConfig({
   /**
    * Default connection used for all queries.
    */
-  connection: 'sqlite',
+  connection: 'pg',
 
   connections: {
     /**
-     * SQLite connection (default).
+     * PostgreSQL connection.
      */
-    sqlite: {
-      client: 'better-sqlite3',
-
+    pg: {
+      client: 'pg',
       connection: {
-        filename: app.tmpPath('db.sqlite3'),
+        connectionString: env.get('DATABASE_URL'),
+
+        /**
+         * Turned on by `DATABASE_SSL`, and not by `NODE_ENV`: what decides is where the
+         * database is, not in which environment the application runs. A database on the same private
+         * network as the application usually does not speak TLS - and requiring TLS there brings down
+         * the connection at boot.
+         */
+        ssl: (function () {
+          if (env.get('DATABASE_SSL')) return { rejectUnauthorized: true }
+
+          return false
+        })(),
       },
-
-      /**
-       * Required by Knex for SQLite defaults.
-       */
-      useNullAsDefault: true,
-
       migrations: {
         /**
-         * Sort migration files naturally by filename.
+         * Sorts the migration files by name. The timestamp at the start of the
+         * name is what decides the order, and without this lexicographic ordering
+         * scrambles files with different digit counts.
          */
         naturalSort: true,
-
-        /**
-         * Paths containing migration files.
-         */
         paths: ['database/migrations'],
       },
 
       schemaGeneration: {
         /**
-         * Enable schema generation from Lucid models.
+         * `database/schema.ts` is regenerated on every `migration:run` from the
+         * live connection, and it is from it that the Lucid models inherit the columns.
          */
         enabled: true,
-
-        /**
-         * Custom schema rules file paths.
-         */
         rulesPaths: ['./database/schema_rules.js'],
       },
+
+      debug: app.inDev,
     },
-
-    /**
-     * PostgreSQL connection.
-     * Install package to switch: npm install pg
-     */
-    // pg: {
-    //   client: 'pg',
-    //   connection: {
-    //     host: env.get('DB_HOST'),
-    //     port: env.get('DB_PORT'),
-    //     user: env.get('DB_USER'),
-    //     password: env.get('DB_PASSWORD'),
-    //     database: env.get('DB_DATABASE'),
-    //   },
-    //   migrations: {
-    //     naturalSort: true,
-    //     paths: ['database/migrations'],
-    //   },
-    //   schemaGeneration: {
-    //     enabled: true,
-    //     rulesPaths: ['./database/schema_rules.js'],
-    //   },
-    //   debug: app.inDev,
-    // },
-
-    /**
-     * MySQL / MariaDB connection.
-     * Install package to switch: npm install mysql2
-     */
-    // mysql: {
-    //   client: 'mysql2',
-    //   connection: {
-    //     host: env.get('DB_HOST'),
-    //     port: env.get('DB_PORT'),
-    //     user: env.get('DB_USER'),
-    //     password: env.get('DB_PASSWORD'),
-    //     database: env.get('DB_DATABASE'),
-    //   },
-    //   migrations: {
-    //     naturalSort: true,
-    //     paths: ['database/migrations'],
-    //   },
-    //   schemaGeneration: {
-    //     enabled: true,
-    //     rulesPaths: ['./database/schema_rules.js'],
-    //   },
-    //   debug: app.inDev,
-    // },
-
-    /**
-     * Microsoft SQL Server connection.
-     * Install package to switch: npm install tedious
-     */
-    // mssql: {
-    //   client: 'mssql',
-    //   connection: {
-    //     server: env.get('DB_HOST'),
-    //     port: env.get('DB_PORT'),
-    //     user: env.get('DB_USER'),
-    //     password: env.get('DB_PASSWORD'),
-    //     database: env.get('DB_DATABASE'),
-    //   },
-    //   migrations: {
-    //     naturalSort: true,
-    //     paths: ['database/migrations'],
-    //   },
-    //   schemaGeneration: {
-    //     enabled: true,
-    //     rulesPaths: ['./database/schema_rules.js'],
-    //   },
-    //   debug: app.inDev,
-    // },
-
-    /**
-     * libSQL (Turso) connection.
-     * Install package to switch: npm install @libsql/client
-     */
-    // libsql: {
-    //   client: 'libsql',
-    //   connection: {
-    //     url: env.get('LIBSQL_URL'),
-    //     authToken: env.get('LIBSQL_AUTH_TOKEN'),
-    //   },
-    //   useNullAsDefault: true,
-    //   migrations: {
-    //     naturalSort: true,
-    //     paths: ['database/migrations'],
-    //   },
-    //   schemaGeneration: {
-    //     enabled: true,
-    //     rulesPaths: ['./database/schema_rules.js'],
-    //   },
-    //   debug: app.inDev,
-    // },
   },
 })
 

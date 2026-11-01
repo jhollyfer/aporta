@@ -2,20 +2,27 @@
 import type { routes } from './index.ts'
 
 export interface ApiDefinition {
-  auth: {
-    newAccount: {
-      store: typeof routes['auth.new_account.store']
-    }
-    accessTokens: {
-      store: typeof routes['auth.access_tokens.store']
-    }
+  healthCheck: typeof routes['health_check']
+  documentation: {
+    openapi: typeof routes['documentation.openapi']
+    reference: typeof routes['documentation.reference']
+  }
+  authentication: {
+    signIn: typeof routes['authentication.sign_in']
+    signOut: typeof routes['authentication.sign_out']
+    refresh: typeof routes['authentication.refresh']
   }
   profile: {
-    profile: {
-      show: typeof routes['profile.profile.show']
-    }
-    accessTokens: {
-      destroy: typeof routes['profile.access_tokens.destroy']
-    }
+    show: typeof routes['profile.show']
+    update: typeof routes['profile.update']
+  }
+  storages: {
+    paginate: typeof routes['storages.paginate']
+    create: typeof routes['storages.create']
+    complete: typeof routes['storages.complete']
+    parts: typeof routes['storages.parts']
+    show: typeof routes['storages.show']
+    delete: typeof routes['storages.delete']
+    download: typeof routes['storages.download']
   }
 }

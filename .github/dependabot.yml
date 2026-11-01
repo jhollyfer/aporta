@@ -1,0 +1,27 @@
+# One npm block for the whole workspace, one for the actions and one for the Docker
+# bases pinned by digest (`_standards/tooling.md` §9). TypeScript major
+# stays out: the standard is at 6 (§0, `_standards/DECISIONS.md` #121).
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directories: [/backend, /frontend, /shared, /]
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      patches:
+        update-types: [patch]
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directories: [/backend, /frontend, /backend/infra/minio]
+    schedule:
+      interval: weekly

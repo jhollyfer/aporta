@@ -16,35 +16,85 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare createdAt: DateTime | null
   @column.dateTime()
   declare expiresAt: DateTime | null
-  @column()
+  @column({ serializeAs: null })
   declare hash: string
   @column({ isPrimary: true })
-  declare id: number
+  declare id: string
   @column.dateTime()
   declare lastUsedAt: DateTime | null
   @column()
   declare name: string | null
   @column()
-  declare tokenableId: number
+  declare tokenableId: string
   @column()
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
 
+export class RateLimitSchema extends BaseModel {
+  static $columns = ['expire', 'key', 'points'] as const
+  $columns = RateLimitSchema.$columns
+  @column()
+  declare expire: bigint | number | null
+  @column({ isPrimary: true })
+  declare key: string
+  @column()
+  declare points: number
+}
+
+export class StorageSchema extends BaseModel {
+  static $columns = ['createdAt', 'deletedAt', 'filename', 'id', 'mimetype', 'originalName', 'ownerId', 'partSize', 'path', 'size', 'status', 'updatedAt', 'uploadId'] as const
+  $columns = StorageSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare filename: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare mimetype: string
+  @column()
+  declare originalName: string
+  @column()
+  declare ownerId: string
+  @column()
+  declare partSize: number | null
+  @column()
+  declare path: string
+  @column()
+  declare size: bigint | number
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare uploadId: string | null
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['avatarId', 'createdAt', 'deletedAt', 'email', 'id', 'name', 'password', 'role', 'status', 'updatedAt'] as const
   $columns = UserSchema.$columns
+  @column()
+  declare avatarId: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
   @column()
   declare email: string
-  @column()
-  declare fullName: string | null
   @column({ isPrimary: true })
-  declare id: number
+  declare id: string
+  @column()
+  declare name: string
   @column({ serializeAs: null })
   declare password: string
+  @column()
+  declare role: string
+  @column()
+  declare status: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

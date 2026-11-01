@@ -2,19 +2,32 @@ import { defineConfig } from '@adonisjs/shield'
 
 const shieldConfig = defineConfig({
   /**
-   * Configure CSP policies for your app. Refer documentation
-   * to learn more.
+   * The API only answers JSON (and download redirects), so nothing it
+   * returns loads a resource: `default-src 'none'` and the directives that block being
+   * framed, swapping the base and posting forms. helmet requires
+   * `default-src` in the policy. The reference page (Scalar, with a CDN
+   * script) is the only HTML response and swaps this header in its own controller
+   * (`SCALAR_CONTENT_SECURITY_POLICY`). Whoever serves the panel HTML is the
+   * frontend, with its own policy (`frontend/src/lib/security-headers.ts`).
+   * https://docs.adonisjs.com/guides/security/securing-ssr-applications
    */
   csp: {
     /**
      * Enable the Content-Security-Policy header.
      */
-    enabled: false,
+    enabled: true,
+
+    useDefaults: false,
 
     /**
      * Per-resource CSP directives.
      */
-    directives: {},
+    directives: {
+      defaultSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+    },
 
     /**
      * Report violations without blocking resources.

@@ -1,0 +1,413 @@
+import * as React from 'react'
+import { Controller } from 'react-hook-form'
+import type { Control } from 'react-hook-form'
+
+import {
+  LISTING_PERIODS,
+  LISTING_TYPES,
+  PHOTO_ENVIRONMENTS,
+} from '@aporta/shared'
+import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
+
+import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import {
+  LISTING_PERIOD_LABELS,
+  LISTING_TYPE_LABELS,
+  PHOTO_ENVIRONMENT_LABELS,
+} from '#/lib/labels'
+import { m } from '#/paraglide/messages'
+
+import { CONTROL, Field, invalidProps } from './field'
+
+type StepProps = { control: Control<OwnerListingCreate> }
+
+/** Só dígitos: o teclado numérico do celular aparece com `inputMode`, e colar "R$ 900,00" não entra como texto. */
+function digits(raw: string): string {
+  return raw.replace(/\D/g, '')
+}
+
+/**
+ * O valor numérico do campo: vazio é `undefined` (campo ausente) e o resto é número.
+ *
+ * O validator do `shared/` espera `number`, e guardar o texto digitado ("900") fazia o
+ * formulário acusar "Informe um número válido" ao sair do campo. A linha de erro entrava acima
+ * dos checkboxes dos períodos e os empurrava entre o `mousedown` e o `mouseup`, e o clique se
+ * perdia: o dono via o checkbox "não pegar".
+ */
+function toNumber(raw: string): number | undefined {
+  const text = digits(raw)
+  if (text === '') return undefined
+  return Number(text)
+}
+
+export function TypeStep({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="type"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_type()}
+            htmlFor="type"
+            error={fieldState.error?.message}
+          >
+            <select
+              id="type"
+              {...field}
+              {...invalidProps(fieldState.invalid, 'type')}
+              className={CONTROL}
+            >
+              <option value="">{m.field_select()}</option>
+              {LISTING_TYPES.map((value) => (
+                <option key={value} value={value}>
+                  {LISTING_TYPE_LABELS[value]()}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
+      />
+      <Controller
+        control={control}
+        name="furnished"
+        render={({ field }) => (
+          <label className="flex items-center gap-3 text-base font-bold text-ink">
+            <input
+              type="checkbox"
+              checked={field.value}
+              onChange={(event) => field.onChange(event.target.checked)}
+              className="size-6 accent-[var(--moss)]"
+            />
+            {m.field_furnished()}
+          </label>
+        )}
+      />
+    </>
+  )
+}
+
+export function PlaceStep({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="neighborhood"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_neighborhood()}
+            htmlFor="neighborhood"
+            error={fieldState.error?.message}
+          >
+            <select
+              id="neighborhood"
+              {...field}
+              {...invalidProps(fieldState.invalid, 'neighborhood')}
+              className={CONTROL}
+            >
+              <option value="">{m.field_select()}</option>
+              {NEIGHBORHOODS.map((item) => (
+                <option key={item.slug} value={item.slug}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
+      />
+      <Controller
+        control={control}
+        name="address"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_address()}
+            hint={m.field_address_hint()}
+            htmlFor="address"
+            error={fieldState.error?.message}
+          >
+            <input
+              id="address"
+              type="text"
+              autoComplete="street-address"
+              {...field}
+              {...invalidProps(fieldState.invalid, 'address')}
+              className={CONTROL}
+            />
+          </Field>
+        )}
+      />
+    </>
+  )
+}
+
+function NumberInput({
+  control,
+  name,
+  label,
+  hint,
+}: StepProps & {
+  name: 'monthly' | 'daily' | 'minimumStayMonths'
+  label: string
+  hint?: string
+}): React.JSX.Element {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => (
+        <Field
+          label={label}
+          hint={hint}
+          htmlFor={name}
+          error={fieldState.error?.message}
+        >
+          <input
+            id={name}
+            type="text"
+            inputMode="numeric"
+            {...field}
+            value={field.value ?? ''}
+            onChange={(event) => field.onChange(toNumber(event.target.value))}
+            {...invalidProps(fieldState.invalid, name)}
+            className={CONTROL}
+          />
+        </Field>
+      )}
+    />
+  )
+}
+
+function togglePeriod(
+  current: ReadonlyArray<ListingPeriod>,
+  period: ListingPeriod,
+): Array<ListingPeriod> {
+  if (current.includes(period)) return current.filter((p) => p !== period)
+  return [...current, period]
+}
+
+const COST_LABELS: Record<'water' | 'electricity' | 'internet', () => string> =
+  {
+    water: () => m.cost_water_label(),
+    electricity: () => m.cost_electricity_label(),
+    internet: () => m.cost_internet_label(),
+  }
+
+export function ValuesStep({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <NumberInput
+        control={control}
+        name="monthly"
+        label={m.field_monthly()}
+        hint={m.field_monthly_hint()}
+      />
+      <NumberInput
+        control={control}
+        name="daily"
+        label={m.field_daily()}
+        hint={m.field_daily_hint()}
+      />
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-bold text-ink">
+          {m.field_included()}
+        </legend>
+        {(['water', 'electricity', 'internet'] as const).map((name) => (
+          <Controller
+            key={name}
+            control={control}
+            name={name}
+            render={({ field }) => (
+              <label className="flex items-center gap-3 text-base text-ink">
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={(event) => field.onChange(event.target.checked)}
+                  className="size-6 accent-[var(--moss)]"
+                />
+                {COST_LABELS[name]()}
+              </label>
+            )}
+          />
+        ))}
+      </fieldset>
+      <Controller
+        control={control}
+        name="periods"
+        render={({ field, fieldState }) => (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="text-sm font-bold text-ink">
+              {m.field_periods()}
+            </legend>
+            {LISTING_PERIODS.map((period) => (
+              <label
+                key={period}
+                className="flex items-center gap-3 text-base text-ink"
+              >
+                <input
+                  type="checkbox"
+                  checked={field.value.includes(period)}
+                  onChange={() =>
+                    field.onChange(togglePeriod(field.value, period))
+                  }
+                  className="size-6 accent-[var(--moss)]"
+                />
+                {LISTING_PERIOD_LABELS[period]()}
+              </label>
+            ))}
+            {fieldState.error !== undefined && (
+              <p role="alert" className="text-sm font-bold text-danger">
+                {fieldState.error.message}
+              </p>
+            )}
+          </fieldset>
+        )}
+      />
+      <NumberInput
+        control={control}
+        name="minimumStayMonths"
+        label={m.field_minimum()}
+        hint={m.field_minimum_hint()}
+      />
+    </>
+  )
+}
+
+/**
+ * O passo de fotos pede cada ambiente por nome. As fotos ficam no aparelho (o
+ * `localStorage` não guarda arquivo, e o envio de verdade entra com a API), então
+ * este passo orienta e confere a lista; não é um upload.
+ */
+export function PhotosStep(): React.JSX.Element {
+  return (
+    <ul className="flex flex-col gap-3">
+      {PHOTO_ENVIRONMENTS.map((environment) => (
+        <li key={environment}>
+          <label className="flex flex-col gap-1.5 text-sm font-bold text-ink">
+            {PHOTO_ENVIRONMENT_LABELS[environment]()}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="text-base font-normal text-ink-soft"
+            />
+          </label>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export function RulesStep({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="title"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_title()}
+            htmlFor="title"
+            error={fieldState.error?.message}
+          >
+            <input
+              id="title"
+              type="text"
+              {...field}
+              {...invalidProps(fieldState.invalid, 'title')}
+              className={CONTROL}
+            />
+          </Field>
+        )}
+      />
+      <Controller
+        control={control}
+        name="description"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_description()}
+            htmlFor="description"
+            error={fieldState.error?.message}
+          >
+            <textarea
+              id="description"
+              rows={4}
+              {...field}
+              {...invalidProps(fieldState.invalid, 'description')}
+              className="w-full rounded-xl border border-line bg-surface p-4 text-base text-ink"
+            />
+          </Field>
+        )}
+      />
+      <Controller
+        control={control}
+        name="rules"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_rules()}
+            hint={m.field_rules_hint()}
+            htmlFor="rules"
+            error={fieldState.error?.message}
+          >
+            <textarea
+              id="rules"
+              rows={4}
+              {...field}
+              {...invalidProps(fieldState.invalid, 'rules')}
+              className="w-full rounded-xl border border-line bg-surface p-4 text-base text-ink"
+            />
+          </Field>
+        )}
+      />
+    </>
+  )
+}
+
+export function ContactStep({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <Controller
+        control={control}
+        name="ownerName"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_owner_name()}
+            htmlFor="ownerName"
+            error={fieldState.error?.message}
+          >
+            <input
+              id="ownerName"
+              type="text"
+              autoComplete="name"
+              {...field}
+              {...invalidProps(fieldState.invalid, 'ownerName')}
+              className={CONTROL}
+            />
+          </Field>
+        )}
+      />
+      <Controller
+        control={control}
+        name="whatsapp"
+        render={({ field, fieldState }) => (
+          <Field
+            label={m.field_whatsapp()}
+            hint={m.field_whatsapp_hint()}
+            htmlFor="whatsapp"
+            error={fieldState.error?.message}
+          >
+            <input
+              id="whatsapp"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              {...field}
+              onChange={(event) => field.onChange(digits(event.target.value))}
+              {...invalidProps(fieldState.invalid, 'whatsapp')}
+              className={CONTROL}
+            />
+          </Field>
+        )}
+      />
+    </>
+  )
+}

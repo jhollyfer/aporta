@@ -3,32 +3,100 @@ import type { AdonisEndpoint } from '@tuyau/core/types'
 import type { Registry } from './schema.d.ts'
 import type { ApiDefinition } from './tree.d.ts'
 
+export type { Route, Path } from './schema.d.ts'
+
 const placeholder: any = {}
 
 const routes = {
-  'auth.new_account.store': {
-    methods: ["POST"],
-    pattern: '/api/v1/auth/signup',
-    tokens: [{"old":"/api/v1/auth/signup","type":0,"val":"api","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['auth.new_account.store']['types'],
-  },
-  'auth.access_tokens.store': {
-    methods: ["POST"],
-    pattern: '/api/v1/auth/login',
-    tokens: [{"old":"/api/v1/auth/login","type":0,"val":"api","end":""},{"old":"/api/v1/auth/login","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/login","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/login","type":0,"val":"login","end":""}],
-    types: placeholder as Registry['auth.access_tokens.store']['types'],
-  },
-  'profile.profile.show': {
+  'health_check': {
     methods: ["GET","HEAD"],
-    pattern: '/api/v1/account/profile',
-    tokens: [{"old":"/api/v1/account/profile","type":0,"val":"api","end":""},{"old":"/api/v1/account/profile","type":0,"val":"v1","end":""},{"old":"/api/v1/account/profile","type":0,"val":"account","end":""},{"old":"/api/v1/account/profile","type":0,"val":"profile","end":""}],
-    types: placeholder as Registry['profile.profile.show']['types'],
+    pattern: '/health-check',
+    tokens: [[0,"health-check"]],
+    types: placeholder as Registry['health_check']['types'],
   },
-  'profile.access_tokens.destroy': {
+  'documentation.openapi': {
+    methods: ["GET","HEAD"],
+    pattern: '/openapi.json',
+    tokens: [[0,"openapi.json"]],
+    types: placeholder as Registry['documentation.openapi']['types'],
+  },
+  'documentation.reference': {
+    methods: ["GET","HEAD"],
+    pattern: '/documentation',
+    tokens: [[0,"documentation"]],
+    types: placeholder as Registry['documentation.reference']['types'],
+  },
+  'authentication.sign_in': {
     methods: ["POST"],
-    pattern: '/api/v1/account/logout',
-    tokens: [{"old":"/api/v1/account/logout","type":0,"val":"api","end":""},{"old":"/api/v1/account/logout","type":0,"val":"v1","end":""},{"old":"/api/v1/account/logout","type":0,"val":"account","end":""},{"old":"/api/v1/account/logout","type":0,"val":"logout","end":""}],
-    types: placeholder as Registry['profile.access_tokens.destroy']['types'],
+    pattern: '/authentication/sign-in',
+    tokens: [[0,"authentication"],[0,"sign-in"]],
+    types: placeholder as Registry['authentication.sign_in']['types'],
+  },
+  'authentication.sign_out': {
+    methods: ["POST"],
+    pattern: '/authentication/sign-out',
+    tokens: [[0,"authentication"],[0,"sign-out"]],
+    types: placeholder as Registry['authentication.sign_out']['types'],
+  },
+  'authentication.refresh': {
+    methods: ["POST"],
+    pattern: '/authentication/refresh',
+    tokens: [[0,"authentication"],[0,"refresh"]],
+    types: placeholder as Registry['authentication.refresh']['types'],
+  },
+  'profile.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/account',
+    tokens: [[0,"account"]],
+    types: placeholder as Registry['profile.show']['types'],
+  },
+  'profile.update': {
+    methods: ["PUT"],
+    pattern: '/account',
+    tokens: [[0,"account"]],
+    types: placeholder as Registry['profile.update']['types'],
+  },
+  'storages.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/storages',
+    tokens: [[0,"storages"]],
+    types: placeholder as Registry['storages.paginate']['types'],
+  },
+  'storages.create': {
+    methods: ["POST"],
+    pattern: '/storages',
+    tokens: [[0,"storages"]],
+    types: placeholder as Registry['storages.create']['types'],
+  },
+  'storages.complete': {
+    methods: ["POST"],
+    pattern: '/storages/:id/complete',
+    tokens: [[0,"storages"],[1,"id"],[0,"complete"]],
+    types: placeholder as Registry['storages.complete']['types'],
+  },
+  'storages.parts': {
+    methods: ["GET","HEAD"],
+    pattern: '/storages/:id/parts',
+    tokens: [[0,"storages"],[1,"id"],[0,"parts"]],
+    types: placeholder as Registry['storages.parts']['types'],
+  },
+  'storages.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/storages/:id',
+    tokens: [[0,"storages"],[1,"id"]],
+    types: placeholder as Registry['storages.show']['types'],
+  },
+  'storages.delete': {
+    methods: ["DELETE"],
+    pattern: '/storages/:id',
+    tokens: [[0,"storages"],[1,"id"]],
+    types: placeholder as Registry['storages.delete']['types'],
+  },
+  'storages.download': {
+    methods: ["GET","HEAD"],
+    pattern: '/storages/:id/download',
+    tokens: [[0,"storages"],[1,"id"],[0,"download"]],
+    types: placeholder as Registry['storages.download']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

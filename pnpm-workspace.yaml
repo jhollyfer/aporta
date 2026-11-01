@@ -1,0 +1,28 @@
+# One repository, one product: backend, frontend and shared in a single workspace, with one
+# `pnpm-lock.yaml` at the root (`_standards/tooling.md` §1). `shared/` keeps what
+# both sides read the same way (Zod validators, enums, responses; `architecture.md` §9).
+packages:
+  - backend
+  - frontend
+  - shared
+
+# Dependency build scripts run only when listed here: pnpm does not
+# run any by default and interrupts the install until the decision is
+# made explicitly.
+allowBuilds:
+  # Builds a native binding; without the build @adonisjs/assembler falls back and
+  # HMR becomes visibly slower.
+  '@swc/core': true
+  # Not used: the connection is PostgreSQL. Compiling the SQLite binding would be
+  # minutes of build on every install for a driver nobody opens.
+  better-sqlite3: false
+  # Vite binary (frontend dev and build); without the postinstall the package is left
+  # without the platform executable.
+  esbuild: true
+  # Resolver of eslint-plugin-import-x. The postinstall only checks the platform's
+  # precompiled binary and downloads the fallback when it is missing.
+  unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - '@inlang/cli@3.4.5'
+  - '@inlang/sdk@4.1.0'

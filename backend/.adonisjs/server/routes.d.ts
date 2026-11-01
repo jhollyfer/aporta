@@ -4,21 +4,54 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
-    'auth.new_account.store': { paramsTuple?: []; params?: {} }
-    'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
-    'profile.profile.show': { paramsTuple?: []; params?: {} }
-    'profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'health_check': { paramsTuple?: []; params?: {} }
+    'documentation.openapi': { paramsTuple?: []; params?: {} }
+    'documentation.reference': { paramsTuple?: []; params?: {} }
+    'authentication.sign_in': { paramsTuple?: []; params?: {} }
+    'authentication.sign_out': { paramsTuple?: []; params?: {} }
+    'authentication.refresh': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.update': { paramsTuple?: []; params?: {} }
+    'storages.paginate': { paramsTuple?: []; params?: {} }
+    'storages.create': { paramsTuple?: []; params?: {} }
+    'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
-    'profile.profile.show': { paramsTuple?: []; params?: {} }
+    'health_check': { paramsTuple?: []; params?: {} }
+    'documentation.openapi': { paramsTuple?: []; params?: {} }
+    'documentation.reference': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'storages.paginate': { paramsTuple?: []; params?: {} }
+    'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
-    'profile.profile.show': { paramsTuple?: []; params?: {} }
+    'health_check': { paramsTuple?: []; params?: {} }
+    'documentation.openapi': { paramsTuple?: []; params?: {} }
+    'documentation.reference': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'storages.paginate': { paramsTuple?: []; params?: {} }
+    'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'storages.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
-    'auth.new_account.store': { paramsTuple?: []; params?: {} }
-    'auth.access_tokens.store': { paramsTuple?: []; params?: {} }
-    'profile.access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'authentication.sign_in': { paramsTuple?: []; params?: {} }
+    'authentication.sign_out': { paramsTuple?: []; params?: {} }
+    'authentication.refresh': { paramsTuple?: []; params?: {} }
+    'storages.create': { paramsTuple?: []; params?: {} }
+    'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  PUT: {
+    'profile.update': { paramsTuple?: []; params?: {} }
+  }
+  DELETE: {
+    'storages.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

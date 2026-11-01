@@ -1,0 +1,77 @@
+# Local infrastructure only (database and test bucket); the application runs outside
+# of here, with `pnpm dev` (`_standards/tooling.md` §8.4). Own ports (5435,
+# 9006, 9007) to coexist with another project on the same machine.
+name: aporta-backend
+
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: aporta-backend-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: aporta
+      POSTGRES_DB: aporta
+      POSTGRES_USER: aporta
+    ports:
+      - '${DB_PORT:-5435}:5432'
+    volumes:
+      - aporta-backend-database-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U aporta -d aporta']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # S3-compatible bucket for dev and e2e: the upload is presigned multipart, an S3
+  # API that the local disk does not have. Never goes to production, which uses S3 or R2.
+  # The image is built from source at a pinned release (`infra/minio/`).
+  minio:
+    build: ./infra/minio
+    image: aporta-minio-test:2025-10-15
+    container_name: aporta-backend-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # The browser sends each part straight here: without CORS, the PUT
+      # preflight dies before any byte leaves.
+      MINIO_API_CORS_ALLOW_ORIGIN: ${CORS_ORIGINS:-http://localhost:3000}
+      # An abandoned multipart upload disappears on its own.
+      MINIO_API_STALE_UPLOADS_EXPIRY: 24h
+      MINIO_API_STALE_UPLOADS_CLEANUP_INTERVAL: 6h
+    ports:
+      - '${STORAGE_PORT:-9006}:9000'
+      - '${STORAGE_CONSOLE_PORT:-9007}:9001'
+    volumes:
+      - aporta-backend-minio-volume:/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '-q',
+          '-O',
+          '/dev/null',
+          'http://127.0.0.1:9000/minio/health/live',
+        ]
+      interval: 5s
+      retries: 10
+
+  # Creates the buckets and the application's minimum-scope user. Runs once and exits.
+  minio-setup:
+    image: aporta-minio-test:2025-10-15
+    container_name: aporta-backend-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ['/bin/sh', '/setup/minio-setup.sh', 'http://minio:9000']
+    env_file: .env
+    volumes:
+      - ./infra/minio:/setup:ro
+
+volumes:
+  aporta-backend-database-volume:
+    driver: local
+  aporta-backend-minio-volume:
+    driver: local

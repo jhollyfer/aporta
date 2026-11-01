@@ -1,0 +1,31 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+# curl para healthcheck
+RUN apk add --no-cache curl
+
+# Copia .output pronto (vem do artifact)
+COPY .output/ ./.output/
+
+# Usuario nao-root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nitro && \
+    chown -R nitro:nodejs /app/.output
+
+USER nitro
+
+
+# saber se o Nitro subiu, e não só se o processo está de pé: um SSR que morreu
+# no boot deixa o container vivo e a página em branco.
+#
+# `/health-check` e não `/`: a home renderiza o site inteiro (fontes, imagens, a
+# agenda), e o painel lê a API. Apontar para `/` media mais que o processo, e
+# um backend lento derrubaria o frontend junto. `/health-check` não sai do processo.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/health-check || exit 1
+
+EXPOSE 3000
+ENV PORT=3000
+
+CMD ["node", ".output/server/index.mjs"]

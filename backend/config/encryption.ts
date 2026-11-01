@@ -1,5 +1,6 @@
-import env from '#start/env'
 import { defineConfig, drivers } from '@adonisjs/core/encryption'
+
+import env from '#start/env'
 
 const encryptionConfig = defineConfig({
   /**
@@ -30,5 +31,8 @@ export default encryptionConfig
  * in your application.
  */
 declare module '@adonisjs/core/types' {
-  export interface EncryptorsList extends InferEncryptors<typeof encryptionConfig> {}
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type -- declaration merging requires `interface`, which adds no members here
+  export interface EncryptorsList extends InferEncryptors<
+    typeof encryptionConfig
+  > {}
 }

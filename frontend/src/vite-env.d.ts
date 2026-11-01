@@ -1,0 +1,19 @@
+/// <reference types="vite/client" />
+
+/**
+ * As variáveis de ambiente que este frontend lê, tipadas para o
+ * `import.meta.env` não cair no `any` do index signature do Vite.
+ *
+ * `interface` aqui é module augmentation, o único caso em que o TypeScript não
+ * aceita `type`.
+ */
+interface ImportMetaEnv {
+  /** O endereço público do site, sem barra no fim: canônico, sitemap e `og:url`. */
+  readonly VITE_SITE_URL?: string
+  /** Base da API AdonisJS. Sem ela o frontend usa os dados de `lib/data`. */
+  readonly VITE_API_URL?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

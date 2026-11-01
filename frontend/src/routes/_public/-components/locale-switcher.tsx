@@ -1,0 +1,38 @@
+import * as React from 'react'
+
+import { m } from '#/paraglide/messages'
+import { getLocale, locales, setLocale } from '#/paraglide/runtime'
+import { cn } from '#/lib/cn'
+
+/**
+ * O seletor de idioma. O código do idioma é o rótulo (PT, EN, ES) e o nome
+ * completo vai no `aria-label`, porque a barra do celular não comporta o nome.
+ * `setLocale` recarrega a página no endereço do outro idioma, que é o que o
+ * Paraglide faz com a estratégia `url`.
+ */
+export function LocaleSwitcher(): React.JSX.Element {
+  const current = getLocale()
+
+  return (
+    <div
+      role="group"
+      aria-label={m.locale_switcher_label()}
+      className="ml-1 flex rounded-full bg-moss-wash p-0.5"
+    >
+      {locales.map((locale) => (
+        <button
+          key={locale}
+          type="button"
+          onClick={() => void setLocale(locale)}
+          aria-pressed={locale === current}
+          className={cn(
+            'rounded-full px-2.5 py-1.5 text-xs font-extrabold text-moss-deep',
+            locale === current && 'bg-moss text-paper',
+          )}
+        >
+          {locale.slice(0, 2).toUpperCase()}
+        </button>
+      ))}
+    </div>
+  )
+}

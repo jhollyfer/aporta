@@ -128,6 +128,9 @@ export default [
       'src/routeTree.gen.ts',
       '.output/**',
       '.tanstack/**',
+      // Saída do Playwright: relatório HTML e traços, regenerados a cada execução.
+      'playwright-report/**',
+      'test-results/**',
     ],
   },
 ]

@@ -15,7 +15,8 @@
     "lint": "eslint --max-warnings 0",
     "format": "prettier --write . && eslint --fix",
     "check": "pnpm lint && pnpm typecheck && prettier --check .",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts"
   },
   "dependencies": {
     "@aporta/shared": "workspace:*",
@@ -46,7 +47,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@inlang/paraglide-js": "^2.13.1",
+    "@playwright/test": "1.64.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "^0.8.3",

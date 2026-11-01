@@ -23,3 +23,7 @@ project.inlang/README.md
 .output/
 .tanstack/
 src/routeTree.gen.ts
+
+# Saída do Playwright, regenerada a cada execução.
+playwright-report/
+test-results/

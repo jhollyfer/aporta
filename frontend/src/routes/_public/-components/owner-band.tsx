@@ -11,7 +11,7 @@ export function OwnerBand(): React.JSX.Element {
   return (
     <section
       aria-labelledby="owner-title"
-      className="mx-auto mt-28 max-w-6xl px-4"
+      className="reveal mx-auto mt-28 max-w-6xl px-4"
     >
       <div className="flex flex-col gap-5 rounded-card bg-clay-wash px-6 py-12 sm:px-12">
         <h2

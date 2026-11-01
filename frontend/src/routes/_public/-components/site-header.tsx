@@ -13,7 +13,7 @@ const LINK =
  */
 export function SiteHeader(): React.JSX.Element {
   return (
-    <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-none">
+    <header className="sticky top-0 z-40 bg-paper">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
         <Link
           to="/"

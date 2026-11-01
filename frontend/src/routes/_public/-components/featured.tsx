@@ -32,7 +32,7 @@ export function Featured(): React.JSX.Element {
       </div>
       <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((listing, index) => (
-          <li key={listing.id}>
+          <li key={listing.id} className="reveal">
             <ListingCard listing={listing}>
               <ListingCard.Photo priority={index === 0} />
               <ListingCard.Badge />

@@ -9,7 +9,7 @@ export function GuideBand(): React.JSX.Element {
   return (
     <section
       aria-labelledby="guide-title"
-      className="mx-auto mt-28 grid max-w-6xl items-center gap-8 px-4 md:grid-cols-2"
+      className="reveal mx-auto mt-28 grid max-w-6xl items-center gap-8 px-4 md:grid-cols-2"
     >
       <div className="aspect-[4/3] overflow-hidden rounded-card">
         <Scene kind={SCENE_KIND.HOUSE} label={m.guide_band_scene_label()} />

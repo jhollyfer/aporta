@@ -10,7 +10,7 @@
 */
 
 await import('reflect-metadata')
-const { Ignitor, prettyPrintError } = await import('@adonisjs/core/ignitor')
+const { Ignitor, prettyPrintError } = await import('@adonisjs/core')
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -22,24 +22,29 @@ const APP_ROOT = new URL('../', import.meta.url)
  * The importer is used to import files in context of the
  * application.
  */
-const IMPORTER = (filePath: string) => {
+const IMPORTER = function (filePath: string) {
   if (filePath.startsWith('./') || filePath.startsWith('../')) {
     return import(new URL(filePath, APP_ROOT).href)
   }
   return import(filePath)
 }
 
-new Ignitor(APP_ROOT, { importer: IMPORTER })
-  .tap((app) => {
-    app.booting(async () => {
-      await import('#start/env')
+try {
+  await new Ignitor(APP_ROOT, { importer: IMPORTER })
+    .tap(function (app) {
+      app.booting(async function () {
+        await import('#start/env')
+      })
+      app.listen('SIGTERM', function () {
+        void app.terminate()
+      })
+      app.listenIf(app.managedByPm2, 'SIGINT', function () {
+        void app.terminate()
+      })
     })
-    app.listen('SIGTERM', () => app.terminate())
-    app.listenIf(app.managedByPm2, 'SIGINT', () => app.terminate())
-  })
-  .httpServer()
-  .start()
-  .catch((error) => {
-    process.exitCode = 1
-    prettyPrintError(error)
-  })
+    .httpServer()
+    .start()
+} catch (error) {
+  process.exitCode = 1
+  await prettyPrintError(error)
+}

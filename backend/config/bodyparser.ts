@@ -33,6 +33,15 @@ const bodyParserConfig = defineConfig({
     convertEmptyStringsToNull: true,
 
     /**
+     * Do not trim the strings of the body. The default trims every string, nested ones
+     * included, and the rich text JSON carries meaningful spaces inside its text nodes
+     * (`"Some "` before a bold run): trimmed, `Some **bold** text` would reach the database as
+     * `Somebold text`. The validators that want a trimmed string say `.trim()` themselves.
+     * _doc-lib/adonisjs.md#guides/basics/body-parser, https://docs.adonisjs.com/guides/basics/body-parser
+     */
+    trimWhitespaces: false,
+
+    /**
      * Content types handled by the JSON parser.
      */
     types: [
@@ -44,34 +53,14 @@ const bodyParserConfig = defineConfig({
   },
 
   /**
-   * Config for the "multipart/form-data" content-type parser.
-   * File uploads are handled by the multipart parser.
+   * No `multipart/form-data` parser: the binary goes straight to the bucket by
+   * signed URL (`services/multipart`) and the API only receives JSON. An empty list
+   * turns the parser off, and no route loads a file into memory or onto temporary
+   * disk.
+   * _doc-lib/adonisjs.md#guides/basics/body-parser, https://docs.adonisjs.com/guides/basics/body-parser
    */
   multipart: {
-    /**
-     * Automatically process uploaded files into the system tmp directory.
-     */
-    autoProcess: true,
-
-    /**
-     * Normalize empty string values to null.
-     */
-    convertEmptyStringsToNull: true,
-
-    /**
-     * Routes where multipart processing is handled manually.
-     */
-    processManually: [],
-
-    /**
-     * Maximum accepted payload size for multipart requests.
-     */
-    limit: '20mb',
-
-    /**
-     * Content types handled by the multipart parser.
-     */
-    types: ['multipart/form-data'],
+    types: [],
   },
 })
 

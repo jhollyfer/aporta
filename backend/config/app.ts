@@ -1,13 +1,14 @@
-import env from '#start/env'
-import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
+
+import env from '#start/env'
 
 /**
  * The app URL can be used in various places where you want to create absolute
  * URLs to your application. For example, when sending emails, images should
  * use absolute URLs.
  */
-export const appUrl = env.get('APP_URL')
+export const serverUrl = env.get('APP_SERVER_URL')
 
 /**
  * The configuration settings used by the HTTP server
@@ -20,6 +21,17 @@ export const http = defineConfig({
   generateRequestId: true,
 
   /**
+   * Who may state the real client IP in `X-Forwarded-For`: only the proxies in
+   * `TRUSTED_PROXIES`, what the deploy topology declares (Coolify's Traefik
+   * on the Docker network, for example `172.16.0.0/12`). Without a trusted proxy,
+   * `request.ip()` returns the proxy IP for everyone and the per-IP limits
+   * become a global bucket; with `true` the client forges the header and picks its
+   * own key. When absent, the framework default (`loopback`) applies.
+   * https://docs.adonisjs.com/guides/basics/request
+   */
+  trustProxy: env.get('TRUSTED_PROXIES') ?? 'loopback',
+
+  /**
    * Allow HTTP method spoofing via the "_method" form/query parameter.
    * This lets HTML forms target PUT/PATCH/DELETE routes while still
    * submitting with POST.
@@ -29,12 +41,14 @@ export const http = defineConfig({
   /**
    * Enabling async local storage will let you access HTTP context
    * from anywhere inside your application.
+   *
+   * Turned on for the `RequestMessagesProvider` (`app/core/validator.ts`): the
+   * validators are compiled once and called by `Validator.validate()`,
+   * without the `ctx` at hand, so the request language only reaches the validation
+   * message through `HttpContext.get()`
+   * (https://docs.adonisjs.com/guides/concepts/async-local-storage).
    */
-  useAsyncLocalStorage: false,
-
-  router: {
-    matcher: 'tree',
-  },
+  useAsyncLocalStorage: true,
 
   /**
    * Redirect configuration controls the behavior of

@@ -3,21 +3,15 @@
 | Validator file
 |--------------------------------------------------------------------------
 |
-| The validator file is used for configuring global transforms for VineJS.
-| The transform below converts all VineJS date outputs from JavaScript
-| Date objects to Luxon DateTime instances, so that validated dates are
-| ready to use with Lucid models and other parts of the app that expect
-| Luxon DateTime.
+| Only registers the configured VineJS at boot. The date transform, the messages
+| provider and the shared rules live in `app/core/validator.ts`
+| (`_standards/architecture.md` §3): `start/` only loads, and binds the provider to
+| `I18nManager`, which only exists with the application up.
 |
 */
 
-import { DateTime } from 'luxon'
-import { VineDate } from '@vinejs/vine'
+import i18nManager from '@adonisjs/i18n/services/main'
 
-declare module '@vinejs/vine/types' {
-  interface VineGlobalTransforms {
-    date: DateTime
-  }
-}
+import { requestMessagesProvider } from '#core/validator'
 
-VineDate.transform((value) => DateTime.fromJSDate(value))
+requestMessagesProvider.bind(i18nManager)

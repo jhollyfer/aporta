@@ -1,0 +1,89 @@
+# Production image of the API, built from the workspace root
+# (`_standards/tooling.md` §8.2): `docker build -f backend/Dockerfile-production .`.
+# From the root the build sees the single `pnpm-lock.yaml` and the `pnpm-workspace.yaml`.
+#
+# Multi-stage, and the build happens in here - not on the CI runner. The reason is that
+# the image is multi-architecture (amd64 and arm64) and the project has a dependency with a
+# native binary (`@swc/core`): a `node_modules` compiled on the amd64 runner does not
+# run on the arm64 variant. Building per stage, each architecture installs its own
+# binary.
+#
+# The base is pinned by digest and Dependabot updates it: a moving tag changes what
+# was audited without a single commit.
+
+FROM node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS builder
+
+WORKDIR /app
+
+# pnpm through the install page's path, without Corepack; on first use it
+# switches to the `devEngines.packageManager` version of the root, the same as CI
+# (_doc-lib/pnpm.md#installation, https://pnpm.io/installation). The installer
+# writes to `PNPM_HOME`, which must be on the PATH.
+ENV PNPM_HOME=/pnpm \
+    PATH=/pnpm/bin:$PATH
+RUN npx --yes get-pnpm
+
+# Manifests before the code, so the install stays cached while only the
+# code changes. `pnpm-workspace.yaml` carries `allowBuilds`: without it the install
+# decides on its own what to compile, or stops and asks (_doc-lib/pnpm.md#docker).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json backend/
+COPY shared/package.json shared/
+RUN pnpm --filter "{./backend}..." install --frozen-lockfile
+
+COPY shared/ shared/
+COPY backend/ backend/
+
+# `node ace build` boots the application (`bin/console.ts` imports `#start/env` in
+# `app.booting`), so the validation of `start/env.ts` runs during the build.
+# These values exist only to satisfy the schema: none of them survives the
+# stage, and in production the platform injects the real variables.
+ENV NODE_ENV=development \
+    PORT=3333 \
+    HOST=0.0.0.0 \
+    LOG_LEVEL=info \
+    APP_SERVER_URL=http://localhost:3333 \
+    DATABASE_URL=postgres://build:build@localhost:5432/build \
+    UPLOAD_MAX_SIZE=209715200
+
+# APP_KEY stays on the command line, not in ENV: in ENV it would become image
+# metadata, and buildkit itself warns about it. The placeholder does not need to survive
+# the command that requires it. The filter with `...` first builds what the backend uses
+# from the workspace, in topological order (_doc-lib/pnpm.md#filtering).
+RUN APP_KEY=build-time-placeholder-not-used-at-runtime pnpm --filter "{./backend}..." run build
+
+# Only the production dependencies, with whatever comes from the workspace inside, in an
+# isolated folder (_doc-lib/pnpm.md#cli/deploy, https://pnpm.io/cli/deploy).
+RUN pnpm --filter ./backend --prod deploy /out
+
+
+FROM node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+
+WORKDIR /app
+
+RUN apk add --no-cache curl
+
+# `build/` brings `bin/`, `config/`, `database/` and the `openapi.json` declared in
+# `metaFiles` - the `GET /openapi.json` route reads that file from disk. The
+# `node_modules` comes from the deploy: production only, no assembler, eslint or typescript.
+COPY --from=builder --chown=node:node /out/build ./
+COPY --from=builder --chown=node:node /out/node_modules ./node_modules
+
+# The `node` image already ships the `node` user (uid 1000). There is no upload
+# directory to fix permissions on: every file goes to the S3-compatible bucket.
+USER node
+
+EXPOSE 3333
+
+ENV NODE_ENV=production \
+    PORT=3333 \
+    HOST=0.0.0.0
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -fsS http://127.0.0.1:3333/health-check || exit 1
+
+# No ENTRYPOINT: migrations do not run on container start. What migrates is the
+# platform's deploy command (`node ace migration:run --force`; on Coolify the
+# Post-deployment command, `tooling.md` §8.2), so that
+# starting a replica is not the same event as changing the schema.
+CMD ["node", "bin/server.js"]

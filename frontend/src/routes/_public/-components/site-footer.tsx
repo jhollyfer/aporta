@@ -11,12 +11,14 @@ import { m } from '#/paraglide/messages'
  */
 export function SiteFooter(): React.JSX.Element {
   return (
-    <footer className="mt-24 bg-moss-deep text-paper">
+    <footer className="mt-24 bg-stage text-on-stage">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-14">
         <p className="text-5xl font-extrabold tracking-tight sm:text-7xl">
           {m.brand_name()}
         </p>
-        <p className="max-w-xl text-lg text-paper/90">{m.footer_tagline()}</p>
+        <p className="max-w-xl text-lg text-on-stage/90">
+          {m.footer_tagline()}
+        </p>
         <nav aria-label={m.footer_nav_label()}>
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-base font-bold">
             <li>
@@ -36,7 +38,7 @@ export function SiteFooter(): React.JSX.Element {
             </li>
           </ul>
         </nav>
-        <p className="text-sm text-paper/80">{m.footer_credit()}</p>
+        <p className="text-sm text-on-stage/80">{m.footer_credit()}</p>
       </div>
     </footer>
   )

@@ -21,9 +21,23 @@ import { CONTROL, Field, invalidProps } from './field'
 
 type StepProps = { control: Control<OwnerListingCreate> }
 
-/** Só dígitos: preço e telefone entram como texto, e o teclado numérico do celular aparece com `inputMode`. */
+/** Só dígitos: o teclado numérico do celular aparece com `inputMode`, e colar "R$ 900,00" não entra como texto. */
 function digits(raw: string): string {
   return raw.replace(/\D/g, '')
+}
+
+/**
+ * O valor numérico do campo: vazio é `undefined` (campo ausente) e o resto é número.
+ *
+ * O validator do `shared/` espera `number`, e guardar o texto digitado ("900") fazia o
+ * formulário acusar "Informe um número válido" ao sair do campo. A linha de erro entrava acima
+ * dos checkboxes dos períodos e os empurrava entre o `mousedown` e o `mouseup`, e o clique se
+ * perdia: o dono via o checkbox "não pegar".
+ */
+function toNumber(raw: string): number | undefined {
+  const text = digits(raw)
+  if (text === '') return undefined
+  return Number(text)
 }
 
 export function TypeStep({ control }: StepProps): React.JSX.Element {
@@ -152,7 +166,8 @@ function NumberInput({
             type="text"
             inputMode="numeric"
             {...field}
-            onChange={(event) => field.onChange(digits(event.target.value))}
+            value={field.value ?? ''}
+            onChange={(event) => field.onChange(toNumber(event.target.value))}
             {...invalidProps(fieldState.invalid, name)}
             className={CONTROL}
           />

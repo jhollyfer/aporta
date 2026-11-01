@@ -14,14 +14,17 @@ const LINK =
 export function SiteHeader(): React.JSX.Element {
   return (
     <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-none">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
         <Link
           to="/"
           className="text-xl font-extrabold tracking-tight text-moss"
         >
           {m.brand_name()}
         </Link>
-        <nav aria-label={m.nav_label()} className="flex items-center gap-1">
+        <nav
+          aria-label={m.nav_label()}
+          className="flex flex-wrap items-center gap-1"
+        >
           <Link to="/listings" className={LINK}>
             {m.nav_listings()}
           </Link>

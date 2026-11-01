@@ -1,0 +1,217 @@
+name: Check Backend
+
+# The same standard on the PR (`ci.yml`) and on the push to main (`main.yml`): the PR does not go
+# through a different gate from the deploy's (`_standards/tooling.md` §7, §8.1).
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Backend - Guard-rails, Unit, E2E & Build
+    runs-on: ubuntu-latest
+
+    # The port and the database name come from `backend/.env.test`, which is versioned:
+    # 5435 on the host (`backend/.env.test`) and `aporta_test`. Declaring `POSTGRES_DB` already with the
+    # test name spares the `createdb` that local development does by hand.
+    services:
+      database:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aporta
+          POSTGRES_PASSWORD: aporta
+          POSTGRES_DB: aporta_test
+        ports:
+          - '5435:5432'
+        options: >-
+          --health-cmd "pg_isready -U aporta -d aporta_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # pnpm at the version of `devEngines.packageManager` and Node through `runtime`,
+      # without `actions/setup-node` (_doc-lib/pnpm.md#continuous-integration).
+      - name: Setup pnpm e Node
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The backend imports `@aporta/shared`'s `dist/` (validator
+      # parity): the build comes before everything that resolves the package.
+      # `shared/` has its own standard and the backend imports its `dist/`: its check
+      # and unit come before any backend step (`tooling.md` §7).
+      - name: Shared - Check
+        run: pnpm --filter ./shared --fail-if-no-match check
+
+      - name: Shared - Unit
+        run: pnpm --filter ./shared --fail-if-no-match test:unit
+
+      - name: Shared - Build
+        run: pnpm --filter ./shared --fail-if-no-match build
+
+      - name: Lint
+        run: pnpm --filter ./backend --fail-if-no-match lint
+
+      - name: Typecheck
+        run: pnpm --filter ./backend --fail-if-no-match typecheck
+
+      - name: Guard-rails do padrão
+        run: |
+          pnpm --filter ./backend --fail-if-no-match pattern:check
+          pnpm --filter ./backend --fail-if-no-match authz:check
+
+      # Layer direction and cycles (`domain.md` §8). It runs after
+      # `pattern:check`, which demands the tree and the names; this one demands the graph.
+      - name: Direção das camadas
+        run: pnpm --filter ./backend --fail-if-no-match depcruise
+
+      # The parity imports the backend validators, and the files one reads
+      # `UPLOAD_MAX_SIZE` from `start/env.ts`: the import validates the environment. The
+      # values are the OpenAPI step's placeholders, unused outside here.
+      - name: Paridade VineJS × Zod
+        env:
+          NODE_ENV: development
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+          DATABASE_URL: postgres://ci:ci@localhost:5432/ci
+          UPLOAD_MAX_SIZE: '1073741824'
+          STORAGE_KEY: ci
+          STORAGE_SECRET: ci
+          STORAGE_BUCKET: ci
+          STORAGE_ENDPOINT: http://localhost:9006
+        run: pnpm --filter ./backend --fail-if-no-match validators:check
+
+      # `openapi.json` is a committed artifact. This step fails whoever touched a
+      # route, a validator or a `docs` block and did not regenerate the document.
+      #
+      # The `env` block belongs to the step, and not to the job: `openapi:generate` boots the
+      # application, and the boot validates `start/env.ts`. On the whole job these values
+      # would win over the `.env.test` of the following steps, because a process
+      # variable takes precedence over a file (`tooling.md` §7).
+      - name: OpenAPI
+        env:
+          NODE_ENV: development
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+          DATABASE_URL: postgres://ci:ci@localhost:5432/ci
+          UPLOAD_MAX_SIZE: '1073741824'
+          STORAGE_KEY: ci
+          STORAGE_SECRET: ci
+          STORAGE_BUCKET: ci
+          STORAGE_ENDPOINT: http://localhost:9006
+        run: pnpm --filter ./backend --fail-if-no-match openapi:check
+
+      - name: Prettier
+        run: pnpm --filter ./backend --fail-if-no-match format:check
+
+      # The Japa runner boots the application for the unit suite too, and the boot
+      # validates `start/env.ts`: the variables that `.env.test` does not bring go in here,
+      # the same as the E2E step's.
+      - name: Unit
+        env:
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+        run: pnpm --filter ./backend --fail-if-no-match test:unit
+
+      # MinIO does not come up as `services:` because it needs a `command`. The image is
+      # the house test one, compiled from the source code (`backend/infra/minio/`),
+      # and the setup is the same script as the compose: closed buckets and a
+      # minimal-scope user for the application. The wait is for the state (bucket exists),
+      # not for `sleep` (`tooling.md` §7, §8.4).
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build da imagem do MinIO de teste
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: backend/infra/minio
+          load: true
+          tags: aporta-minio-test:ci
+          cache-from: type=gha,scope=minio-test
+          cache-to: type=gha,mode=max,scope=minio-test
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio --network host \
+            -e MINIO_ROOT_USER=aporta-root \
+            -e MINIO_ROOT_PASSWORD=aporta-root-secret \
+            aporta-minio-test:ci server /data --address ":9006" --console-address ":9007"
+
+          docker run --rm --network host --entrypoint /bin/sh \
+            -e MINIO_ROOT_USER=aporta-root \
+            -e MINIO_ROOT_PASSWORD=aporta-root-secret \
+            -e STORAGE_KEY=aporta \
+            -e STORAGE_SECRET=aporta-secret \
+            -e STORAGE_BUCKET=aporta \
+            -v "$PWD/backend/infra/minio:/setup:ro" \
+            aporta-minio-test:ci -c '
+              for _ in $(seq 1 30); do
+                wget -q -O /dev/null http://127.0.0.1:9006/minio/health/live && break
+                sleep 2
+              done
+              sh /setup/minio-setup.sh http://127.0.0.1:9006
+              mc ls local/aporta-test
+            '
+
+      # Only the variables that `.env.test` does not bring go in: the rest comes from the
+      # versioned file, and overriding it from here would point the suite at another database.
+      - name: E2E
+        env:
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+        run: pnpm --filter ./backend --fail-if-no-match test:e2e
+
+      # Boots the application and builds every service and policy through the container; it stays
+      # in the job that already has the database and bucket up.
+      # `NODE_ENV: test` makes the boot read `.env.test` (test database and
+      # bucket); without it `node ace` looks for a `.env` that CI does not have.
+      - name: Injeção de dependência
+        env:
+          NODE_ENV: test
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+        run: pnpm --filter ./backend --fail-if-no-match di:check
+
+      # Dev typecheck and production build use configs different enough
+      # for one to pass and the other to fail.
+      - name: Build
+        env:
+          NODE_ENV: development
+          PORT: '3333'
+          HOST: 0.0.0.0
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+          DATABASE_URL: postgres://ci:ci@localhost:5432/ci
+          UPLOAD_MAX_SIZE: '1073741824'
+          STORAGE_KEY: ci
+          STORAGE_SECRET: ci
+          STORAGE_BUCKET: ci
+          STORAGE_ENDPOINT: http://localhost:9006
+        run: pnpm --filter "{./backend}..." --fail-if-no-match build

@@ -1,0 +1,279 @@
+name: Check Frontend
+
+# The same standard on the PR (`ci.yml`) and on the push to main (`main-build-frontend.yml`,
+# which calls this one with `publish: true`): the PR does not go through a different gate from the
+# deploy's (`_standards/tooling.md` §7, §8.1).
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: carimba o revision.txt e publica o .output como artifact
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Frontend - Lint, Typecheck, Unit & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm e Node
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `@aporta/shared` has its own standard, and the frontend imports its
+      # `dist/`: the build comes before any step that resolves the package
+      # (type-aware lint, typecheck, Vitest).
+      - name: Shared - Check
+        run: pnpm --filter ./shared --fail-if-no-match check
+
+      - name: Shared - Unit
+        run: pnpm --filter ./shared --fail-if-no-match test:unit
+
+      - name: Shared - Build
+        run: pnpm --filter ./shared --fail-if-no-match build
+
+      # The Paraglide output (`src/paraglide/`) is not versioned: lint,
+      # typecheck and Vitest import from it, so it compiles first. The inlang `check`
+      # fails a missing or empty translation and a swapped variable
+      # (`_standards/i18n.md` §4, _doc-lib/paraglide.md#/checking-translations).
+      - name: i18n
+        run: |
+          pnpm --filter ./frontend --fail-if-no-match i18n:compile
+          pnpm --filter ./frontend --fail-if-no-match i18n:check
+
+      - name: Lint
+        run: pnpm --filter ./frontend --fail-if-no-match lint
+
+      # `pnpm build` is transpile-only: it erases types without checking anything. Without this
+      # step, no type error fails a PR.
+      - name: Typecheck
+        run: pnpm --filter ./frontend --fail-if-no-match typecheck
+
+      - name: Prettier
+        run: pnpm --filter ./frontend --fail-if-no-match format:check
+
+      - name: Unit
+        run: pnpm --filter ./frontend --fail-if-no-match test:unit
+
+      # The stamp comes before the build: Nitro serves `public/` through a manifest
+      # frozen at build, and a file written afterwards falls into the SSR catch-all
+      # (_doc-lib/nitro.md#docs/assets). The deploy checks this body against the SHA.
+      - name: Carimbo de revisão
+        if: ${{ inputs.publish }}
+        env:
+          REVISION: ${{ github.sha }}
+        run: printf '%s' "$REVISION" > frontend/public/revision.txt
+
+      # `VITE_*` enters the bundle at BUILD time and is public by definition (the
+      # browser reads it in DevTools); changing the value requires rebuilding the image.
+      # No trailing slash (`docs/ENV.md`).
+      - name: Build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          VITE_API_URL: https://api-aporta.maiyu.com.br
+          VITE_SITE_URL: https://aporta.maiyu.com.br
+        run: pnpm --filter "{./frontend}..." --fail-if-no-match build
+
+      # The Router plugin rewrites `routeTree.gen.ts` in the build. A generated tree
+      # that came out different from the committed one fails (`tooling.md` §9).
+      - name: routeTree.gen.ts atualizado
+        run: git diff --exit-code -- frontend/src/routeTree.gen.ts
+
+      - name: revision.txt no manifesto do Nitro
+        if: ${{ inputs.publish }}
+        run: grep -q '"/revision.txt"' frontend/.output/server/index.mjs
+
+      # It uploads before the cycle check, and not after: when the guard below
+      # fails, the `.output/` is precisely what one needs to open to find the
+      # guilty read. The job fails anyway, and no image comes out of it.
+      - name: Upload artifact
+        if: ${{ inputs.publish }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frontend-build
+          retention-days: 1
+          include-hidden-files: true
+          path: frontend/.output/
+
+      # What is refused is not the cycle (TanStack's router comes out in two chunks
+      # that re-export each other, and that is inert), it is the **early read** of a
+      # binding that comes from a chunk in a cycle. That one passes the build green and only
+      # breaks on the first SSR in production.
+      - name: Ciclos de chunk
+        run: pnpm --filter ./frontend --fail-if-no-match check-cycles
+
+  # The panel and storefront E2Es against the real backend, in a job of their own and
+  # after the `check` (`_standards/tooling.md` §7, step 8). Playwright brings up the
+  # two servers through the `webServer` in `e2e/playwright.config.ts`: the backend by
+  # `node ace serve` and the frontend by the build (`.output/server`), as in production.
+  e2e:
+    name: Frontend - E2E (Playwright)
+    needs: check
+    runs-on: ubuntu-latest
+    # Above the config's `globalTimeout` (15 min): a job killed by the provider
+    # generates no report, and the runner's ceiling is what closes the run with the artifact.
+    timeout-minutes: 30
+
+    services:
+      database:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aporta
+          POSTGRES_PASSWORD: aporta
+          POSTGRES_DB: aporta
+        ports:
+          - "5435:5432"
+        options: >-
+          --health-cmd "pg_isready -U aporta -d aporta"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm e Node
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # No password in the repository (`_standards/tooling.md` §7): the account's password is born
+      # here, per run, masked in the log, and only the steps that need it receive it. The suffix
+      # satisfies `Rule.password()` (lower, upper, digit and symbol).
+      - name: Credencial do E2E
+        id: credential
+        run: |
+          password="$(openssl rand -hex 12)aA1!"
+          echo "::add-mask::$password"
+          echo "password=$password" >> "$GITHUB_OUTPUT"
+
+      # The same MinIO as the backend job (`main-check-backend.yml`): the house test
+      # image, closed buckets and the wait for the state, not for a fixed `sleep`.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build da imagem do MinIO de teste
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: backend/infra/minio
+          load: true
+          tags: aporta-minio-test:ci
+          cache-from: type=gha,scope=minio-test
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio --network host \
+            -e MINIO_ROOT_USER=aporta-root \
+            -e MINIO_ROOT_PASSWORD=aporta-root-secret \
+            aporta-minio-test:ci server /data --address ":9006" --console-address ":9007"
+
+          docker run --rm --network host --entrypoint /bin/sh \
+            -e MINIO_ROOT_USER=aporta-root \
+            -e MINIO_ROOT_PASSWORD=aporta-root-secret \
+            -e STORAGE_KEY=aporta \
+            -e STORAGE_SECRET=aporta-secret \
+            -e STORAGE_BUCKET=aporta \
+            -v "$PWD/backend/infra/minio:/setup:ro" \
+            aporta-minio-test:ci -c '
+              for _ in $(seq 1 30); do
+                wget -q -O /dev/null http://127.0.0.1:9006/minio/health/live && break
+                sleep 2
+              done
+              sh /setup/minio-setup.sh http://127.0.0.1:9006
+              mc ls local/aporta
+            '
+
+      - name: Shared - Build
+        run: pnpm --filter ./shared --fail-if-no-match build
+
+      # `node ace` validates `start/env.ts` on boot, and CI has no `.env`: the
+      # environment comes from the step, as in `main-check-backend.yml`, and not from the job
+      # (`_standards/tooling.md` §7). The password is not in the block below: the
+      # "Credencial do E2E" step generates it per run.
+      - name: Banco - Migrations e administrador
+        env:
+          NODE_ENV: development
+          # The backend reads these from the process (the `webServer` inherits the step's environment).
+          HOST: 0.0.0.0
+          PORT: "3333"
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+          DATABASE_URL: postgres://aporta:aporta@localhost:5435/aporta
+          UPLOAD_MAX_SIZE: "1073741824"
+          STORAGE_KEY: aporta
+          STORAGE_SECRET: aporta-secret
+          STORAGE_BUCKET: aporta
+          STORAGE_ENDPOINT: http://localhost:9006
+          STORAGE_FORCE_PATH_STYLE: "true"
+          # The account the seeder creates and with which the E2E signs in (`docs/ENV.md`).
+          SEED_OWNER_EMAIL: administrator@mail.com
+          SEED_OWNER_PASSWORD: ${{ steps.credential.outputs.password }}
+        run: |
+          pnpm --filter ./backend --fail-if-no-match exec node ace migration:run --force
+          pnpm --filter ./backend --fail-if-no-match exec node ace db:seed
+
+      # The API address enters the bundle at build time; here it points to the job's
+      # local backend, not to production.
+      - name: Frontend - Build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          VITE_API_URL: https://api-aporta.maiyu.com.br
+          VITE_SITE_URL: https://aporta.maiyu.com.br
+        run: pnpm --filter "{./frontend}..." --fail-if-no-match build
+
+      # No browser cache: the docs do not recommend it (_doc-lib/playwright.md#docs/ci).
+      - name: Playwright - Chromium
+        run: pnpm --filter ./frontend --fail-if-no-match exec playwright install --with-deps chromium
+
+      # Playwright brings up the backend (`node ace serve`) inside this step, so the backend
+      # environment is repeated here: it belongs to the steps that boot it.
+      - name: E2E
+        env:
+          # The backend reads these from the process (the `webServer` inherits the step's environment).
+          HOST: 0.0.0.0
+          PORT: "3333"
+          LOG_LEVEL: info
+          APP_KEY: ci-placeholder-sem-uso-fora-deste-passo
+          APP_SERVER_URL: http://localhost:3333
+          DATABASE_URL: postgres://aporta:aporta@localhost:5435/aporta
+          UPLOAD_MAX_SIZE: "1073741824"
+          STORAGE_KEY: aporta
+          STORAGE_SECRET: aporta-secret
+          STORAGE_BUCKET: aporta
+          STORAGE_ENDPOINT: http://localhost:9006
+          STORAGE_FORCE_PATH_STYLE: "true"
+          # The account the seeder creates and with which the E2E signs in (`docs/ENV.md`).
+          SEED_OWNER_EMAIL: administrator@mail.com
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:3333
+          E2E_OWNER_EMAIL: administrator@mail.com
+          E2E_OWNER_PASSWORD: ${{ steps.credential.outputs.password }}
+        run: pnpm --filter ./frontend --fail-if-no-match exec playwright test --config e2e/playwright.config.ts --workers=1 --add-reporter=github
+
+      - name: Relatório do Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          retention-days: 7
+          path: frontend/playwright-report/

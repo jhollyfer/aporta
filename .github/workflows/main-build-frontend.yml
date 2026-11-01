@@ -1,0 +1,16 @@
+name: Build Frontend
+
+# The steps are the check's (`main-check-frontend.yml`), with the revision
+# stamp and the `.output` artifact that the image packages (`_standards/tooling.md`
+# §8.1). Calling the same reusable keeps a single standard.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/main-check-frontend.yml
+    with:
+      publish: true

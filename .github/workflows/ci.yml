@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The same reusables that the push to main uses, so the PR does not go through a
+  # different standard from the deploy's (`_standards/tooling.md` §8.1).
+  backend:
+    uses: ./.github/workflows/main-check-backend.yml
+
+  frontend:
+    uses: ./.github/workflows/main-check-frontend.yml
+
+  repository:
+    name: Repositório - Autoria, Audit, Segredos & Workflows
+    runs-on: ubuntu-latest
+    # gitleaks lists the PR's commits through the API (`pulls/<n>/commits`), which
+    # requires `pull-requests: read`; only this job gets the extra permission.
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm e Node
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Single author (`tooling.md` §6, layer 3): catches a commit made with
+      # `--no-verify` or on a machine without the hook.
+      # Up to the PR's `head.sha`, and not up to `HEAD`: the `pull_request` checkout
+      # is the synthetic merge that GitHub creates, with committer `noreply@github.com`.
+      - name: Autoria dos commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          log=$(git log --format='%an <%ae>%n%cn <%ce>%n%B' "$BASE_SHA..$HEAD_SHA")
+          if printf '%s\n' "$log" | grep -qiE '^(co-authored-by|claude-session):|generated with|noreply@anthropic\.com|anthropic\.com/claude'; then
+            echo "trailer ou marca de agente num commit do PR" >&2; exit 1
+          fi
+          others=$(git log --no-merges --format='%ae%n%ce' "$BASE_SHA..$HEAD_SHA" | sort -u | grep -vx 'jhollyfer.fr@gmail.com' || true)
+          if [ -n "$others" ]; then
+            echo "autor ou committer fora do permitido: $others" >&2; exit 1
+          fi
+          # A PR merged through the GitHub UI leaves a merge commit authored by the owner's
+          # noreply address and committed by `noreply@github.com` (web-flow); nothing else
+          # may author a merge.
+          merges=$(git log --merges --format='%ae%n%ce' "$BASE_SHA..$HEAD_SHA" | sort -u \
+            | grep -vxE 'jhollyfer\.fr@gmail\.com|67079657\+jhollyfer@users\.noreply\.github\.com|noreply@github\.com' || true)
+          if [ -n "$merges" ]; then
+            echo "merge fora do permitido: $merges" >&2; exit 1
+          fi
+
+      # A high vulnerability in a production dependency fails; a dev tool stays
+      # outside the gate. The fix is a reviewed update, never `audit fix`.
+      - name: Audit
+        run: pnpm audit --prod --audit-level=high
+
+      - name: Varredura de segredo
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The action above lists only the PR's commits (`pulls/<n>/commits`) and has no input to
+      # widen that range, so a secret that lives on another ref (a Dependabot branch, an old
+      # tag) passes. This step runs the same CLI over every ref the checkout fetched
+      # (`fetch-depth: 0`), with the repository's config. The tarball is pinned by version
+      # and checked against the sha256 of the release's `checksums.txt`.
+      - name: Varredura de segredo em todas as refs
+        env:
+          GITLEAKS_VERSION: 8.28.0
+          GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tar.gz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml --log-opts=--all --redact --no-banner .
+
+      # Workflow without injection (`tooling.md` §9): no `pull_request_target`, and
+      # `${{ github.event.* }}` never inside `run:`, only through `env:`.
+      - name: Workflows sem injeção
+        run: |
+          # Only the trigger key (`pull_request_target:`); this check's own
+          # text must not match.
+          if grep -rnE '^[[:space:]]*pull_request_target[[:space:]]*:' .github/workflows; then
+            echo "pull_request_target não entra" >&2; exit 1
+          fi
+          if awk '/^[[:space:]]*run:/{r=1} /^[[:space:]]*(- name|uses|env|with):/{r=0} r && /\$\{\{ *github\.event\./' .github/workflows/*.yml | grep -q .; then
+            echo "github.event interpolado dentro de run:" >&2; exit 1
+          fi

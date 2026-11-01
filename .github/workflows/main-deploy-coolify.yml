@@ -1,0 +1,65 @@
+name: Deploy to Coolify
+
+on:
+  workflow_call:
+    secrets:
+      COOLIFY_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Trigger Coolify Deploy
+    runs-on: ubuntu-latest
+    steps:
+      # `-f` fails on 4xx/5xx; without it a deploy that never happened comes out green.
+      # POST, and not GET: since Coolify v4.2 the GET answers 405. The response
+      # must bring `deployment_uuid`: without it the request was accepted and nothing
+      # was queued (wrong uuid or out of the token's reach,
+      # `_standards/tooling.md` §8.3).
+      #
+      # Os UUIDs e a URL da instância vêm de `vars.*` do repositório, nunca escritos aqui: um UUID copiado de
+      # outro projeto faria este deploy redeployar a aplicação do outro.
+      #
+      # ATTENTION: the UUID is the APPLICATION's, not the instance's. The value is in the
+      # application's URL in the Coolify panel.
+      - name: Deploy da API e do app
+        env:
+          COOLIFY_URL: ${{ vars.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_UUID_API: ${{ vars.COOLIFY_UUID_API }}
+          COOLIFY_UUID_APP: ${{ vars.COOLIFY_UUID_APP }}
+        run: |
+          for uuid in "$COOLIFY_UUID_API" "$COOLIFY_UUID_APP"; do
+            body=$(curl -fsS -X POST "$COOLIFY_URL" \
+              -H "Authorization: Bearer $COOLIFY_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"uuid\":\"$uuid\",\"force\":false}")
+            printf '%s\n' "$body" | grep -q '"deployment_uuid"' \
+              || { echo "Coolify não enfileirou $uuid: $body" >&2; exit 1; }
+          done
+
+      # The trigger is asynchronous: the job only finishes green when the API answers on
+      # `/health-check` and the app serves `/revision.txt` with this commit's SHA.
+      # Checking by the body, never by the status: the SSR catch-all answers
+      # 200 with HTML for a missing file.
+      - name: Smoke test
+        env:
+          API_URL: https://api-aporta.maiyu.com.br
+          APP_URL: https://aporta.maiyu.com.br
+          REVISION: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 8); do
+            api=$(curl -fsS --max-time 10 "$API_URL/health-check" || true)
+            app=$(curl -fsS --max-time 10 "$APP_URL/revision.txt" || true)
+            if printf '%s' "$api" | grep -q '"ok"' && [ "$app" = "$REVISION" ]; then
+              echo "API e app no ar com $REVISION (tentativa $attempt)."
+              exit 0
+            fi
+            echo "Ainda subindo (tentativa $attempt): api=$(printf '%s' "$api" | head -c 80) app=$(printf '%s' "$app" | head -c 80)"
+            sleep 15
+          done
+          echo "API ou app não chegaram em $REVISION em dois minutos." >&2
+          exit 1

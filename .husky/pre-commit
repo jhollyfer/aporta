@@ -1,0 +1,19 @@
+# The commit gate, per app and filtered by folder (`_standards/tooling.md` §6):
+# `check` and the unit suite only for the app that the commit touches. The E2E suite brings up
+# Postgres and MinIO and stays in CI, so the hook stays fast enough not to
+# be skipped with `--no-verify`.
+staged=$(git diff --cached --name-only)
+
+touches() {
+  printf '%s\n' "$staged" | grep -q "^$1/"
+}
+
+if touches shared; then
+  pnpm --filter ./shared check && pnpm --filter ./shared test:unit || exit 1
+fi
+if touches backend || touches shared; then
+  pnpm --filter ./backend check && pnpm --filter ./backend test:unit || exit 1
+fi
+if touches frontend || touches shared; then
+  pnpm --filter ./frontend check && pnpm --filter ./frontend test:unit || exit 1
+fi

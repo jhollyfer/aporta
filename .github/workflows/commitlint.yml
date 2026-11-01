@@ -1,0 +1,56 @@
+name: Commitlint
+
+on:
+  # `edited` because the PR title is validated here: a corrected title must
+  # pass the standard again, and a push alone is not enough.
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commitlint:
+    name: Commits, título e branch do PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm e Node
+        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The version is the root devDependency's (`pnpm exec`), the same as the local
+      # hook's (`_standards/tooling.md` §7).
+      - name: Commits do PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+      # Title and branch in the convention and without an agent name (`tooling.md` §6).
+      - name: Título e branch do PR
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BRANCH: ${{ github.head_ref }}
+        run: |
+          printf '%s\n' "$PR_TITLE" | pnpm exec commitlint
+          printf '%s\n' "$PR_BRANCH" | grep -qE '^(feat|fix|refactor|docs|test|chore|ci|build|perf|style|revert)/[a-z0-9][a-z0-9-]*$' \
+            || { echo "branch fora do padrão <tipo>/<escopo>-<assunto>: $PR_BRANCH" >&2; exit 1; }
+          if printf '%s\n%s\n' "$PR_TITLE" "$PR_BRANCH" | grep -qiE 'claude|anthropic|codex|cursor'; then
+            echo "nome de agente no título ou na branch do PR" >&2; exit 1
+          fi

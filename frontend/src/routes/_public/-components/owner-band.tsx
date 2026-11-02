@@ -11,18 +11,18 @@ export function OwnerBand(): React.JSX.Element {
   return (
     <section
       aria-labelledby="owner-title"
-      className="reveal mx-auto mt-28 max-w-6xl px-4"
+      className="mx-auto mt-28 max-w-6xl px-4"
     >
       <div className="flex flex-col gap-5 rounded-card bg-clay-wash px-6 py-12 sm:px-12">
         <h2
           id="owner-title"
-          className="max-w-2xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl"
+          className="max-w-2xl text-title font-extrabold tracking-tight text-ink"
         >
           {m.owner_band_title()}
         </h2>
         <p className="max-w-xl text-lg text-ink-soft">{m.owner_band_text()}</p>
         <div>
-          <PillButton to="/list-your-place" tone="sun" scale="lg">
+          <PillButton to="/list-your-place" tone="link">
             {m.owner_band_cta()}
           </PillButton>
         </div>

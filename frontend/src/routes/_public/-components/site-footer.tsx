@@ -13,7 +13,7 @@ export function SiteFooter(): React.JSX.Element {
   return (
     <footer className="mt-24 bg-stage text-on-stage">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-14">
-        <p className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+        <p className="text-headline font-extrabold tracking-tight">
           {m.brand_name()}
         </p>
         <p className="max-w-xl text-lg text-on-stage/90">
@@ -22,17 +22,26 @@ export function SiteFooter(): React.JSX.Element {
         <nav aria-label={m.footer_nav_label()}>
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-base font-bold">
             <li>
-              <Link to="/listings" className="hover:underline">
+              <Link
+                to="/listings"
+                className="inline-flex min-h-11 min-w-11 items-center hover:underline"
+              >
                 {m.nav_listings()}
               </Link>
             </li>
             <li>
-              <Link to="/guide" className="hover:underline">
+              <Link
+                to="/guide"
+                className="inline-flex min-h-11 min-w-11 items-center hover:underline"
+              >
                 {m.nav_guide()}
               </Link>
             </li>
             <li>
-              <Link to="/list-your-place" className="hover:underline">
+              <Link
+                to="/list-your-place"
+                className="inline-flex min-h-11 min-w-11 items-center hover:underline"
+              >
                 {m.nav_list_your_place()}
               </Link>
             </li>

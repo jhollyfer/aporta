@@ -4,7 +4,7 @@ import { m } from '#/paraglide/messages'
 
 /**
  * Por que confiar, em três afirmações escritas por extenso. Sem ícone sobre
- * cada uma: a promessa é o que o grupo de WhatsApp não cumpre (dono que
+ * cada uma, e em linhas separadas por fio, não em três colunas iguais: a promessa é o que o grupo de WhatsApp não cumpre (dono que
  * responde, anúncio que não é golpe, valor sem surpresa), e o texto grande é
  * quem a carrega.
  */
@@ -16,30 +16,30 @@ export function Trust(): React.JSX.Element {
     >
       <h2
         id="trust-title"
-        className="max-w-2xl text-3xl font-extrabold tracking-tight text-ink sm:text-5xl"
+        className="max-w-2xl text-title font-extrabold tracking-tight text-ink"
       >
         {m.trust_title()}
       </h2>
-      <div className="grid gap-10 md:grid-cols-3">
-        <div className="reveal flex flex-col gap-2">
-          <h3 className="text-xl font-extrabold text-moss-deep">
+      <dl className="flex flex-col divide-y divide-line border-y border-line">
+        <div className="flex flex-col gap-2 py-6 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-10">
+          <dt className="text-xl font-extrabold text-moss-deep">
             {m.trust_direct_title()}
-          </h3>
-          <p className="text-ink-soft">{m.trust_direct_text()}</p>
+          </dt>
+          <dd className="text-ink-soft">{m.trust_direct_text()}</dd>
         </div>
-        <div className="reveal flex flex-col gap-2">
-          <h3 className="text-xl font-extrabold text-moss-deep">
+        <div className="flex flex-col gap-2 py-6 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-10">
+          <dt className="text-xl font-extrabold text-moss-deep">
             {m.trust_verified_title()}
-          </h3>
-          <p className="text-ink-soft">{m.trust_verified_text()}</p>
+          </dt>
+          <dd className="text-ink-soft">{m.trust_verified_text()}</dd>
         </div>
-        <div className="reveal flex flex-col gap-2">
-          <h3 className="text-xl font-extrabold text-moss-deep">
+        <div className="flex flex-col gap-2 py-6 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-10">
+          <dt className="text-xl font-extrabold text-moss-deep">
             {m.trust_clear_title()}
-          </h3>
-          <p className="text-ink-soft">{m.trust_clear_text()}</p>
+          </dt>
+          <dd className="text-ink-soft">{m.trust_clear_text()}</dd>
         </div>
-      </div>
+      </dl>
     </section>
   )
 }

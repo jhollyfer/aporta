@@ -23,7 +23,6 @@
   "http_invalid_response": "The server answered in a format we did not expect. Try again in a moment.",
   "hero_title": "Find a place to live in Benjamin Constant",
   "hero_lead": "Houses, studios, rooms and hotels, straight from the owner on WhatsApp. For anyone arriving to study, work or see the city.",
-  "hero_cta_search": "I am looking for a place",
   "hero_cta_owner": "I have a place to list",
   "hero_scene_label": "Wooden houses over the river, seen from the bank",
   "search_type_label": "Type",
@@ -68,8 +67,36 @@
   "owner_band_title": "Graduated and left a place empty?",
   "owner_band_text": "List the house or studio in a few minutes and talk to people searching, without relying on WhatsApp groups.",
   "owner_band_cta": "List my place",
-  "card_bedrooms": "{count} bedrooms",
-  "card_bedroom_one": "1 bedroom",
+  "card_bedrooms": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No bedrooms",
+        "countExact=*, countPlural=one": "1 bedroom",
+        "countExact=*, countPlural=*": "{count} bedrooms"
+      }
+    }
+  ],
+  "count_bathrooms": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No bathrooms",
+        "countExact=*, countPlural=one": "1 bathroom",
+        "countExact=*, countPlural=*": "{count} bathrooms"
+      }
+    }
+  ],
   "price_per_month": "/month",
   "price_per_day": "/day",
   "cost_water": "water",
@@ -80,9 +107,21 @@
   "available_from": "Available from {date}",
   "owner_verified": "Verified owner",
   "owner_label": "Owner",
-  "updated_today": "Updated today",
-  "updated_one_day": "Updated 1 day ago",
-  "updated_days": "Updated {count} days ago",
+  "updated_days": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Updated today",
+        "countExact=*, countPlural=one": "Updated 1 day ago",
+        "countExact=*, countPlural=*": "Updated {count} days ago"
+      }
+    }
+  ],
   "listings_page_title": "Listings in Benjamin Constant",
   "listings_page_description": "Filter by price, neighborhood and period and talk straight to the owner.",
   "listings_title": "Listings in Benjamin Constant",
@@ -91,7 +130,21 @@
   "filter_price_min": "Minimum price",
   "filter_price_max": "Maximum price",
   "filter_clear": "Clear",
-  "filter_show": "Show {count} listings",
+  "filter_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No listings to show",
+        "countExact=*, countPlural=one": "Show 1 listing",
+        "countExact=*, countPlural=*": "Show {count} listings"
+      }
+    }
+  ],
   "chips_label": "Applied filters",
   "chip_price": "R$ {min} to {max}",
   "chip_remove": "Remove filter {label}",
@@ -100,8 +153,21 @@
   "detail_price_title": "Price",
   "detail_available": "Available from",
   "detail_minimum": "Minimum stay",
-  "detail_minimum_value": "{count} months",
-  "detail_minimum_one": "1 month",
+  "detail_minimum_value": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No minimum stay",
+        "countExact=*, countPlural=one": "1 month",
+        "countExact=*, countPlural=*": "{count} months"
+      }
+    }
+  ],
   "detail_periods": "Periods",
   "detail_address": "Address",
   "detail_about_title": "About the place",
@@ -218,7 +284,22 @@
   "photos_step_unsaved": "Photos are not saved on this device like the rest of the form: if you leave the page, pick them again.",
   "photos_choose": "Choose photos",
   "photos_choose_more": "Add more photos",
-  "photos_count": "{count} of {max} photos chosen",
+  "photos_count": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No photos chosen (up to {max})",
+        "countExact=*, countPlural=one": "1 photo chosen (up to {max})",
+        "countExact=*, countPlural=*": "{count} of {max} photos chosen"
+      }
+    }
+  ],
   "photos_empty": "No photos chosen. You can list without photos, but people want to see the place.",
   "photos_environment": "What the photo shows",
   "photos_remove": "Remove {name}",
@@ -280,7 +361,22 @@
   "owner_edit_save": "Save changes",
   "owner_edit_saved": "Changes saved.",
   "owner_edit_section_text": "Title, description and rules",
-  "owner_edit_photos_note": "The listing has {count} of {max} photos. For now you can only add: photos already uploaded stay on the listing.",
+  "owner_edit_photos_note": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "The listing has no photos yet (up to {max}). For now you can only add: photos already uploaded stay on the listing.",
+        "countExact=*, countPlural=one": "The listing has 1 photo (up to {max}). For now you can only add: photos already uploaded stay on the listing.",
+        "countExact=*, countPlural=*": "The listing has {count} of {max} photos. For now you can only add: photos already uploaded stay on the listing."
+      }
+    }
+  ],
   "owner_edit_photos_send": "Upload photos",
   "label_status_adjust": "Needs changes",
   "label_reason_scam": "Looks like a scam",
@@ -292,7 +388,22 @@
   "label_report_resolved": "Resolved",
   "nav_panel": "Panel",
   "note_cancel": "Cancel",
-  "note_counter": "{count} of {max} characters",
+  "note_counter": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No characters (up to {max})",
+        "countExact=*, countPlural=one": "1 character (up to {max})",
+        "countExact=*, countPlural=*": "{count} of {max} characters"
+      }
+    }
+  ],
   "pagination_label": "Pagination",
   "pagination_previous": "Previous",
   "pagination_next": "Next",
@@ -329,7 +440,21 @@
   "staff_filter_draft": "Sent back to owner",
   "staff_filter_published": "Online",
   "staff_filter_archived": "Archived",
-  "staff_listings_count": "Listings in this queue: {count}",
+  "staff_listings_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No listings in this queue",
+        "countExact=*, countPlural=one": "1 listing in this queue",
+        "countExact=*, countPlural=*": "{count} listings in this queue"
+      }
+    }
+  ],
   "staff_column_listing": "Listing",
   "staff_column_owner": "Owner",
   "staff_column_updated": "Updated",
@@ -354,7 +479,7 @@
   "staff_fact_type": "Type",
   "staff_fact_whatsapp": "Listing WhatsApp",
   "staff_fact_rooms": "Rooms",
-  "staff_fact_rooms_value": "{bedrooms} bedrooms, {bathrooms} bathrooms",
+  "staff_fact_rooms_value": "{bedrooms}, {bathrooms}",
   "staff_fact_sent": "Sent on",
   "staff_fact_includes": "What is included",
   "staff_state_pending": "This listing is waiting for the team to decide.",
@@ -384,7 +509,21 @@
   "staff_reports_title": "Reports",
   "staff_reports_lead": "Open the reported listing, check it and record what the team decided.",
   "staff_reports_filter_label": "Report status",
-  "staff_reports_count": "Reports in this list: {count}",
+  "staff_reports_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "No reports in this list",
+        "countExact=*, countPlural=one": "1 report in this list",
+        "countExact=*, countPlural=*": "{count} reports in this list"
+      }
+    }
+  ],
   "staff_reports_origin": "origin {origin}",
   "staff_reports_open_listing": "(open the listing)",
   "staff_reports_no_details": "The visitor did not write any details.",
@@ -413,11 +552,42 @@
   "staff_search_clear": "Clear search",
   "staff_search_empty_title": "No listing with this text",
   "staff_search_empty_text": "Nothing for \"{q}\" in this status. Try another part of the title, or another queue status.",
-  "listings_range": "Showing {from} to {to} of {total} places",
+  "listings_range": [
+    {
+      "declarations": [
+        "input total",
+        "input from",
+        "input to",
+        "local totalExact = total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": ["totalExact", "totalPlural"],
+      "match": {
+        "totalExact=0, totalPlural=*": "No places",
+        "totalExact=*, totalPlural=one": "Showing 1 place",
+        "totalExact=*, totalPlural=*": "Showing {from} to {to} of {total} places"
+      }
+    }
+  ],
   "listings_page_missing_title": "This page does not exist",
   "listings_page_missing_description": "The search has fewer pages than this. Go back to the start of the list.",
   "listings_page_first": "Go to the first page",
-  "map_pins_limit": "The map shows {shown} of {total} places in this area. Zoom in to see them all.",
+  "map_pins_limit": [
+    {
+      "declarations": [
+        "input total",
+        "input shown",
+        "local totalExact = total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": ["totalExact", "totalPlural"],
+      "match": {
+        "totalExact=0, totalPlural=*": "No places in this area. Move or zoom out the map to see more.",
+        "totalExact=*, totalPlural=one": "The map shows the only place in this area.",
+        "totalExact=*, totalPlural=*": "The map shows {shown} of {total} places in this area. Zoom in to see them all."
+      }
+    }
+  ],
   "map_pins_empty": "No places in this area. Move the map or zoom out to see more.",
   "map_pins_error": "Could not load the places on the map.",
   "map_pins_retry": "Try again",

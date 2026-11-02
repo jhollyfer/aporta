@@ -60,15 +60,18 @@ export function SearchPillSegment({
   const id = React.useId()
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl px-4 py-2 hover:bg-moss-wash/60 sm:rounded-full">
-      <label htmlFor={id} className="text-xs font-bold text-ink">
+    <div className="relative flex-1 rounded-2xl hover:bg-moss-wash/60 sm:rounded-full">
+      <label
+        htmlFor={id}
+        className="pointer-events-none absolute top-2 left-4 text-xs font-bold text-ink"
+      >
         {spec.label()}
       </label>
       <select
         id={id}
         value={values[field]}
         onChange={(event) => setValue(field, event.target.value)}
-        className="w-full bg-transparent text-sm text-ink-soft outline-none"
+        className="h-14 w-full rounded-[inherit] bg-transparent px-4 pt-5 text-sm text-ink-soft outline-none"
       >
         <option value="">{spec.any()}</option>
         {spec.options(neighborhoods).map((option) => (

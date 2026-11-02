@@ -7,7 +7,6 @@ import StaffCreate from '../../../../../commands/staff-create.command.ts'
 
 import { UserFactory } from '#database/factories/user.factory'
 import UserModel from '#models/user'
-import env from '#start/env'
 import { countRows, resetDatabase } from '#tests/database-fixtures'
 import { authenticate } from '#tests/session-fixtures'
 
@@ -24,20 +23,33 @@ const PASSWORD = 'Demo1234!'
  */
 test.group('administrator > staff > create > command', (group) => {
   group.each.setup(() => resetDatabase())
-  group.each.teardown(() => {
-    env.set('STAFF_PASSWORD', '')
-    env.set('STAFF_EMAIL', '')
-    env.set('STAFF_NAME', '')
-  })
 
-  async function run(...args: Array<string>) {
-    const ace = await app.container.make('ace')
-    ace.ui.switchMode('raw')
+  async function execute(
+    prepare: (ace: Awaited<ReturnType<typeof makeAce>>) => void,
+    args: Array<string>,
+  ) {
+    const ace = await makeAce()
+    prepare(ace)
     const command = await ace.create(StaffCreate, args)
 
     await command.exec()
 
     return { command, ace }
+  }
+
+  async function makeAce() {
+    const ace = await app.container.make('ace')
+    ace.ui.switchMode('raw')
+
+    return ace
+  }
+
+  /** The password has no flag and no variable: every run types it in the hidden prompt, twice. */
+  function run(password: string, ...args: Array<string>) {
+    return execute((ace) => {
+      ace.prompt.trap('Password').replyWith(password)
+      ace.prompt.trap('Repeat the password').replyWith(password)
+    }, args)
   }
 
   function logs(ace: Awaited<ReturnType<typeof run>>['ace']): string {
@@ -47,13 +59,12 @@ test.group('administrator > staff > create > command', (group) => {
       .join('\n')
   }
 
-  test('when flags and STAFF_PASSWORD are given, it creates an ADMINISTRATOR that signs in, and never prints the password', async ({
+  test('when the flags are given and the password is typed, it creates an ADMINISTRATOR that signs in, and never prints the password', async ({
     client,
     assert,
   }) => {
-    env.set('STAFF_PASSWORD', PASSWORD)
-
     const { command, ace } = await run(
+      PASSWORD,
       '--email=maria@aporta.com.br',
       '--name=Maria da Equipe',
     )
@@ -69,9 +80,8 @@ test.group('administrator > staff > create > command', (group) => {
   test('when --role=MODERATOR is given, the account is a moderator', async ({
     assert,
   }) => {
-    env.set('STAFF_PASSWORD', PASSWORD)
-
     const { command } = await run(
+      PASSWORD,
       '--email=ana@aporta.com.br',
       '--name=Ana',
       '--role=moderator',
@@ -85,12 +95,10 @@ test.group('administrator > staff > create > command', (group) => {
   test('when the role is not a staff role, it refuses and creates nothing', async ({
     assert,
   }) => {
-    env.set('STAFF_PASSWORD', PASSWORD)
-
-    const { command } = await run(
-      '--email=dono@aporta.com.br',
-      '--name=Dono',
-      '--role=OWNER',
+    // The role is refused before any prompt, so no prompt is trapped.
+    const { command } = await execute(
+      () => undefined,
+      ['--email=dono@aporta.com.br', '--name=Dono', '--role=OWNER'],
     )
 
     command.assertFailed()
@@ -108,9 +116,8 @@ test.group('administrator > staff > create > command', (group) => {
   test('when the password breaks the policy, it refuses, says which rule and does not echo the value', async ({
     assert,
   }) => {
-    env.set('STAFF_PASSWORD', 'weakpass')
-
     const { command, ace } = await run(
+      'weakpass',
       '--email=fraca@aporta.com.br',
       '--name=Fraca',
     )
@@ -127,9 +134,8 @@ test.group('administrator > staff > create > command', (group) => {
     const existing = await UserFactory.merge({
       email: 'maria@aporta.com.br',
     }).create()
-    env.set('STAFF_PASSWORD', PASSWORD)
-
     const { command } = await run(
+      PASSWORD,
       '--email=maria@aporta.com.br',
       '--name=Outra Maria',
     )

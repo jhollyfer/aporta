@@ -47,6 +47,23 @@ function note(path: string, response: APIResponse): void {
 }
 
 export class E2eAccount {
+  /**
+   * Espera a janela de entrada e de cadastro virar, para o próximo spec começar com o limite
+   * cheio. O `auth.setup.ts` gasta 1 cadastro e 2 entradas, e `auth.spec.ts` precisa de 4
+   * entradas pela tela: sem esta espera, o 4º reprova com 429 quando a janela do setup ainda
+   * está aberta.
+   */
+  static async settle(): Promise<void> {
+    const wait = Math.max(
+      0,
+      ...[...windows.values()].map(
+        (last) => WINDOW_MS - (Date.now() - last.at),
+      ),
+    )
+
+    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait))
+  }
+
   /** Atende a política de senha (`Rule.password()`: 8 a 32, maiúscula, minúscula, número e símbolo). */
   static readonly password = 'Senha@12345'
 

@@ -153,6 +153,8 @@ test.describe('paginação da listagem', () => {
 
 const PINS_PATH = '/storefront/listings/pins'
 
+// Abaixo de `lg` lista e mapa se alternam: `view=map` abre o mapa em qualquer viewport, e a partir
+// de `lg` os dois já estão na tela (o botão flutuante só existe em `mobile` e `tablet`).
 test.describe('mapa por janela', () => {
   test('quando a listagem abre, o mapa pede os pins da janela visível com os filtros da URL', async ({
     page,
@@ -161,7 +163,7 @@ test.describe('mapa por janela', () => {
       item.url().includes(PINS_PATH),
     )
 
-    await page.goto('/listings?type=KITNET')
+    await page.goto('/listings?type=KITNET&view=map')
 
     const params = new URL((await request).url()).searchParams
 
@@ -191,7 +193,7 @@ test.describe('mapa por janela', () => {
       }
     })
 
-    await page.goto('/listings')
+    await page.goto('/listings?view=map')
     await expectHydrated(E2eMap.applyButton(page))
     await expect.poll(() => windows.length).toBeGreaterThan(0)
 
@@ -207,7 +209,7 @@ test.describe('mapa por janela', () => {
     page,
     expectHydrated,
   }) => {
-    await page.goto('/listings')
+    await page.goto('/listings?view=map')
 
     const pin = E2eMap.firstPin(page)
 
@@ -230,7 +232,7 @@ test.describe('mapa por janela', () => {
   test('quando o filtro não deixa nenhum imóvel, o mapa diz que a área está vazia', async ({
     page,
   }) => {
-    await page.goto('/listings?type=HOTEL&neighborhood=umariacu-2')
+    await page.goto('/listings?type=HOTEL&neighborhood=umariacu-2&view=map')
 
     await expect(
       page.getByRole('status').filter({ hasText: 'Nenhum imóvel nesta área' }),
@@ -265,7 +267,7 @@ test.describe('mapa por janela', () => {
       }),
     )
 
-    await page.goto('/listings')
+    await page.goto('/listings?view=map')
 
     const alert = page.getByRole('alert').filter({ hasText: '30 s' })
 

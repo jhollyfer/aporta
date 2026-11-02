@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { ActionButton } from '#/components/common/action-button'
 import { m } from '#/paraglide/messages'
 
 import { useStepper } from './stepper-context'
@@ -38,25 +39,18 @@ export function StepperNav({
       data-slot="stepper-nav"
       className="flex items-center justify-between gap-3"
     >
-      <button
-        type="button"
+      <ActionButton
+        tone="link"
         onClick={() => go(current - 1)}
         disabled={current === 0}
-        className="h-12 rounded-full px-5 text-sm font-bold text-ink underline underline-offset-4 disabled:opacity-40"
       >
         {m.stepper_back()}
-      </button>
-      <button
-        type="button"
-        onClick={() => void handleNext()}
-        disabled={pending}
-        aria-busy={pending}
-        className="h-12 rounded-full bg-moss px-7 text-sm font-extrabold text-paper transition-[background-color,transform] hover:bg-moss-deep active:scale-[0.97] disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100"
-      >
+      </ActionButton>
+      <ActionButton onClick={() => void handleNext()} pending={pending}>
         {pending && m.stepper_sending()}
         {!pending && last && m.stepper_submit()}
         {!pending && !last && m.stepper_next()}
-      </button>
+      </ActionButton>
     </div>
   )
 }

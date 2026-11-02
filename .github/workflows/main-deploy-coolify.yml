@@ -1,9 +1,19 @@
 name: Deploy to Coolify
 
+# The address and the target of the deploy are secrets, never written here
+# (`_standards/tooling.md` §8.3, `DECISIONS.md` #272): a UUID copied from another project
+# would redeploy the other project's application, and the site host in place of the panel
+# answers the route with the app's 404 HTML.
 on:
   workflow_call:
     secrets:
+      COOLIFY_URL:
+        required: true
       COOLIFY_TOKEN:
+        required: true
+      COOLIFY_API_UUID:
+        required: true
+      COOLIFY_APP_UUID:
         required: true
 
 permissions:
@@ -14,31 +24,61 @@ jobs:
     name: Trigger Coolify Deploy
     runs-on: ubuntu-latest
     steps:
-      # `-f` fails on 4xx/5xx; without it a deploy that never happened comes out green.
-      # POST, and not GET: since Coolify v4.2 the GET answers 405. The response
-      # must bring `deployment_uuid`: without it the request was accepted and nothing
-      # was queued (wrong uuid or out of the token's reach,
-      # `_standards/tooling.md` §8.3).
+      # POST, and not GET: since Coolify v4.2 the GET answers 405. `-f` alone hides the body and
+      # leaves a 404 with no cause, so the status goes to `-w` and the body to a file; outside
+      # 2xx the step prints both (`DECISIONS.md` #274). The response must bring
+      # `deployment_uuid`: without it the request was accepted and nothing was queued (wrong
+      # uuid or out of the token's reach).
       #
-      # Os UUIDs e a URL da instância vêm de `vars.*` do repositório, nunca escritos aqui: um UUID copiado de
-      # outro projeto faria este deploy redeployar a aplicação do outro.
+      # Each value loses space and line break first (`tr -d '[:space:]'`): a secret pasted with
+      # `\n` becomes a broken header. An empty secret fails naming it, and so does a
+      # `COOLIFY_URL` with a path: it is the panel's base, and the endpoint is built here.
       #
-      # ATTENTION: the UUID is the APPLICATION's, not the instance's. The value is in the
-      # application's URL in the Coolify panel.
+      # ATTENTION: the UUID is the APPLICATION's, not the instance's. The value is at the end of
+      # the application's URL in the Coolify panel.
       - name: Deploy da API e do app
         env:
-          COOLIFY_URL: ${{ vars.COOLIFY_URL }}
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
-          COOLIFY_UUID_API: ${{ vars.COOLIFY_UUID_API }}
-          COOLIFY_UUID_APP: ${{ vars.COOLIFY_UUID_APP }}
+          COOLIFY_API_UUID: ${{ secrets.COOLIFY_API_UUID }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
         run: |
-          for uuid in "$COOLIFY_UUID_API" "$COOLIFY_UUID_APP"; do
-            body=$(curl -fsS -X POST "$COOLIFY_URL" \
-              -H "Authorization: Bearer $COOLIFY_TOKEN" \
+          clean() { printf '%s' "$1" | tr -d '[:space:]'; }
+          url=$(clean "$COOLIFY_URL")
+          token=$(clean "$COOLIFY_TOKEN")
+          api_uuid=$(clean "$COOLIFY_API_UUID")
+          app_uuid=$(clean "$COOLIFY_APP_UUID")
+
+          for pair in "COOLIFY_URL:$url" "COOLIFY_TOKEN:$token" "COOLIFY_API_UUID:$api_uuid" "COOLIFY_APP_UUID:$app_uuid"; do
+            if [ -z "${pair#*:}" ]; then
+              echo "secret ${pair%%:*} vazio ou ausente" >&2; exit 1
+            fi
+          done
+
+          # Whatever follows the host after the scheme is a path.
+          rest="${url#*://}"
+          case "${rest%/}" in
+            */*) echo "COOLIFY_URL deve ser só a base do painel, sem caminho (veio com '/' depois do host)" >&2; exit 1 ;;
+          esac
+
+          endpoint="${url%/}/api/v1/deploy"
+          response="$RUNNER_TEMP/coolify-response.txt"
+
+          for uuid in "$api_uuid" "$app_uuid"; do
+            status=$(curl -sS -X POST "$endpoint" \
+              -H "Authorization: Bearer $token" \
               -H "Content-Type: application/json" \
-              -d "{\"uuid\":\"$uuid\",\"force\":false}")
-            printf '%s\n' "$body" | grep -q '"deployment_uuid"' \
-              || { echo "Coolify não enfileirou $uuid: $body" >&2; exit 1; }
+              -d "{\"uuid\":\"$uuid\",\"force\":false}" \
+              -o "$response" -w '%{http_code}')
+            case "$status" in
+              2??) ;;
+              *)
+                echo "Coolify respondeu $status para $uuid: $(head -c 300 "$response" 2>/dev/null)" >&2
+                exit 1
+                ;;
+            esac
+            grep -q '"deployment_uuid"' "$response" \
+              || { echo "Coolify não enfileirou $uuid: $(head -c 300 "$response" 2>/dev/null)" >&2; exit 1; }
           done
 
       # The trigger is asynchronous: the job only finishes green when the API answers on

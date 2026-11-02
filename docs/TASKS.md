@@ -113,12 +113,13 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
 | 7.15 | A tela do cadastro dizia "Anúncio recebido" com um envio que não gravava nada: trocar o texto por um estado honesto | Alta | Feita | commit `01f86eb`: o stub saiu, o último passo "Finalizar cadastro" só valida o formulário inteiro e mostra "Anúncio pronto", avisa que o envio ainda não está no ar e mantém o rascunho |
 
-## Fase 8 · E2E (1/4)
+## Fase 8 · E2E (2/5)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
 | 8.1 | Playwright no frontend com `e2e/playwright.config.ts` | Alta | Feita | 37 testes de navegador verdes contra o backend semeado: health-check e `GET /storefront/listings` (200, 12 itens, `meta.total` 12), busca, detalhe, guia, cadastro, idiomas, API fora do ar com a página aberta e axe nos dois temas; o job do CI ainda não rodou no GitHub |
 | 8.2 | Specs dos fluxos críticos de `USER-FLOWS.md` que dependem da API | Alta | A fazer | os fluxos públicos de leitura já têm spec contra a API real (8.1); faltam os que dependem das fases 4 e 5 |
+| 8.5 | CI rápido: job `changes` (PR só de texto pula backend e frontend), Playwright em job próprio e em paralelo ao `check`, matriz `mobile`/`tablet`/`desktop` com um banco por projeto, E2E só no PR | Alta | Feita | `_standards/tooling.md` §7 e §8.1, `DECISIONS.md` #273 da régua; os workflows passam no parser YAML e na guarda de injeção, mas **nunca rodaram no GitHub**; depende de os projetos `mobile`, `tablet` e `desktop` existirem em `e2e/playwright.config.ts` (hoje só `chromium`) |
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 | 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
@@ -126,7 +127,8 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 9.1 | Fornecer `COOLIFY_URL`, `COOLIFY_UUID_API` e `COOLIFY_UUID_APP` e conferir os três segredos | Alta | Bloqueada | valores ainda não fornecidos pelo dono, `ENV.md` §6 |
+| 3.10 | Levar o frontend à régua nova: tipografia fluida, alvo de toque de 44 px no kit, projetos Playwright `mobile`/`tablet`/`desktop` com `responsive` e `touch-targets`, lista "cara de gerador", contador com número exato | Alta | Feita | `DESIGN.md` §3, §7, §9, §10, §11; `TEST-PLAN.md` §1. Pendente de decisão do dono: `STORAGE_PUBLIC_URL` (ver `MEMORY.md`) |
+| 9.1 | Cadastrar os seis secrets do deploy: `COOLIFY_URL` (base do painel, sem caminho), `COOLIFY_TOKEN`, `COOLIFY_API_UUID`, `COOLIFY_APP_UUID`, `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | Alta | Bloqueada | o workflow já lê esses nomes (`tooling.md` §8.3, `DECISIONS.md` #272 e #274 da régua); URL e UUIDs ainda não foram fornecidos pelo dono, `ENV.md` §6; os antigos `vars` `COOLIFY_UUID_*` podem ser apagados |
 | 9.2 | Subir Node 24 e pnpm 11 no ambiente de desenvolvimento | Média | A fazer | o ambiente desta sessão tinha Node 22 e pnpm 10 |
 | 9.3 | Primeiro run do CI no GitHub e correção do que falhar | Alta | A fazer | depende de 8.1 |
 | 9.4 | Configurar o painel: migration pós-deploy, `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, healthcheck em `/health-check` | Alta | A fazer | `ARCHITECTURE.md` §9.1; `CORS_ORIGINS=https://aporta.maiyu.com.br` passou a ser requisito da vitrine, porque o navegador chama a API direto; `SERVER_API_URL` é opcional |

@@ -21,7 +21,7 @@ export function GalleryTabs(): React.JSX.Element {
           aria-selected={environment === current}
           onClick={() => jumpTo(environment)}
           className={cn(
-            'rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-soft',
+            'min-h-11 rounded-full border border-line px-4 text-sm font-semibold text-ink-soft sm:min-h-9',
             environment === current && 'border-moss bg-moss text-paper',
           )}
         >

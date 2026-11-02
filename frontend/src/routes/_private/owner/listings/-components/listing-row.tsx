@@ -127,6 +127,7 @@ export function ListingRow({
           <PillButton
             to="/owner/listings/$id"
             params={{ id: listing.id }}
+            tone="link"
             aria-label={m.owner_listings_edit_named({ title: listing.title })}
           >
             {m.owner_listings_edit()}

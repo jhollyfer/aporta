@@ -2,7 +2,8 @@ name: Check Frontend
 
 # The same standard on the PR (`ci.yml`) and on the push to main (`main-build-frontend.yml`,
 # which calls this one with `publish: true`): the PR does not go through a different gate from the
-# deploy's (`_standards/tooling.md` §7, §8.1).
+# deploy's (`_standards/tooling.md` §7, §8.1). The Playwright job runs only on the PR
+# (`e2e: false` on the push, `DECISIONS.md` #273).
 on:
   workflow_call:
     inputs:
@@ -10,6 +11,10 @@ on:
         description: carimba o revision.txt e publica o .output como artifact
         type: boolean
         default: false
+      e2e:
+        description: roda o Playwright (só no PR; o push na main já entra com o PR provado)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -115,17 +120,25 @@ jobs:
       - name: Ciclos de chunk
         run: pnpm --filter ./frontend --fail-if-no-match check-cycles
 
-  # The panel and storefront E2Es against the real backend, in a job of their own and
-  # after the `check` (`_standards/tooling.md` §7, step 8). Playwright brings up the
-  # two servers through the `webServer` in `e2e/playwright.config.ts`: the backend by
-  # `node ace serve` and the frontend by the build (`.output/server`), as in production.
+  # The panel and storefront E2Es against the real backend, in a job of their own and IN PARALLEL
+  # with the `check` (no `needs`: the job does its own build), one job and one database per
+  # viewport project (`_standards/tooling.md` §7 step 8, `DECISIONS.md` #273). `--project` pulls
+  # the `setup` and teardown through the `dependencies` (_doc-lib/playwright.md#docs/test-projects).
+  # Playwright brings up the two servers through the `webServer` in `e2e/playwright.config.ts`:
+  # the backend by `node ace serve` and the frontend by the build (`.output/server`), as in
+  # production.
   e2e:
-    name: Frontend - E2E (Playwright)
-    needs: check
+    name: Frontend - E2E (${{ matrix.project }})
+    if: ${{ inputs.e2e }}
     runs-on: ubuntu-latest
     # Above the config's `globalTimeout` (15 min): a job killed by the provider
     # generates no report, and the runner's ceiling is what closes the run with the artifact.
     timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [mobile, tablet, desktop]
 
     services:
       database:
@@ -268,12 +281,12 @@ jobs:
           E2E_API_URL: http://localhost:3333
           E2E_OWNER_EMAIL: administrator@mail.com
           E2E_OWNER_PASSWORD: ${{ steps.credential.outputs.password }}
-        run: pnpm --filter ./frontend --fail-if-no-match exec playwright test --config e2e/playwright.config.ts --workers=1 --add-reporter=github
+        run: pnpm --filter ./frontend --fail-if-no-match exec playwright test --config e2e/playwright.config.ts --project=${{ matrix.project }} --workers=1 --add-reporter=github
 
       - name: Relatório do Playwright
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           retention-days: 7
           path: frontend/playwright-report/

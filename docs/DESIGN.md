@@ -39,15 +39,15 @@ em `@media (prefers-color-scheme: dark)`, sem tocar nos nomes.
 | `moss-wash` | `#e4eee6` | `#213a2d` | fundo suave de chip, aba, estado vazio e barra de progresso |
 | `clay` | `#a8643d` | `#e0a47c` | terroso de apoio nas cenas e em detalhes |
 | `clay-wash` | `#ece3dd` | `#3a2a20` | fundo suave terroso, de croma baixo |
-| `sun` | `#f2b134` | `#f2b134` | acento quente reservado ao clique de contato e ao convite a anunciar |
+| `sun` | `#f2b134` | `#f2b134` | acento quente reservado ao clique de contato (WhatsApp) |
 | `sun-deep` | `#d99a1d` | `#ffc65a` | hover do `sun` |
 | `river` | `#4f7f86` | `#86b8bf` | azul de rio, detalhes e cenas |
 | `danger` | `#b3412f` | `#ef8d7a` | mensagem de erro de campo |
 
-Regra do acento: `sun` aparece no botão "Chamar no WhatsApp" (`WhatsAppCta`), nos convites a
-anunciar (`PillButton` com `tone="sun"`, cabeçalho, hero e faixa do dono), no destaque de
-disponibilidade do card e nas dicas do cadastro. Cor a mais que isso vira enfeite e custa atenção
-numa tela pequena.
+Regra do acento: `sun` aparece no botão "Chamar no WhatsApp" (`WhatsAppCta`), no destaque de
+disponibilidade do card e nas dicas do cadastro. Os convites a anunciar (cabeçalho, hero, faixa do
+dono) são link, não pílula amarela: a pílula é a ação primária da tela, e cada tela tem uma
+(`_standards/frontend.md` §10.8). Cor a mais que isso vira enfeite e custa atenção numa tela pequena.
 
 Tokens de cena (céu, mata, rio e casa das cenas SVG), redefinidos no escuro para a noite:
 `--sky-top`, `--sky-bottom`, `--forest-far`, `--forest-near`, `--water`, `--water-deep`, `--stilt`,
@@ -82,17 +82,26 @@ servida pelo próprio site, sem pedido a terceiros), com `ui-sans-serif, system-
 reserva. Pesos usados: normal (corpo), `font-semibold` (600), `font-bold` (700) e `font-extrabold`
 (800, títulos e botões).
 
-O projeto não define tokens `--text-*`: usa a escala do Tailwind com os papéis abaixo. Um token por
-papel (`--text-heading` e semelhantes) é uma melhoria pendente, e não existe hoje.
+A escala de título é **fluida** e vive no `@theme` de `styles.css` (`_standards/frontend.md` §6,
+`DECISIONS.md` #265 da régua): `clamp(mínimo, base + inclinação·vw, teto)`, com o tamanho de desktop
+como teto e o mínimo escolhido pelo que cabe em 320 px. Corpo, apoio e legenda não encolhem.
+
+| Token | `clamp()` | Linha | Onde |
+|---|---|---|---|
+| `text-display` | `2.25rem, 1.25rem + 5.1vw, 6rem` | 1,02 | o título da home |
+| `text-headline` | `2rem, 1.1rem + 4vw, 4.5rem` | 1,04 | `h1` da listagem, do detalhe, do guia e do cadastro; a assinatura do rodapé |
+| `text-title` | `1.75rem, 1.25rem + 1.6vw, 2.25rem` | 1,15 | `h1` das telas do dono, da equipe, da conta e da entrada; `h2` das seções da home |
 
 | Papel | Classes usadas | Peso | Onde |
 |---|---|---|---|
-| Display | `text-4xl sm:text-6xl`, `leading-[1.05]`, `tracking-tight` | extrabold | título da home |
-| Título | `text-3xl sm:text-4xl` ou `sm:text-5xl`, `tracking-tight` | extrabold | `h1` de cada página |
+| Display | `text-display`, `tracking-tight` | extrabold | título da home |
+| Headline e título | `text-headline` e `text-title`, `tracking-tight` | extrabold | `h1` de cada página |
 | Subtítulo | `text-xl` e `text-2xl` | extrabold | `h2` e título de bloco |
 | Corpo | `text-base` (16 px) e `text-lg` no texto de abertura | normal | texto e campos; nunca abaixo de 16 px em campo |
 | Secundário | `text-sm`, cor `ink-soft` | normal a bold | rótulo, dica, metadado |
 | Legenda | `text-xs` (redefinido para 13px no tema), `font-semibold` | semibold | selo do card; nada que se leia fica abaixo de 13px |
+
+O `cn()` registra os três tamanhos no `tailwind-merge`; sem isso ele os leria como cor de texto.
 
 Número de preço em `text-4xl` extrabold no detalhe. Texto corrido com `max-w-3xl` ou `max-w-2xl`
 (medida de leitura).
@@ -137,7 +146,8 @@ repouso, hover, `focus-visible`, desabilitado, erro.
 
 | Componente | Variantes e partes | Regra |
 |---|---|---|
-| `PillButton` | `tone`: `moss`, `sun`, `outline`; `scale`: `md` (44 px), `lg` (56 px) | um `moss` ou `sun` por área; `sun` só para contato ou convite a anunciar; é link, não botão de formulário |
+| `PillButton` | `tone`: `moss`, `sun`, `outline`, `link`; `scale`: `md` (44 px), `lg` (56 px) | uma pílula `moss` por tela; o resto é `link` (texto sublinhado, 44 px de alto); é link, não botão de formulário |
+| `ActionButton` | os mesmos tons e tamanhos do `PillButton`, `pending` | o botão de quem envia (formulário, sair, repetir); recebe o mesmo desenho |
 | `WhatsAppCta` | um estilo (`sun`, 48 px) | o botão principal da plataforma; abre `wa.me` com mensagem pronta, `target="_blank"` e `rel="noopener noreferrer"` |
 | `SearchPill` | partes `Segment` (tipo, bairro, período) e `Submit` | busca em pílula da home; vira coluna no celular |
 | `CategoryRail` | parte `Item` (um tipo de imóvel) | faixa horizontal, rola sem barra visível |
@@ -171,17 +181,14 @@ Ilustração de estado vazio: a cena SVG do rio, desenhada com os tokens de cena
 
 ## 9. Movimento
 
-Só `transform` e `opacity`, e só para quem não pediu menos movimento
-(`@media (prefers-reduced-motion: no-preference)` em `styles.css`):
+Não há animação de entrada: nada aparece escalonado nem ao rolar. Entrada animada e escalonada é
+um dos sinais de tela montada por gerador (`_standards/frontend.md` §10.8, `DECISIONS.md` #269 da
+régua), e a internet do Alto Solimões não ganha nada com ela. O que existe:
 
-- `.enter`: a entrada do que aparece na primeira tela, escalonada por `--i` (80ms por passo), no hero,
-  no cabeçalho de cada página e no cadastro.
-- `.reveal`: a entrada de cada bloco ao entrar na janela, guiada pela rolagem
-  (`animation-timeline: view()`), sem JavaScript e sem observador, o que importa na internet lenta
-  do Alto Solimões. Onde o navegador não conhece a propriedade, o bloco aparece parado.
+- Transição curta de cor ou opacidade em hover e foco (`transition-colors`, `transition-opacity`).
+  O hover do card de anúncio esmaece a foto; ele não a amplia.
 - Toque: `active:scale-[0.97]` nos botões, com `motion-reduce:active:scale-100`.
-- Nunca em bloco de texto de baixo contraste, como o rodapé: com opacidade parcial o axe lê o texto
-  semitransparente e reprova o contraste. O E2E cobre isso nos dois temas.
+- O giro do botão enviando e o popup do diálogo, com `motion-reduce:`.
 - A regra global de `prefers-reduced-motion` no `styles.css` zera as durações. `_standards/frontend.md`
   §10 pede caminho por componente (`motion-reduce:`); a regra global é desvio a corrigir (`TASKS.md`).
 
@@ -190,7 +197,16 @@ Só `transform` e `opacity`, e só para quem não pediu menos movimento
 - Meta: WCAG 2.1 AA.
 - Foco visível: `outline` de 2 px na cor `moss` em todo link, botão, campo e elemento focável, com
   `outline-offset` de 2 px. Link "pular para o conteúdo" é o primeiro elemento focável.
-- Alvo de toque: botões a partir de 44 px (`h-11`), botão de WhatsApp com 48 px, campos com 48 px.
+- Alvo de toque: **44 px no celular, vindo do kit** (`components/common/`: `PillButton`, `ActionButton`,
+  campos, abas, paginação, itens do cabeçalho), nunca de ajuste por tela. Botão `h-11`, botão de WhatsApp
+  48 px, campos 48 px. O mapa cresce o botão de zoom do Leaflet para 44 px em tela de toque e dá ao
+  pin de preço uma área de toque de 44 px por `::before`. O `touch-targets.spec.ts` (só no projeto
+  `mobile`) reprova qualquer controle abaixo disso nas telas do visitante, do dono e da equipe; a
+  exceção é o link no meio de texto corrido. Não há degrau de 24 px (WCAG 2.5.8) registrado: nenhuma
+  tela ficou abaixo de 44 px.
+- Viewports de teste: `mobile` 360x740 (toque), `tablet` 768x1024 e `desktop` 1440x900. O
+  `responsive.spec.ts` reprova rolagem horizontal, texto cortado sem `truncate` e violação séria do
+  axe em toda tela de cada perfil (`TEST-PLAN.md`).
 - Ícones: Phosphor (`@phosphor-icons/react`), decorativos com `aria-hidden`.
 - Imagem com sentido tem `alt`; a cena SVG decorativa fica `aria-hidden`. A página declara `lang`
   pelo idioma da requisição.
@@ -204,11 +220,27 @@ só os que este projeto confirmou ou acrescentou:
 
 | Fazer | Não fazer |
 |---|---|
-| Usar `sun` só para o clique de contato e o convite a anunciar | Usar `sun` como cor de enfeite ou em mais de uma ação por área |
+| Usar `sun` só para o clique de contato (WhatsApp) | Usar `sun` como cor de enfeite ou em convite a anunciar |
+| Uma pílula `moss` por tela; as outras ações são `link` | Repetir botão em pílula na hero, na faixa do guia e na faixa do dono |
 | Mostrar o valor e o que está incluso no card | Esconder água, luz e internet até o detalhe |
 | Desenhar o ambiente em SVG enquanto não há foto real | Usar foto de banco ou gerada por IA |
 | Mandar para o WhatsApp com mensagem que cita o imóvel | Criar chat interno |
 | Pôr o pin do mapa só com o preço | Pôr texto digitado por usuário no HTML do pin |
+| Contador com `=0`, `=1` e plural: "Nenhum imóvel", "1 imóvel", "12 imóveis" | "imóvel(is)", "0 item" |
+
+Lista de `_standards/frontend.md` §10.8 ("Cara de gerador de interface") e o que o Aporta usa no lugar:
+
+| Sinal | No Aporta |
+|---|---|
+| halo, brilho ou gradiente radial atrás de bloco | fundo liso; a cena SVG é a imagem, sem véu |
+| quadradinho de ícone sobre cada item | os "porquês" da home são linhas com título e texto, sem ícone; o ícone da faixa de categorias é o próprio conteúdo |
+| grade de cards iguais em toda seção | a grade de anúncios é o ritmo do conteúdo (a vitrine compara imóveis); as demais seções variam: linhas separadas por fio, bloco com cena, faixa cheia |
+| eyebrow em caixa alta com tracking largo | não há eyebrow; o título vai sozinho |
+| botão em pílula repetido | uma pílula `moss` por tela; o resto, link |
+| hover que só faz `scale` | foto do card esmaece; botão troca de cor |
+| texto justificado | alinhado à esquerda, `max-w-3xl` |
+| entrada animada e escalonada | nenhuma (§9) |
+| copy genérica | verbo e objeto: "Ver todos os imóveis", "Abrir o guia da cidade", "Anunciar meu imóvel" |
 
 ## 12. Referências
 

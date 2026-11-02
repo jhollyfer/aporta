@@ -60,6 +60,16 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 - O `sitemap.xml` passa a listar cada anúncio publicado nos três idiomas. Se a API não responder, sai
   só com as páginas fixas e não fica em cache.
 
+- Os títulos das telas encolhem sozinhos em celulares estreitos, sem quebrar a linha no meio da
+  palavra; o texto corrido não muda de tamanho.
+- Botões, campos e links de menu têm pelo menos 44 px de altura no celular, incluindo o zoom do mapa e
+  o pin de preço.
+- Os convites a anunciar na home, no cabeçalho e na conta são links, e só há um botão cheio por tela.
+  Sai a animação de entrada das seções, que só atrasava a leitura em internet lenta, e a foto do
+  anúncio passa a esmaecer, em vez de crescer, quando se aponta o cursor.
+- As contagens falam "Nenhum imóvel", "1 imóvel" e "12 imóveis" (e o mesmo em espanhol e inglês),
+  sem "imóvel(is)" nem "0 foto".
+
 ### Corrigido
 
 - O último passo do cadastro não diz mais "Anúncio recebido", porque nada era enviado. O botão agora

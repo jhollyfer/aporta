@@ -7,12 +7,6 @@ import { PhosphorVerified } from '#/components/common/listing-card/listing-card-
 import { daysSince } from '#/lib/format'
 import { m } from '#/paraglide/messages'
 
-function updatedLabel(days: number): string {
-  if (days === 0) return m.updated_today()
-  if (days === 1) return m.updated_one_day()
-  return m.updated_days({ count: days })
-}
-
 /**
  * O cartão do dono: nome, selo de verificado e há quantos dias o anúncio foi
  * atualizado. Anúncio parado é imóvel já alugado ou golpe, os dois defeitos do
@@ -39,7 +33,7 @@ export function OwnerCard({
           </p>
         )}
         <p className="text-sm text-ink-soft">
-          {updatedLabel(daysSince(owner.updatedAt))}
+          {m.updated_days({ count: daysSince(owner.updatedAt) })}
         </p>
       </div>
     </section>

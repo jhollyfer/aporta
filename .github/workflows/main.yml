@@ -15,8 +15,12 @@ jobs:
   check-backend:
     uses: ./.github/workflows/main-check-backend.yml
 
+  # The Playwright runs only on the PR: the merge enters with the E2E already proved, and
+  # repeating it delays the deploy (`_standards/tooling.md` §8.1, `DECISIONS.md` #273).
   build-frontend:
     uses: ./.github/workflows/main-build-frontend.yml
+    with:
+      e2e: false
 
   docker-backend:
     needs: check-backend
@@ -38,4 +42,7 @@ jobs:
     needs: [docker-backend, docker-frontend]
     uses: ./.github/workflows/main-deploy-coolify.yml
     secrets:
+      COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
       COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+      COOLIFY_API_UUID: ${{ secrets.COOLIFY_API_UUID }}
+      COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}

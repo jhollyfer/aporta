@@ -40,8 +40,7 @@ function RouteComponent(): React.JSX.Element {
   )
   const locale = getLocale()
   const { monthly, daily } = listing.price
-  let minimum = m.detail_minimum_value({ count: listing.minimumStayMonths })
-  if (listing.minimumStayMonths === 1) minimum = m.detail_minimum_one()
+  const minimum = m.detail_minimum_value({ count: listing.minimumStayMonths })
 
   const message = m.whatsapp_message({
     title: listing.title,
@@ -50,17 +49,17 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8">
-      <header className="enter flex flex-col gap-2">
+      <header className="flex flex-col gap-2">
         <p className="text-sm font-bold text-moss">
           {LISTING_TYPE_LABELS[listing.type]()} · {listing.neighborhood.name}
         </p>
-        <h1 className="max-w-4xl text-[clamp(2rem,4.6vw,4.25rem)] leading-[1.04] font-extrabold tracking-tight break-words text-ink">
+        <h1 className="max-w-4xl text-headline font-extrabold tracking-tight break-words text-ink">
           {listing.title}
         </h1>
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <Gallery listing={listing} className="enter [--i:1]">
+        <Gallery listing={listing}>
           <Gallery.Tabs />
           <Gallery.Main />
           <Gallery.Thumbs />
@@ -69,7 +68,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="flex flex-col gap-6">
           <section
             aria-labelledby="price-title"
-            className="reveal flex flex-col gap-2"
+            className="flex flex-col gap-2"
           >
             <h2 id="price-title" className="sr-only">
               {m.detail_price_title()}
@@ -93,7 +92,7 @@ function RouteComponent(): React.JSX.Element {
             <Costs costs={listing.costs} />
           </section>
 
-          <dl className="reveal grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
             <div>
               <dt className="font-bold text-ink-soft">
                 {m.detail_available()}
@@ -135,7 +134,7 @@ function RouteComponent(): React.JSX.Element {
 
       <section
         aria-labelledby="about-title"
-        className="reveal flex max-w-3xl flex-col gap-3"
+        className="flex max-w-3xl flex-col gap-3"
       >
         <h2 id="about-title" className="text-2xl font-extrabold text-ink">
           {m.detail_about_title()}
@@ -145,7 +144,7 @@ function RouteComponent(): React.JSX.Element {
 
       <section
         aria-labelledby="rules-title"
-        className="reveal flex max-w-3xl flex-col gap-3"
+        className="flex max-w-3xl flex-col gap-3"
       >
         <h2 id="rules-title" className="text-2xl font-extrabold text-ink">
           {m.detail_rules_title()}

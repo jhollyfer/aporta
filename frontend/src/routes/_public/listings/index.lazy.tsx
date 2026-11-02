@@ -111,7 +111,7 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-8">
-      <h1 className="enter text-[clamp(2.25rem,5vw,4.5rem)] leading-[1.02] font-extrabold tracking-tight text-ink">
+      <h1 className="text-headline font-extrabold tracking-tight text-ink">
         {m.listings_title()}
       </h1>
 
@@ -136,13 +136,9 @@ function RouteComponent(): React.JSX.Element {
               title={m.listings_empty_title()}
               description={m.listings_empty_description()}
             >
-              <button
-                type="button"
-                onClick={handleClear}
-                className="h-11 rounded-full bg-moss px-6 text-sm font-extrabold text-paper hover:bg-moss-deep"
-              >
+              <ActionButton onClick={handleClear}>
                 {m.filter_clear()}
-              </button>
+              </ActionButton>
             </EmptyState>
           )}
           {results.length === 0 && meta.total > 0 && (
@@ -170,7 +166,7 @@ function RouteComponent(): React.JSX.Element {
               </p>
               <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
                 {results.map((listing, index) => (
-                  <li key={listing.id} className="reveal">
+                  <li key={listing.id}>
                     <ListingCard listing={listing}>
                       <ListingCard.Photo priority={index < 2} />
                       <ListingCard.Badge />

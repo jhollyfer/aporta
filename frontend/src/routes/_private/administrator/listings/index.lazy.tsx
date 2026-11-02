@@ -77,7 +77,7 @@ function RouteComponent(): React.JSX.Element {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-ink sm:text-4xl">
+        <h1 className="text-title font-extrabold tracking-tight text-ink">
           {m.staff_listings_title()}
         </h1>
         <p className="text-lg text-ink-soft">{m.staff_listings_lead()}</p>

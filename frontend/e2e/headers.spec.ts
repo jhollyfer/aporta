@@ -218,7 +218,7 @@ for (const scheme of SCHEMES) {
 
         // O mapa carrega depois da hidratação (lazy): espera os ladrilhos serem pedidos, que é
         // onde o `img-src` do OpenStreetMap seria barrado.
-        if (path.startsWith('/listings') && !path.includes('kitnet')) {
+        if (path.includes('view=map')) {
           await expect(
             page.getByRole('link', { name: 'OpenStreetMap' }),
           ).toBeVisible()

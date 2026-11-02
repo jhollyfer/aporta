@@ -19,7 +19,7 @@ export function ListingSubmitted({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-start gap-5 px-4 pt-12 pb-8">
       <StatusChip status={listing.status} />
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+      <h1 className="text-title font-extrabold tracking-tight text-ink">
         {m.owner_ready_title()}
       </h1>
       <p className="text-lg text-ink-soft">
@@ -29,7 +29,7 @@ export function ListingSubmitted({
         <PillButton to="/owner/listings" scale="lg">
           {m.owner_ready_listings()}
         </PillButton>
-        <PillButton to="/" tone="outline" scale="lg">
+        <PillButton to="/" tone="link">
           {m.not_found_home()}
         </PillButton>
       </div>

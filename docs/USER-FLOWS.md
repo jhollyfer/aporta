@@ -85,10 +85,10 @@ A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta pagina
 
 **Entrada:** botão "Anunciar imóvel" do cabeçalho (a partir de telas médias), da home ou da faixa do dono.
 **Ação:** preenche seis etapas e envia.
-**Sucesso:** tela "Anúncio pronto" com o título e o aviso de que o envio ainda não está no ar; o rascunho continua salvo e há "Voltar ao cadastro" e o caminho para a home.
-**Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro.
+**Sucesso:** o anúncio é criado em análise (nunca no ar sozinho), as fotos sobem e a tela diz que a equipe vai revisar; o rascunho é apagado e há o caminho para "Meus anúncios".
+**Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro. Sem sessão no último passo, o rascunho é guardado e a pessoa vai para o login, voltando ao cadastro depois. Se as fotos falharem, o anúncio já existe e a tela repete só o envio das fotos.
 
-Hoje o cadastro não envia nada: o último passo só valida o formulário inteiro (`TASKS.md` 7.15). Ainda não existe a entrada do dono (login) na tela nem a conta `OWNER` por cadastro; quando existirem, o fluxo ganha o passo de entrar antes da etapa 1.
+As fotos escolhidas não ficam no rascunho (o arquivo não cabe no `localStorage`): quem é mandado ao login no último passo escolhe as fotos de novo. Em "Meus anúncios" o dono edita os dados, adiciona fotos e arquiva; remover ou reordenar foto ainda não existe na API.
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|

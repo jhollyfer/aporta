@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 69 tarefas · 32 feitas · 0 em andamento · 9 bloqueadas · 28 a fazer, atualizado 2026-11-02
+**Resumo:** 69 tarefas · 37 feitas · 0 em andamento · 9 bloqueadas · 23 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -40,12 +40,12 @@ Telas públicas completas. Nesta fase liam `frontend/src/lib/data` em vez da API
 | 2.3 | Listagem: filtros na URL, chips, mapa com preço no pin, alternância lista/mapa no celular | Alta | Feita | `DECISIONS.md` #5 |
 | 2.4 | Detalhe do imóvel: galeria por ambiente, valores, dono e WhatsApp fixo no celular | Alta | Feita | |
 | 2.5 | Guia com quatro abas na URL | Média | Feita | |
-| 2.6 | Cadastro do dono em seis etapas com progresso e rascunho local | Alta | Feita | o último passo só valida e diz que o envio não está no ar (7.15); o passo de fotos não envia arquivo |
+| 2.6 | Cadastro do dono em seis etapas com progresso e rascunho local | Alta | Feita | o último passo envia o anúncio e as fotos (PR D) |
 | 2.7 | Cenas SVG por ambiente no lugar de fotos | Média | Feita | `DECISIONS.md` #6 |
 | 2.8 | `sitemap.xml`, `robots.txt`, `/health-check` e `head` por rota | Média | Feita | |
 | 2.9 | Dados de exemplo: 12 imóveis, 10 lugares e 6 bairros | Média | Feita | telefones fictícios (`5597999990`) e coordenadas aproximadas, ver 7.10; hoje moram em `backend/database/data/` e chegam ao app pela API |
 
-## Fase 3 · Domínio de anúncios no backend (7/9)
+## Fase 3 · Domínio de anúncios no backend (8/9)
 
 A leitura pública entrou (commits `44f5ebe` e `4692ac0`): quatro rotas `GET` em `/storefront`, sem
 escrita. O frontend passou a lê-la (3.6, branch `feat/frontend-vitrine-api`). Falta o `POST` do dono e a
@@ -57,29 +57,29 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 3.2 | Bairros como dado (tabela e consulta pública) | Alta | Feita | `GET /storefront/neighborhoods`; a lista e as coordenadas ainda precisam de conferência com quem conhece a cidade (7.10) |
 | 3.3 | Vitrine pública: listar com filtro e paginação, mostrar por `slug` | Alta | Feita | `GET /storefront/listings` e `GET /storefront/listings/:slug`; `ARCHITECTURE.md` §4 |
 | 3.4 | Lugares do guia (categoria, evento com data) | Média | Feita | `GET /storefront/places`, filtro `category`; só o evento tem `date` |
-| 3.5 | Validator VineJS par do `OwnerListingCreateValidator` e criação do anúncio pelo dono | Alta | A fazer | paridade por `validators:check`; depende de 5.1 para saber quem é o dono |
+| 3.5 | Validator VineJS par do `OwnerListingCreateValidator` e criação do anúncio pelo dono | Alta | Feita | `owner/listings/{create,paginate,show,update,archive}`; nasce `PENDING`; posse por `listing.policy.ts` (404 para anúncio alheio) |
 | 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | Feita | `frontend/src/lib/data` saiu; a camada está em `frontend/src/integrations/tanstack-query/` (`ARCHITECTURE.md` §6); `VITE_API_URL` é obrigatória (`ENV.md`); a API não devolve URL de foto, então a cena SVG continua. Verificado: Vitest 43 testes, E2E de navegador 37 contra o backend semeado, build e `check-chunk-cycles` verdes. Falta o CI no GitHub (9.3) e a imagem Docker, que não foi construída |
 | 3.7 | Responses de listagem em `shared/src/responses/` e documento OpenAPI | Média | Feita | `shared/src/responses/storefront/`; `openapi:check` com 16 de 16 operações; a response do `POST` do dono entra com 3.5 |
 | 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | Feita | as quatro rotas de `/storefront`, `TEST-PLAN.md` §3 e §3.1; o `POST` do dono leva as linhas dele |
 | 3.9 | Paginar a listagem e o mapa: hoje `/listings` pede `perPage=100` (o teto da API, `MAX_PER_PAGE`) e mostra todos os pins de uma vez; passando de 100 anúncios publicados os pins e os cards cobrem só os 100 primeiros, e o sitemap, os bairros e as abas do guia têm o mesmo corte | Média | A fazer | paginação na listagem e consulta do mapa por área; vale antes de o catálogo chegar a 100 anúncios, `ARCHITECTURE.md` §10 |
 
-## Fase 4 · Fotos dos anúncios (0/5)
+## Fase 4 · Fotos dos anúncios (3/5)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 4.1 | Policy de posse por dono nas ações de `/storages` e só então abrir o grupo ao `OWNER` | Alta | A fazer | segurança, `SECURITY.md` TM-002 e TM-003 |
+| 4.1 | Policy de posse por dono nas ações de `/storages` e só então abrir o grupo ao `OWNER` | Alta | Feita | `StoragePolicy`: equipe vê tudo, `OWNER` só o próprio arquivo, o resto é 404; as variantes de upload do `OWNER` não foram provadas (sem MinIO) |
 | 4.2 | Teto de upload próprio para foto e lista de tipos só de imagem | Alta | A fazer | hoje o teto é global e a lista herdou PDF e áudio |
-| 4.3 | Passo de fotos do cadastro envia por ambiente pelo fluxo multipart | Alta | A fazer | depende de 4.1 e 3.5 |
-| 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | A fazer | depende de 3.3 |
+| 4.3 | Passo de fotos do cadastro envia por ambiente pelo fluxo multipart | Alta | Feita | escrita e testada no navegador até a escolha, prévia e remoção; **o envio ao bucket não foi exercitado** (sem MinIO), nem o CORS do bucket expondo `ETag` |
+| 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
 | 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | A fazer | |
 
-## Fase 5 · Dono, verificação e moderação (2/7)
+## Fase 5 · Dono, verificação e moderação (3/7)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
 | 5.1 | Definir como nasce a conta `OWNER` (cadastro com e-mail ou convite) | Alta | Feita | cadastro aberto, sem confirmação de e-mail até haver provedor (6.x); `DECISIONS.md` #12 |
 | 5.2 | Entrada do dono na tela e rota privada com guarda | Alta | Feita | `_authentication` e `_private`, `E2E` em `auth.spec.ts` |
-| 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | A fazer | depende de 3.5 e 5.2 |
+| 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | Feita | `_private/owner/listings`; a API só adiciona foto, não remove nem reordena |
 | 5.4 | Verificação do dono e selo "dono verificado" | Alta | Bloqueada | quem verifica e como: `PRD.md` §8 |
 | 5.5 | Moderação de anúncio (aprovar, pedir ajuste, arquivar) | Alta | Bloqueada | antes ou depois de publicar: `PRD.md` §8 |
 | 5.6 | Política de anúncio parado (prazo sem atualização) | Média | Bloqueada | `PRD.md` §8 |

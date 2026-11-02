@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 5 · Dono (conta e entrada feitas; falta a escrita do anúncio e as fotos) | 46% (32 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-02 | 5 · Dono (conta, anúncio e fotos feitos; falta a moderação) | 54% (37 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -24,23 +24,24 @@
 
 ## Parou em
 
-Branch `feat/conta-cadastro-entrada-dono`, sobre a `main` com a vitrine lendo a API (PR #17). Entrou a
-conta do dono: `POST /authentication/sign-up` (papel `OWNER` do caso de uso, 5 por minuto por IP, sem
-abrir sessão), cookies com prefixo `aporta-`, CORS expondo `Retry-After`, e no frontend as rotas
-`_authentication/{sign-in,sign-up}`, o portão `_private` (`ssr: false`) com `/account`, cabeçalho com
-"Entrar" ou "Minha conta", `credentials: 'include'` só nas rotas de conta e renovação única em `401`.
-O destino pós-login viaja em `?redirect=` e só aceita caminho interno; recusa devolve
-`{ redirect: undefined }` explícito, porque o TanStack Router mescla o retorno do `validateSearch` sobre
-a busca crua.
+Branch `feat/anuncios-dono-cria-edita`, sobre a `main` com a conta do dono (PR #18). Entrou a escrita do
+anúncio: `owner/listings` (criar em análise, listar, ver, editar, arquivar) e `owner/listing-photos`
+(liga até 12 arquivos já enviados a ambientes), `listing.policy.ts` com 404 para anúncio alheio,
+`/storages` aberto ao `OWNER` com policy por dono do arquivo, `listings.owner_id` e
+`listing_photos.storage_id`, e a vitrine devolvendo `photos[].url` assinada. No frontend, o cadastro
+envia de verdade (sem sessão, guarda o rascunho e vai ao login), o passo de fotos sobe pelo fluxo
+multipart com retomada, e `_private/owner/listings` lista, edita e arquiva. O seeder cria uma conta de
+dono de exemplo e liga os 12 anúncios a ela, sem tirar as colunas do dono denormalizado.
 
-Verificado nesta data: `shared/` e `frontend/` com tipos, lint, Prettier e unitários; backend com `pnpm
-check` (232 unitários, guardas de padrão, `validators:check`, `openapi:check`); E2E de navegador
-47 de 47 contra o backend semeado (na primeira rodada da sessão a11y do tema claro na home falhou uma
-vez e passou isolada e na rodada seguinte: servidor frio, não reproduzido); E2E do backend 242 passam e
-42 falham, todos de storage, sem MinIO.
+Verificado nesta data: `shared` com 128 testes, backend com `pnpm check` (299 unitários) e E2E com 316
+passando e 42 falhando, todos de storage sem MinIO; frontend com `pnpm check`, 93 testes, build,
+`check-chunk-cycles` e E2E de navegador 63 de 63. O teste de acessibilidade do tema claro na home
+falhou em 3 de cerca de 8 rodadas completas: o axe lia o contraste com a entrada `.enter` ainda em
+curso, e o fixture agora espera as animações do documento antes de medir.
 
-Não verificado: o CI do GitHub nunca rodou; os 42 testes de storage; a imagem Docker; a renovação de
-sessão em produção com `COOKIE_DOMAIN` real.
+Não verificado: o CI do GitHub nunca rodou; o envio de arquivo ao bucket (a sequência `POST /storages`,
+`PUT` assinado, `complete`, `POST .../photos`) e o CORS do bucket expondo `ETag`; os 42 testes de storage;
+a imagem Docker.
 
 ## Próximos passos
 
@@ -51,8 +52,8 @@ sessão em produção com `COOKIE_DOMAIN` real.
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
-5. Fase 4: policy de posse por dono antes de abrir `/storages` ao `OWNER`, depois o upload de fotos e a
-   chave de `listing_photos` para `storages`.
+5. Moderação da equipe (PR seguinte): fila, aprovar e recusar com motivo, verificar o dono e denúncia.
+   Depois contrair as colunas do dono denormalizado de `listings`.
 6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
 7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).

@@ -23,12 +23,16 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
   que está incluso (água, luz, internet), disponibilidade, estadia mínima, períodos aceitos, regras,
   selo "dono verificado" e "atualizado há X dias".
 - Cadastro de conta do dono ("Criar conta"), entrada e "Minha conta" com saída, no cabeçalho e em
-  páginas privadas que levam de volta ao destino depois de entrar. O imóvel ainda não é enviado.
+  páginas privadas que levam de volta ao destino depois de entrar.
+- O cadastro do imóvel agora envia o anúncio e as fotos por ambiente. O anúncio entra em análise e só
+  vai ao ar depois da revisão da equipe.
+- "Meus anúncios": o dono vê o estado de cada anúncio (em análise, no ar, arquivado), edita os dados,
+  adiciona fotos e arquiva.
 - Botão "Chamar no WhatsApp" com mensagem pronta que cita o imóvel, fixo no rodapé no celular.
 - Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis), com a aba guardada no
   endereço e botão de WhatsApp nos lugares que têm número.
 - Cadastro do imóvel pelo dono em seis etapas, com indicador de progresso, dicas por etapa e rascunho
-  salvo no próprio aparelho. O envio ainda não grava o anúncio nem as fotos.
+  salvo no próprio aparelho.
 - API pública de leitura de bairros, anúncios e guia (`GET /storefront/listings`,
   `/storefront/listings/:slug`, `/storefront/neighborhoods` e `/storefront/places`), com paginação,
   ordenação e filtros por tipo, bairro, período e faixa de preço.

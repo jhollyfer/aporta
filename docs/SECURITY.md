@@ -177,6 +177,8 @@ C = confidencialidade, I = integridade, D = disponibilidade.
   a pessoa entra em seguida. Não há confirmação de e-mail por enquanto: nenhum anúncio publica sem
   moderação. E-mail já usado responde `409`, o que permite descobrir se um e-mail tem conta; o
   limite por IP é o freio e fica como risco aceito até haver provedor de e-mail.
+- Anúncio do dono: a posse é regra de domínio e de policy (`listing.policy.ts`); anúncio de outro dono e anúncio sem dono respondem o mesmo 404 do inexistente. O anúncio nasce em análise e `update` nunca muda `status`, `slug` nem dono. Trocar nome ou WhatsApp do contato limpa a verificação. Escrita limitada a 60 por hora por conta (`listingWriteThrottle`).
+- `/storages` está aberto ao `OWNER` com policy por dono do arquivo: arquivo alheio responde 404, a coleção inteira só a equipe lê, e arquivo ligado a uma foto não se apaga (409). Foto aceita só imagem. Falta provar o upload ponta a ponta com bucket real.
 - Os cookies de sessão levam o prefixo do projeto (`aporta-access-token` e `aporta-refresh-token`).
 - O navegador só lê `Retry-After` de outra origem porque o CORS o expõe (`backend/config/cors.ts`);
   é dele que a tela tira o tempo de espera do `429`.

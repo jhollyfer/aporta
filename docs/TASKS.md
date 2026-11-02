@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 69 tarefas · 45 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
+**Resumo:** 70 tarefas · 45 feitas · 1 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -123,7 +123,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 | 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
-## Fase 9 · Deploy e produção (1/9)
+## Fase 9 · Deploy e produção (1/10)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -137,6 +137,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 9.7 | Provisionar o PostgreSQL e o bucket de produção | Alta | A fazer | |
 | 9.8 | Conferir os domínios e o smoke test do deploy | Média | A fazer | `aporta.maiyu.com.br` e `api-aporta.maiyu.com.br` |
 | 9.9 | Conferir a colisão de nome e de domínio dos cookies de sessão com os outros projetos de `maiyu.com.br` e decidir a correção | Alta | Bloqueada | decisão do dono: `DECISIONS.md` #9, `SECURITY.md` TM-014 |
+| 9.10 | Chaves de ambiente no catálogo da régua (`DECISIONS.md` #276): `.env.example` iguais ao modelo, seed ligado pela chave (`SEED_OWNER_PASSWORD`, `SEED_DEMO_PASSWORD`), `SITE_ENV`, `E2E_*`, deploy com os nomes do #272 | Alta | Em andamento | branch `chore/env-catalogo-padrao`; `backend.md` §6 a §6.3; upstream jhollyfer/maiyu-pattern#16 |
 
 ## Fase 10 · Ideias (fora do escopo atual)
 

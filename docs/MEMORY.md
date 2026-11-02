@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 3 · Domínio de anúncios (leitura pública feita e lida pelo frontend; falta a escrita do dono) | 43% (30 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-02 | 5 · Dono (conta e entrada feitas; falta a escrita do anúncio e as fotos) | 46% (32 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -24,35 +24,30 @@
 
 ## Parou em
 
-Trabalho na branch `feat/frontend-vitrine-api`, sobre a `main` que já tem a API pública do PR #16. O
-frontend deixou de ler `frontend/src/lib/data` (a pasta saiu, e `filterListings` e `monthlyEquivalent`
-com ela: a faixa de preço mora no backend, em `COALESCE(price_monthly, price_daily * 30)`) e passou a
-chamar `/storefront` por `request(schema, path, init)`, que valida o corpo com o schema Zod do
-`@aporta/shared`. O layout `_public` pré-carrega os bairros, a home pede os 6 anúncios mais recentes,
-a listagem pede `perPage=100` com o filtro da URL, o detalhe vira 404 só com `code ===
-LISTING_NOT_FOUND`, e o sitemap busca a lista na API (`ARCHITECTURE.md` §6). `VITE_API_URL` agora é
-obrigatória e há `SERVER_API_URL` opcional para o SSR (`ENV.md`).
+Branch `feat/conta-cadastro-entrada-dono`, sobre a `main` com a vitrine lendo a API (PR #17). Entrou a
+conta do dono: `POST /authentication/sign-up` (papel `OWNER` do caso de uso, 5 por minuto por IP, sem
+abrir sessão), cookies com prefixo `aporta-`, CORS expondo `Retry-After`, e no frontend as rotas
+`_authentication/{sign-in,sign-up}`, o portão `_private` (`ssr: false`) com `/account`, cabeçalho com
+"Entrar" ou "Minha conta", `credentials: 'include'` só nas rotas de conta e renovação única em `401`.
+O destino pós-login viaja em `?redirect=` e só aceita caminho interno; recusa devolve
+`{ redirect: undefined }` explícito, porque o TanStack Router mescla o retorno do `validateSearch` sobre
+a busca crua.
 
-Verificado nesta data: Vitest com 43 testes em 8 arquivos; E2E de navegador com 37 testes contra o
-backend semeado; `tsc`, ESLint, Prettier, build e `check-chunk-cycles` verdes (40 chunks, nenhum ciclo).
-O HTML do servidor já traz os anúncios (SSR conferido com `curl`). Com `SERVER_API_URL` apontando para
-uma API morta, `/listings` e o detalhe respondem 500 com a tela "Algo deu errado" em cerca de 0,15 s, e
-`/listings/nao-existe` responde 404. Do backend, o que já estava verificado segue: `shared/` com 103
-testes, 226 unitários, `pattern:check`, `depcruise`, `authz:check`, `validators:check` (10 pares),
-`openapi:check` (16 de 16) e `di:check` (28 classes), e no E2E do backend 231 passam e 42 falham, todos de
-storage, sem MinIO.
+Verificado nesta data: `shared/` e `frontend/` com tipos, lint, Prettier e unitários; backend com `pnpm
+check` (232 unitários, guardas de padrão, `validators:check`, `openapi:check`); E2E de navegador
+47 de 47 contra o backend semeado (na primeira rodada da sessão a11y do tema claro na home falhou uma
+vez e passou isolada e na rodada seguinte: servidor frio, não reproduzido); E2E do backend 242 passam e
+42 falham, todos de storage, sem MinIO.
 
-Não verificado: o CI do GitHub nunca rodou; o SSR com API caída foi conferido à mão com `curl`, não por
-E2E (8.4); os 42 testes de storage seguem sem rodar (8.3); a imagem Docker do frontend não foi
-construída. O cadastro (7.15) continua sem enviar: o último passo valida o formulário e diz que o envio
-ainda não está no ar.
+Não verificado: o CI do GitHub nunca rodou; os 42 testes de storage; a imagem Docker; a renovação de
+sessão em produção com `COOKIE_DOMAIN` real.
 
 ## Próximos passos
 
 1. Mesclar a branch e configurar `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção antes do
    deploy do frontend (9.4): sem ela a navegação no cliente não carrega a vitrine.
-2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono, a política de
-   anúncio parado e como nasce a conta `OWNER`: elas destravam a fase 5 e o `POST` do dono (3.5).
+2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono e a política de
+   anúncio parado: elas destravam a moderação (5.4 a 5.6).
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).

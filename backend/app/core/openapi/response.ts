@@ -34,6 +34,12 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
   'account/profile/update': AccountProfileUpdateResponse,
 
   /**
+   * Sign-up answers the profile of the account it created, the same shape as `GET /account`.
+   * The other `authentication/session` actions answer `204` and need no entry.
+   */
+  'authentication/session/sign-up': AccountProfileShowResponse,
+
+  /**
    * `create` and `parts` answer the upload plan, not the file; `download`
    * is a bodyless redirect and declares that in the controller itself.
    */

@@ -74,6 +74,13 @@ A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta pagina
 
 ---
 
+## Crio minha conta e entro
+
+**Entrada:** "Entrar" no cabeçalho, ou o portão de uma página privada.
+**Ação:** cria a conta com nome, e-mail e senha (com confirmação) e entra.
+**Sucesso:** a pessoa chega em "Minha conta", ou na página que tentou abrir (o destino viaja em `?redirect=` e só aceita caminho interno do app). "Sair" encerra a sessão.
+**Falha:** erro em português junto do campo; e-mail já usado (409); excesso de tentativas mostra o tempo de espera; quem já tem sessão e abre `/sign-in` vai direto para a conta.
+
 ## Tenho um imóvel para anunciar
 
 **Entrada:** botão "Anunciar imóvel" do cabeçalho (a partir de telas médias), da home ou da faixa do dono.

@@ -22,6 +22,8 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 - Página do imóvel com galeria por ambiente (fachada, quarto, banheiro, cozinha, sala), valor com o
   que está incluso (água, luz, internet), disponibilidade, estadia mínima, períodos aceitos, regras,
   selo "dono verificado" e "atualizado há X dias".
+- Cadastro de conta do dono ("Criar conta"), entrada e "Minha conta" com saída, no cabeçalho e em
+  páginas privadas que levam de volta ao destino depois de entrar. O imóvel ainda não é enviado.
 - Botão "Chamar no WhatsApp" com mensagem pronta que cita o imóvel, fixo no rodapé no celular.
 - Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis), com a aba guardada no
   endereço e botão de WhatsApp nos lugares que têm número.
@@ -55,5 +57,5 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Segurança
 
-- Contas da equipe entram por sessão em cookie protegido, com limite de tentativas de senha. Ainda
-  não há tela de entrada nem cadastro de dono.
+- Contas entram por sessão em cookie protegido, com limite de tentativas de senha e de cadastro por
+  IP. Os cookies levam o nome do Aporta para não se misturar com os de outros sites da casa.

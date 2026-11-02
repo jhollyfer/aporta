@@ -72,6 +72,22 @@ export const signInAccountThrottle = limiter.define(
 )
 
 /**
+ * The registration door, per IP. Nobody has a session to count on, and the account does not
+ * exist yet, so the IP is the only key there is (`request.ip()`, which reads
+ * `X-Forwarded-For` only from `TRUSTED_PROXIES`).
+ *
+ * A bucket of its own, and not the sign-in one: someone who mistypes the password five times
+ * must not be refused the registration of a second account, and someone who registers
+ * accounts must not spend the login attempts of the whole NAT. Five per minute, and
+ * `blockFor` for the same reason as `signInThrottle`: without it, going over costs only the
+ * rest of the minute, and an account factory keeps going. It also bounds what each call costs,
+ * which is a password hash.
+ */
+export const signUpThrottle = limiter.define('signUp', function () {
+  return limiter.allowRequests(5).every('1 minute').blockFor('10 mins')
+})
+
+/**
  * `PUT /account` verifies `currentPassword`, so a loop of wrong ones would be a guessing
  * oracle running outside the login ceilings (CWE-307). It spends the **same** account
  * budget as the login: same name (the key prefix), same `signin:<email>` key, so

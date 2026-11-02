@@ -50,7 +50,8 @@ anúncios não tem teste, porque o catálogo semeado tem 12 (`TASKS.md` 3.9).
 | Procuro onde morar | home, busca, detalhe, toque no WhatsApp | filtro sem resultado, URL inválida, anúncio inexistente (404), API fora do ar | `e2e/search.spec.ts`, `e2e/listing-detail.spec.ts` e `e2e/api-down.spec.ts`; a leitura da URL e a tradução em pedido à API têm unitário (§3) |
 | Guia da cidade | troca de aba, WhatsApp do lugar | categoria inválida | `e2e/guide.spec.ts`; aba vazia: Lacuna, o catálogo semeado tem lugares nas quatro categorias |
 | Tenho um imóvel para anunciar | seis etapas, "Finalizar cadastro", tela "Anúncio pronto" que avisa que o envio não está no ar | campo inválido, volta à etapa com erro, rascunho restaurado | `e2e/owner-draft.spec.ts` (erro em português, rascunho restaurado e corrompido, fluxo completo com o rascunho ainda salvo ao fim); o validator do cadastro tem unitário (§3). Não há envio para testar |
-| Entrada da equipe | `sign-in`, perfil, `sign-out` | credencial errada, limite de tentativas | Backend com E2E (§3.1); sem tela ainda |
+| Conta e entrada do dono | cadastro, entrada, "Minha conta", sair | e-mail repetido, senha fraca, confirmação diferente, portão sem sessão, destino externo recusado | `e2e/auth.spec.ts` e `sign-up.e2e.spec.ts` no backend (papel `OWNER` mesmo com `role` no corpo, sem cookie no cadastro); `redirect-search.test.ts` unitário. O limite de 5 por minuto é limpo em `rate_limits` antes da suíte |
+| Entrada da equipe | `sign-in`, perfil, `sign-out` | credencial errada, limite de tentativas | Backend com E2E (§3.1) |
 | Upload de arquivo (equipe) | `POST /storages`, partes, `complete` | tipo fora da lista, tamanho divergente, assinatura falsa | Backend com E2E, **não verificado nesta data** (sem MinIO) |
 | Moderação | aprovar, arquivar, verificar dono | dono de outro anúncio (404) | Falta: o domínio não existe |
 

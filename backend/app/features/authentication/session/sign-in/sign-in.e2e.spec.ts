@@ -34,6 +34,23 @@ test.group('authentication > session > sign-in', (group) => {
     assert.isDefined(response.cookie(COOKIE_TOKEN.REFRESH)?.value)
   })
 
+  test('when the session opens, the cookies carry the `aporta-` prefix', async ({
+    client,
+    assert,
+  }) => {
+    const response = await client
+      .post('/authentication/sign-in')
+      .json(ADMINISTRATOR)
+
+    // Literal names on purpose: asserting through `COOKIE_TOKEN` would pass for any value.
+    // In production the cookie domain is shared with other apps of the house, and a bare
+    // `access-token` would be overwritten by theirs (and overwrite it).
+    assert.deepEqual(Object.keys(response.cookies()).sort(), [
+      'aporta-access-token',
+      'aporta-refresh-token',
+    ])
+  })
+
   test('when the credential is wrong, answers 401 without revealing whether the email exists', async ({
     client,
     assert,

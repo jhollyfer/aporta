@@ -56,6 +56,12 @@ const routes = {
     tokens: [[0,"authentication"],[0,"sign-in"]],
     types: placeholder as Registry['authentication.sign_in']['types'],
   },
+  'authentication.sign_up': {
+    methods: ["POST"],
+    pattern: '/authentication/sign-up',
+    tokens: [[0,"authentication"],[0,"sign-up"]],
+    types: placeholder as Registry['authentication.sign_up']['types'],
+  },
   'authentication.sign_out': {
     methods: ["POST"],
     pattern: '/authentication/sign-out',

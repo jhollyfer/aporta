@@ -11,6 +11,8 @@ const PAGES = [
   '/listings/kitnet-centro-porto',
   '/guide',
   '/list-your-place',
+  '/sign-in',
+  '/sign-up',
 ] as const
 
 const SCHEMES = ['light', 'dark'] as const

@@ -21,6 +21,7 @@ export interface ApiDefinition {
   }
   authentication: {
     signIn: typeof routes['authentication.sign_in']
+    signUp: typeof routes['authentication.sign_up']
     signOut: typeof routes['authentication.sign_out']
     refresh: typeof routes['authentication.refresh']
   }

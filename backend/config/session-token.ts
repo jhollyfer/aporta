@@ -8,14 +8,19 @@ import env from '#start/env'
  *
  * Each token's `name` is not decoration: it is what the guard checks to refuse
  * a refresh token presented as an access token. Both come from the same
- * `DbAccessTokensProvider` and are indistinguishable without it. It lives in `config/`
+ * `DbAccessTokensProvider` and are indistinguishable without it.
+ *
+ * The `aporta-` prefix on the names is not decoration either: in production `COOKIE_DOMAIN` is
+ * `.maiyu.com.br`, shared with other apps of the house that inherited the same mold, and two
+ * cookies with the same name on the same domain overwrite each other - signing in to one
+ * app would sign the other one out. The names are only written here. It lives in `config/`
  * because the repository that issues the token and the guard that reads and writes the cookie
  * need the same value and none imports the other.
  */
 export const COOKIE_TOKEN = {
   DRIVER_NAME: 'cookie-access-tokens',
-  ACCESS: 'access-token',
-  REFRESH: 'refresh-token',
+  ACCESS: 'aporta-access-token',
+  REFRESH: 'aporta-refresh-token',
   ACCESS_EXPIRY: '1d',
   REFRESH_EXPIRY: '7d',
 } as const

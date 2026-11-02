@@ -12,6 +12,7 @@ export type ScannedRoutes = {
     'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
     'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'authentication.sign_in': { paramsTuple?: []; params?: {} }
+    'authentication.sign_up': { paramsTuple?: []; params?: {} }
     'authentication.sign_out': { paramsTuple?: []; params?: {} }
     'authentication.refresh': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
@@ -54,6 +55,7 @@ export type ScannedRoutes = {
   }
   POST: {
     'authentication.sign_in': { paramsTuple?: []; params?: {} }
+    'authentication.sign_up': { paramsTuple?: []; params?: {} }
     'authentication.sign_out': { paramsTuple?: []; params?: {} }
     'authentication.refresh': { paramsTuple?: []; params?: {} }
     'storages.create': { paramsTuple?: []; params?: {} }

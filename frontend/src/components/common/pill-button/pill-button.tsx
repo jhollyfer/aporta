@@ -17,7 +17,7 @@ import { cn } from '#/lib/cn'
  *   sun      a ação de contato (WhatsApp, anunciar): o acento quente, no máximo um por tela
  *   outline  a secundária, com o contorno no tom da tinta
  */
-const pillVariants = cva(
+export const pillVariants = cva(
   'inline-flex items-center justify-center gap-2 rounded-full font-extrabold transition-[color,background-color,transform] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100',
   {
     variants: {

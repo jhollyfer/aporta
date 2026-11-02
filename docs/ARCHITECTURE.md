@@ -60,6 +60,7 @@ substantivo no plural, a ação é verbo.
 | Módulo | Recursos | Ações principais | Público | Estado |
 |---|---|---|---|---|
 | authentication | session | sign-in, sign-out, refresh | todos os papéis | Feito |
+| authentication | session | sign-up | público, cria conta `OWNER` | Feito |
 | account | profile | show, update | qualquer conta autenticada | Feito |
 | storage | files | create, complete, parts, show, paginate, download, delete | `ADMINISTRATOR` e `MODERATOR` | Feito (restrito à equipe, ver `RULES.md` §3) |
 | documentation | openapi, reference | show | desenvolvedores | Feito |

@@ -9,6 +9,10 @@ import type { SignedStorageFile } from '#services/storage/storage.contract'
  * field: the password is not on the entity and, by construction, does not leave.
  * `GET /account` and `PUT /account` have the same shape. Receives the photo already
  * signed: signing is bucket I/O, the use-case's job.
+ *
+ * It sits at the root of `features/` because three actions of two modules (`account/profile`
+ * show and update, `authentication/session` sign-up) answer this same shape, and a feature
+ * does not import another one: `_shared.<theme>` is the place both may reach.
  */
 export default class ProfilePresenter {
   static show(

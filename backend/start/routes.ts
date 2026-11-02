@@ -15,6 +15,7 @@ import {
   currentPasswordThrottle,
   signInAccountThrottle,
   signInThrottle,
+  signUpThrottle,
   refreshThrottle,
   uploadThrottle,
 } from '#start/limiter'
@@ -102,14 +103,20 @@ router
  * Session. No middleware on purpose - not forgetfulness, it is the trait
  * of the block: it is the entry door, and requiring a session here would make it unreachable.
  *
- * All three routes answer `204` with no body. What changes state travels in
- * `Set-Cookie`, with the `httpOnly` token pair.
+ * Sign-in, sign-out and refresh answer `204` with no body: what changes state travels in
+ * `Set-Cookie`, with the `httpOnly` token pair. Sign-up answers `201` with the profile and
+ * sets no cookie.
  */
 router
   .group(() => {
     router
       .post('sign-in', [controllers.authentication.session.signIn.SignIn])
       .use([signInThrottle, signInAccountThrottle])
+    // The owner creating their own account. Anonymous, like `sign-in`, and it opens no
+    // session: the client signs in next, so the cookie pair has a single door.
+    router
+      .post('sign-up', [controllers.authentication.session.signUp.SignUp])
+      .use(signUpThrottle)
     // The only one in the group that requires a session: signing out is deleting *this*
     // session's tokens, and without knowing which it is there is nothing to delete.
     router

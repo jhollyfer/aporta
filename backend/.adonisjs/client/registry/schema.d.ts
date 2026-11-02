@@ -112,6 +112,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/authentication/session/sign-in/sign-in.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'authentication.sign_up': {
+    methods: ["POST"]
+    pattern: '/authentication/sign-up'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/authentication/session.validator').AuthenticationSessionSignUpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/authentication/session.validator').AuthenticationSessionSignUpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/authentication/session/sign-up/sign-up.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/authentication/session/sign-up/sign-up.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/authentication/session/sign-up/sign-up.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'authentication.sign_out': {
     methods: ["POST"]
     pattern: '/authentication/sign-out'

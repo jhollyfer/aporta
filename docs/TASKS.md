@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 69 tarefas · 30 feitas · 0 em andamento · 10 bloqueadas · 29 a fazer, atualizado 2026-11-02
+**Resumo:** 69 tarefas · 32 feitas · 0 em andamento · 9 bloqueadas · 28 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -73,12 +73,12 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | A fazer | depende de 3.3 |
 | 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | A fazer | |
 
-## Fase 5 · Dono, verificação e moderação (0/7)
+## Fase 5 · Dono, verificação e moderação (2/7)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 5.1 | Definir como nasce a conta `OWNER` (cadastro com e-mail ou convite) | Alta | Bloqueada | pergunta aberta em `PRD.md` §8 |
-| 5.2 | Entrada do dono na tela e rota privada com guarda | Alta | A fazer | depende de 5.1 |
+| 5.1 | Definir como nasce a conta `OWNER` (cadastro com e-mail ou convite) | Alta | Feita | cadastro aberto, sem confirmação de e-mail até haver provedor (6.x); `DECISIONS.md` #12 |
+| 5.2 | Entrada do dono na tela e rota privada com guarda | Alta | Feita | `_authentication` e `_private`, `E2E` em `auth.spec.ts` |
 | 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | A fazer | depende de 3.5 e 5.2 |
 | 5.4 | Verificação do dono e selo "dono verificado" | Alta | Bloqueada | quem verifica e como: `PRD.md` §8 |
 | 5.5 | Moderação de anúncio (aprovar, pedir ajuste, arquivar) | Alta | Bloqueada | antes ou depois de publicar: `PRD.md` §8 |

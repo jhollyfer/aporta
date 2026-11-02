@@ -121,7 +121,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | TM-011 | Filtro de URL malformado derruba a página ou injeta valor | alta | baixo | baixa | cada campo da busca tem `.catch(undefined)` e o bairro é conferido contra a lista real; o React escapa o texto | `frontend/src/routes/_public/listings/-search.ts`, `frontend/src/routes/_public/listings/-search.test.ts` |
 | TM-012 | Segredo ou credencial no repositório ou no CI | média | alto | alta | varredura de segredo em todas as refs, `pnpm audit` em produção, seeder sem senha padrão e só fora de produção, workflows sem `pull_request_target` | `.github/workflows/ci.yml`, `.gitleaks.toml`, `backend/database/seeders/user.seed.ts` |
 | TM-013 | Anúncio velho ou já alugado exposto como disponível (engenharia social e perda de confiança) | alta | médio | média | Planejado: política de prazo sem atualização; hoje a tela mostra "atualizado há X dias" | `frontend/src/components/common/owner-card/owner-card.tsx`; política em aberto em `PRD.md` §8 |
-| TM-014 | Colisão de cookie com outro projeto da casa: com `COOKIE_DOMAIN=.maiyu.com.br` e os mesmos nomes `access-token` e `refresh-token`, o login em um projeto sobrescreve a sessão do outro, e um projeto recebe o cookie do outro | média | médio | média | Não mitigado. Confirmar em produção e, se colidir, usar nomes de cookie por projeto ou mover a API para um subdomínio do app (decisão do dono, `DECISIONS.md` #9) | `backend/config/session-token.ts`; sem teste |
+| TM-014 | Colisão de cookie com outro projeto da casa: com `COOKIE_DOMAIN=.maiyu.com.br` e os mesmos nomes `access-token` e `refresh-token`, o login em um projeto sobrescreve a sessão do outro, e um projeto recebe o cookie do outro | média | médio | média | Mitigado: os cookies levam o prefixo `aporta-`. Resta conferir em produção que `COOKIE_DOMAIN=.maiyu.com.br` não choca com outro projeto | `backend/config/session-token.ts`; spec de cookie do `sign-in` |
 | TM-015 | Enumeração por `slug`: o visitante tenta endereços de anúncio para achar rascunho, anúncio em análise ou arquivado | média | baixo | baixa | Rascunho, em análise, arquivado, na lixeira e inexistente respondem o mesmo `404` `LISTING_NOT_FOUND`, então a resposta não confirma que o anúncio existe; o escopo `published` do model corta a linha na consulta. O `slug` de anúncio publicado é público por desenho, e a resposta traz `id` em UUID, nunca sequencial | `backend/app/features/storefront/listings/show/show.e2e.spec.ts` ("answers the same 404"), `backend/app/repositories/listing/listing.repository.e2e.spec.ts`, `backend/app/models/listing.ts` |
 | TM-016 | Raspagem ou carga na leitura pública: muitas chamadas a `/storefront`, inclusive com `search` | média | médio | média | Os limites de entrada são `perPage` até 100 e `search` até 100 caracteres, nos dois validators. Não há limite de requisições por IP nas rotas públicas: o grupo só tem `GET` e a decisão foi pôr o limite junto com a primeira escrita. A busca é `ILIKE` sem índice próprio. Planejado: limite por IP se o tráfego pedir | `backend/app/validators/storefront/`, `backend/start/routes.ts`, `backend/start/limiter.ts`; sem teste de carga
 
@@ -145,7 +145,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 - A origem de `backend/infra/r2-cors.json` já é a do app (`https://aporta.maiyu.com.br`); falta aplicar
   o arquivo no provedor do bucket e conferir o `ETag` exposto.
 - Conferir `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção: o navegador chama `/storefront` direto, e a lista não pode virar `*` nem ficar vazia (`ENV.md`).
-- Conferir em produção a colisão de cookies de sessão com outros projetos do domínio `maiyu.com.br` (TM-014).
+- Conferir em produção que o cookie `aporta-*` não colide com outros projetos do domínio `maiyu.com.br` (TM-014, mitigado pelo prefixo).
 - Revisar cada rota de anúncio nova quanto a escopo por sessão, 404 igual ao inexistente e ao dado
   que a listagem pública devolve do dono.
 - O que a API pública devolve do dono: `name`, `whatsapp`, `verified` e a data de atualização do
@@ -171,8 +171,19 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 - Login responde `401` com a mesma mensagem (`INVALID_CREDENTIALS`) para senha errada e para conta
   inexistente. Recuperação de senha e convite não existem ainda.
 - Hash de senha: scrypt (`backend/config/hash.ts`).
-- Não existe cadastro de conta. A primeira conta de administrador nasce do seeder, só em
-  desenvolvimento e teste, e o seeder para se faltar `SEED_OWNER_PASSWORD`.
+- O dono se cadastra por `POST /authentication/sign-up`: o papel `OWNER` é do caso de uso, nunca do
+  cliente (uma chave `role` no corpo é descartada), a senha segue a política do `sign-in`, o limite é
+  de 5 por minuto por IP com bloqueio de 10 minutos (`signUpThrottle`) e o cadastro não abre sessão:
+  a pessoa entra em seguida. Não há confirmação de e-mail por enquanto: nenhum anúncio publica sem
+  moderação. E-mail já usado responde `409`, o que permite descobrir se um e-mail tem conta; o
+  limite por IP é o freio e fica como risco aceito até haver provedor de e-mail.
+- Os cookies de sessão levam o prefixo do projeto (`aporta-access-token` e `aporta-refresh-token`).
+- O navegador só lê `Retry-After` de outra origem porque o CORS o expõe (`backend/config/cors.ts`);
+  é dele que a tela tira o tempo de espera do `429`.
+- No app, a rota privada abre só no cliente (`ssr: false` em `_private`) e a dica de sessão no
+  `localStorage` apenas evita o piscar da tela: quem decide é sempre a API.
+- A primeira conta de administrador nasce do seeder, só em desenvolvimento e teste, e o seeder para
+  se faltar `SEED_OWNER_PASSWORD`.
 
 ## 4. Autorização
 

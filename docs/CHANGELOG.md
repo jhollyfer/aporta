@@ -28,6 +28,10 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
   vai ao ar depois da revisão da equipe.
 - "Meus anúncios": o dono vê o estado de cada anúncio (em análise, no ar, arquivado), edita os dados,
   adiciona fotos e arquiva.
+- Painel da equipe: fila de anúncios em análise, aprovar, recusar com motivo, arquivar, marcar o dono
+  como verificado e ver e resolver denúncias.
+- O dono vê o motivo quando a equipe pede ajuste, e salvar o anúncio o reenvia para análise.
+- "Denunciar este anúncio" na página do imóvel, sem precisar de conta.
 - Botão "Chamar no WhatsApp" com mensagem pronta que cita o imóvel, fixo no rodapé no celular.
 - Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis), com a aba guardada no
   endereço e botão de WhatsApp nos lugares que têm número.
@@ -61,5 +65,6 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Segurança
 
+- A denúncia pública tem limite por IP e guarda só um hash do IP.
 - Contas entram por sessão em cookie protegido, com limite de tentativas de senha e de cadastro por
   IP. Os cookies levam o nome do Aporta para não se misturar com os de outros sites da casa.

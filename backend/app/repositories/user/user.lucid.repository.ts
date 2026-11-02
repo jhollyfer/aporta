@@ -204,6 +204,7 @@ export default class UserLucidRepository extends UserRepository {
       role: row.role,
       status: row.status,
       avatarId: row.avatarId,
+      verifiedAt: LucidMapping.date(row.verifiedAt),
       deletedAt: LucidMapping.date(row.deletedAt),
     })
   }
@@ -218,6 +219,7 @@ export default class UserLucidRepository extends UserRepository {
       role: snapshot.role,
       status: snapshot.status,
       avatarId: snapshot.avatarId,
+      verifiedAt: LucidMapping.dateTime(snapshot.verifiedAt),
       deletedAt: LucidMapping.dateTime(snapshot.deletedAt),
     }
   }

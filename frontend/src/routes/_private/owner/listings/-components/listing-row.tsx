@@ -7,6 +7,7 @@ import type { OwnerListingShowResponse } from '@aporta/shared'
 import { ConfirmDialog } from '#/components/common/confirm-dialog'
 import { ListingPhoto } from '#/components/common/listing-photo'
 import { PillButton } from '#/components/common/pill-button'
+import { ReviewNote } from '#/components/common/review-note'
 import { StatusChip } from '#/components/common/status-chip'
 import { queryKeys } from '#/hooks/tanstack-query/_query-keys'
 import { useInvalidate } from '#/integrations/tanstack-query/invalidate'
@@ -14,6 +15,7 @@ import { useOwnerListingArchiveMutation } from '#/integrations/tanstack-query/mu
 import { formatCurrency } from '#/lib/format'
 import { LISTING_TYPE_LABELS } from '#/lib/labels'
 import { ownerFailureMessage } from '#/lib/owner-failure'
+import { returnedReview } from '#/lib/returned-review'
 import { m } from '#/paraglide/messages'
 import { getLocale } from '#/paraglide/runtime'
 
@@ -52,6 +54,8 @@ export function ListingRow({
 
   const cover = listing.photos[0]
   const price = priceOf(listing)
+  // Um rascunho com motivo é um anúncio devolvido: o dono tem o que ajustar, e salvar reenvia.
+  const returned = returnedReview(listing)
 
   function confirm(close: () => void): void {
     setFailure(undefined)
@@ -95,7 +99,11 @@ export function ListingRow({
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex flex-col gap-2">
-          <StatusChip status={listing.status} className="self-start" />
+          <StatusChip
+            status={listing.status}
+            needsAdjustment={returned !== undefined}
+            className="self-start"
+          />
           <h2 className="text-lg leading-snug font-extrabold break-words text-ink">
             {listing.title}
           </h2>
@@ -108,6 +116,13 @@ export function ListingRow({
             <p className="text-base font-extrabold text-ink">{price}</p>
           )}
         </div>
+        {returned !== undefined && (
+          <ReviewNote note={returned.note} reviewedAt={returned.reviewedAt}>
+            <p className="text-sm text-ink-soft">
+              {m.review_note_resubmit_list()}
+            </p>
+          </ReviewNote>
+        )}
         <div className="flex flex-wrap items-center gap-3">
           <PillButton
             to="/owner/listings/$id"

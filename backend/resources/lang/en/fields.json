@@ -13,5 +13,7 @@
   "LISTING_PERIODS_EMPTY": "Select at least one period",
   "LISTING_PHOTOS_LIMIT": "Too many photos on the listing",
   "LISTING_PHOTO_DUPLICATED": "That file is already in the listing photos",
-  "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found"
+  "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found",
+  "LISTING_REVIEW_NOTE_INVALID": "Write the reason, from 3 to 500 characters",
+  "REPORT_NOTE_INVALID": "Write the note, from 3 to 500 characters"
 }

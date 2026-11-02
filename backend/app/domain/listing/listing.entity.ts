@@ -1,6 +1,8 @@
 import {
   LISTING_PHOTOS_MAX,
   LISTING_STATUS,
+  REVIEW_NOTE_MAX,
+  REVIEW_NOTE_MIN,
   left,
   right,
   type Either,
@@ -11,7 +13,11 @@ import {
   type PhotoEnvironment,
 } from '@aporta/shared'
 
-import type { ListingError } from './listing.errors.ts'
+import type {
+  ListingAlreadyArchived,
+  ListingError,
+  ListingReviewError,
+} from './listing.errors.ts'
 
 /**
  * A picture slot, in the owner's order. `storageId` is the `storages` file it shows; null is a slot
@@ -33,6 +39,16 @@ export type ListingOwnerProps = {
   readonly name: string
   readonly whatsapp: string
   readonly verifiedAt: Date | null
+}
+
+/**
+ * The staff's last decision on the ad. `note` is the reason of a refusal and null on an approval;
+ * `by` is the account that decided, null if that account was deleted since.
+ */
+export type ListingReviewProps = {
+  readonly note: string | null
+  readonly at: Date
+  readonly by: string | null
 }
 
 /**
@@ -69,6 +85,10 @@ export type ListingProps = {
   readonly lat: number
   readonly lng: number
   readonly photos: ReadonlyArray<ListingPhotoProps>
+  /** When the review put the ad on the air; null until it was approved. */
+  publishedAt: Date | null
+  /** The last decision of the staff; null when no one reviewed it, or when an edit sent it back to the queue. */
+  review: ListingReviewProps | null
   deletedAt: Date | null
 }
 
@@ -103,7 +123,10 @@ export type ListingChanges = Partial<
 
 /** What creating an ad needs: everything but the state it is born with. */
 export type ListingCreateInput = Merge<
-  Omit<ListingProps, 'status' | 'deletedAt' | 'photos'>,
+  Omit<
+    ListingProps,
+    'status' | 'deletedAt' | 'photos' | 'publishedAt' | 'review'
+  >,
   { readonly photos?: ReadonlyArray<ListingPhotoProps> }
 >
 
@@ -131,6 +154,8 @@ export default class Listing {
         ...input,
         status: LISTING_STATUS.DRAFT,
         photos: input.photos ?? [],
+        publishedAt: null,
+        review: null,
         deletedAt: null,
       }),
     )
@@ -168,13 +193,61 @@ export default class Listing {
 
   /**
    * Hands the ad to the review: `DRAFT` becomes `PENDING`. Nothing here publishes; only the
-   * team's review does, so an owner can never put his own ad on the air.
+   * team's review does, so an owner can never put his own ad on the air. The previous decision
+   * is cleared: a refusal's reason is for the owner to fix the ad, and left on a `PENDING` ad it
+   * would read as if the new version had been refused too.
    */
   submit(): Listing {
-    if (this.props.status === LISTING_STATUS.DRAFT)
+    if (this.props.status === LISTING_STATUS.DRAFT) {
       this.props.status = LISTING_STATUS.PENDING
+      this.props.review = null
+    }
 
     return this
+  }
+
+  /**
+   * The staff puts the ad on the air: only an ad waiting in the queue (`PENDING`) can be
+   * approved. An approval after another decision would rewrite who decided and when.
+   */
+  approve(by: string, at: Date): Either<ListingReviewError, Listing> {
+    if (this.props.status !== LISTING_STATUS.PENDING)
+      return left({ code: 'LISTING_NOT_PENDING' })
+
+    this.props = {
+      ...this.props,
+      status: LISTING_STATUS.PUBLISHED,
+      publishedAt: at,
+      review: { note: null, at, by },
+    }
+
+    return right(this)
+  }
+
+  /**
+   * The staff sends the ad back with the reason. It returns to `DRAFT`, which is "the owner still
+   * has something to write": an edit hands it to the queue again (`submit`). The reason is part of
+   * the decision and not optional, since a refusal with no reason is just a closed door.
+   */
+  refuse(
+    note: string,
+    by: string,
+    at: Date,
+  ): Either<ListingReviewError, Listing> {
+    if (this.props.status !== LISTING_STATUS.PENDING)
+      return left({ code: 'LISTING_NOT_PENDING' })
+
+    const reason = note.trim()
+    if (reason.length < REVIEW_NOTE_MIN || reason.length > REVIEW_NOTE_MAX)
+      return left({ code: 'LISTING_REVIEW_NOTE_INVALID' })
+
+    this.props = {
+      ...this.props,
+      status: LISTING_STATUS.DRAFT,
+      review: { note: reason, at, by },
+    }
+
+    return right(this)
   }
 
   /** Whether the account is the one that wrote the ad. An ad with no account belongs to no one. */
@@ -242,7 +315,7 @@ export default class Listing {
    * Takes the ad off the air: `ARCHIVED` and into the trash, in one transition, because the
    * storefront cut reads both and an ad half archived is one the visitor still finds.
    */
-  archive(at: Date): Either<ListingError, Listing> {
+  archive(at: Date): Either<ListingAlreadyArchived, Listing> {
     if (this.props.deletedAt !== null)
       return left({ code: 'LISTING_ALREADY_ARCHIVED' })
 

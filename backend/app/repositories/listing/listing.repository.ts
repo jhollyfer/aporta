@@ -24,6 +24,17 @@ export type ListingNeighborhood = {
 }
 
 /**
+ * The account behind an ad, as the staff reads it. It is the person who wrote the ad, and the seal
+ * (`verifiedAt`) is theirs, not the ad's.
+ */
+export type ListingAccount = {
+  readonly id: string
+  readonly name: string
+  readonly email: string
+  readonly verifiedAt: Date | null
+}
+
+/**
  * The listing as it is read: the entity, its neighborhood, the files its photos show and the time
  * stamps. `files` carries only the live `UPLOADED` ones, still without `url` (signing is bucket
  * I/O, the use-case's): a photo whose file is missing from here is read as "no picture yet".
@@ -31,6 +42,14 @@ export type ListingNeighborhood = {
 export type ListingRecord = {
   readonly listing: Listing
   readonly neighborhood: ListingNeighborhood
+  /** The account that wrote the ad; null for an ad seeded before owners had accounts. */
+  readonly account: ListingAccount | null
+  /**
+   * The "verified owner" seal as the reader sees it: the account's when the ad has one, and the
+   * ad's own denormalized column only for the ads with no account. Decided here, once, so a
+   * presenter never has to know there are two places.
+   */
+  readonly ownerVerifiedAt: Date | null
   readonly files: ReadonlyArray<StorageFileShowResponse>
   readonly createdAt: Date
   readonly updatedAt: Date
@@ -69,6 +88,15 @@ export type ListingOwnedCriteria = Merge<
 >
 
 /**
+ * The staff's list: every ad of the platform, **trash included** (an archived ad is in the trash by
+ * definition, so a staff list that cut it could never show `ARCHIVED`), by status if asked.
+ */
+export type ListingReviewCriteria = Merge<
+  PageCriteria<ListingSortColumn>,
+  { readonly status?: ListingStatus }
+>
+
+/**
  * The listing persistence, by intent (`_standards/domain.md` §5.1). The storefront reads
  * (`findPublishedRecordBySlug`, `paginatePublished`) are cut to `PUBLISHED` outside the trash
  * inside the implementation; a draft, a pending or an archived ad is indistinguishable from one
@@ -81,6 +109,16 @@ export default abstract class ListingRepository {
 
   /** The ad as it is read, with neighborhood and files: any status, outside the trash. */
   abstract findRecordById(id: string): Promise<ListingRecord | null>
+
+  /** The ad for the staff's write: any status, **trash included**, so archiving twice is a 409 and not a 404. */
+  abstract findAnyById(id: string): Promise<Listing | null>
+
+  /** The ad as the staff reads it, with the account behind it: any status, trash included. */
+  abstract findAnyRecordById(id: string): Promise<ListingRecord | null>
+
+  abstract paginateForReview(
+    criteria: ListingReviewCriteria,
+  ): Promise<Paginated<ListingRecord>>
 
   abstract paginateOwned(
     criteria: ListingOwnedCriteria,

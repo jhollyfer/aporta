@@ -17,6 +17,17 @@ export const OwnerListingShowResponse = StorefrontListingShowResponse.omit({
   photos: true,
 }).extend({
   status: z.enum(LISTING_STATUSES),
+  /**
+   * The staff's last decision on the ad. On a `DRAFT` it is the reason the ad came back, the one
+   * thing the owner needs to fix it; `null` until someone reviewed it, and cleared when an edit
+   * hands the ad to the queue again.
+   */
+  review: z
+    .object({
+      note: z.string().nullable(),
+      reviewedAt: ResponseRule.datetime(),
+    })
+    .nullable(),
   photos: z.array(
     z.object({
       id: z.uuid(),

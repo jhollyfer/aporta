@@ -55,5 +55,19 @@
   "OWNER_LISTING_SHOW_ERROR": "Internal server error",
   "OWNER_LISTING_UPDATE_ERROR": "Internal server error",
   "OWNER_LISTING_ARCHIVE_ERROR": "Internal server error",
-  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Internal server error"
+  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Internal server error",
+  "LISTING_NOT_PENDING": "Listing is not in the review queue",
+  "LISTING_REVIEW_NOTE_INVALID": "Invalid refusal reason",
+  "REPORT_NOT_FOUND": "Report not found",
+  "REPORT_ALREADY_RESOLVED": "Report already resolved",
+  "REPORT_NOTE_INVALID": "Invalid resolution note",
+  "USER_NOT_VERIFIABLE": "Only an advertiser account can be verified",
+  "ADMINISTRATOR_LISTING_PAGINATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_LISTING_SHOW_ERROR": "Internal server error",
+  "ADMINISTRATOR_LISTING_REVIEW_ERROR": "Internal server error",
+  "ADMINISTRATOR_LISTING_ARCHIVE_ERROR": "Internal server error",
+  "ADMINISTRATOR_OWNER_VERIFY_ERROR": "Internal server error",
+  "ADMINISTRATOR_REPORT_PAGINATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_REPORT_RESOLVE_ERROR": "Internal server error",
+  "STOREFRONT_REPORT_CREATE_ERROR": "Internal server error"
 }

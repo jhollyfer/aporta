@@ -1,6 +1,10 @@
-import type { StorefrontListingShowResponse } from '@aporta/shared'
+import type {
+  OwnerListingShowResponse,
+  StorefrontListingShowResponse,
+} from '@aporta/shared'
 
 import { WireDate } from '#core/response'
+import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
 import type { ListingRecord } from '#repositories/listing/listing.repository'
 
 /** The listing without its photos: the part of the public shape the owner's shape repeats. */
@@ -47,7 +51,7 @@ export default class ListingSharedPresenter {
       rules: [...listing.rules],
       owner: {
         name: listing.owner.name,
-        verified: listing.owner.verifiedAt !== null,
+        verified: record.ownerVerifiedAt !== null,
         whatsapp: listing.owner.whatsapp,
         // The last time the ad was touched: a stale one is an already-rented property or a scam.
         updatedAt: WireDate.day(record.updatedAt),
@@ -57,5 +61,22 @@ export default class ListingSharedPresenter {
       createdAt: WireDate.iso(record.createdAt),
       updatedAt: WireDate.iso(record.updatedAt),
     }
+  }
+
+  /**
+   * The photos with the key of the file each slot holds, for the two readers who need to tell the
+   * slots apart: the owner editing the gallery and the staff reviewing it. The visitor's shape
+   * (`fields` plus the signed address) leaves the key out.
+   */
+  static keyedPhotos(
+    record: ListingRecord,
+    urls: ReadonlyMap<string, string>,
+  ): OwnerListingShowResponse['photos'] {
+    return record.listing.snapshot().photos.map((photo) => ({
+      id: photo.id,
+      environment: photo.environment,
+      storageId: photo.storageId,
+      url: ListingPhotoUrls.of(urls, photo.storageId),
+    }))
   }
 }

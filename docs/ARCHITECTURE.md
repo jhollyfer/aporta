@@ -66,7 +66,10 @@ substantivo no plural, a ação é verbo.
 | documentation | openapi, reference | show | desenvolvedores | Feito |
 | Anúncios do dono | listings | create, paginate, show, update, archive | `OWNER` | Feito |
 | Anúncios do dono | listing-photos | create (liga arquivos enviados a ambientes, até 12) | `OWNER` | Feito |
-| Anúncios da equipe | listings | revisar, aprovar, arquivar, verificar dono | `MODERATOR`, `ADMINISTRATOR` | A criar |
+| administrator | listings | paginate, show, review (aprovar e recusar com motivo), archive | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| administrator | owners | verify (marcar e desmarcar) | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| administrator | reports | paginate, resolve | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| storefront | reports | create (denúncia pública, com limite por IP) | visitante sem login | Feito |
 | storefront | listings, neighborhoods, places | listings: paginate, show (por `slug`); neighborhoods e places: paginate | visitante sem login | Feito (só `GET`); o frontend a lê, ver §6 |
 
 Raiz de `app/features/`: também `health-check.controller.ts` (`GET /health-check`). Os nomes dos

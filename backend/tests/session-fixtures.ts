@@ -97,6 +97,18 @@ export function authenticateAsOwner(client: ApiClient): Promise<Session> {
   return authenticateAs(client, 'owner')
 }
 
+/** A moderator's session together with the account, for the specs that assert who decided. */
+export async function authenticateAsModeratorAccount(
+  client: ApiClient,
+): Promise<OwnerAccount> {
+  const user = await UserFactory.apply('moderator').create()
+
+  return {
+    session: await authenticate(client, user.email, FACTORY_PASSWORD),
+    userId: user.id,
+  }
+}
+
 /** An owner's session together with the account it belongs to, for the specs that assert ownership. */
 export type OwnerAccount = {
   readonly session: Session

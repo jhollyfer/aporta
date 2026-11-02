@@ -15,6 +15,7 @@ import { middleware } from '#start/kernel'
 import {
   currentPasswordThrottle,
   listingWriteThrottle,
+  reportCreateThrottle,
   signInAccountThrottle,
   signInThrottle,
   signUpThrottle,
@@ -65,9 +66,10 @@ router
  * trash), and the storefront presenter cuts the columns (no `status`, no `deletedAt`, no keys).
  * The owner's WhatsApp does leave, by design: it is the contact the ad exists to publish.
  *
- * **Reads only.** Nothing in this group creates, changes or removes, so it needs no per-IP write
- * limit (`start/limiter.ts`); the day a write enters it, it carries its own throttle on the route.
- * `storefront.e2e.spec.ts` proves both: no route asks for a cookie, and every one is a `GET`.
+ * **Reads, and one write.** Everything in this group is a `GET` but `POST /storefront/reports`
+ * (the scam report), which carries its own per-IP throttle on the route (`start/limiter.ts`).
+ * `storefront.e2e.spec.ts` proves it: no route asks for a cookie, and the report is the only one
+ * that is not a `GET`.
  *
  * The listing is reached by `slug`, which is what the storefront URL carries. The neighborhoods
  * and the guide have no detail route: the screen only ever reads them as a list.
@@ -97,6 +99,18 @@ router
       })
       .prefix('places')
       .as('places')
+
+    // The one write in the group, as the paragraph above anticipated: it carries its own
+    // per-IP throttle on the route. A report needs no account, because whoever was almost
+    // scammed will not sign up to warn the others.
+    router
+      .group(() => {
+        router
+          .post('/', [controllers.storefront.reports.create.Create])
+          .use(reportCreateThrottle)
+      })
+      .prefix('reports')
+      .as('reports')
   })
   .prefix('storefront')
   .as('storefront')
@@ -191,6 +205,57 @@ router
   .as('owner')
   .use(middleware.auth())
   .use(middleware.role([USER_ROLE.OWNER]))
+
+/**
+ * The staff's side of the moderation: the queue of ads, the owner's seal and the scam reports.
+ * Open to `ADMINISTRATOR` and `MODERATOR` alike (`docs/PRD.md` §8 leaves open who composes the
+ * team; the role lists below are the place to narrow it). The `OWNER` never enters: an owner
+ * reviewing ads would be reviewing his own.
+ *
+ * There is no permanent delete of an ad: `archive` is the removal, and the reports and decisions
+ * stay tied to it as record. The routes that take an `:id` need no policy because no per-record
+ * rule exists beyond the role: staff acts on any ad, report or owner account, and a missing one is
+ * an honest `404` (the staff may know the id exists).
+ */
+router
+  .group(() => {
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.listings.paginate.Paginate])
+        router.get(':id', [controllers.administrator.listings.show.Show])
+        router.put(':id/review', [
+          controllers.administrator.listings.review.Review,
+        ])
+        router.delete(':id', [
+          controllers.administrator.listings.archive.Archive,
+        ])
+      })
+      .prefix('listings')
+      .as('listings')
+
+    router
+      .group(() => {
+        router.put(':id/verification', [
+          controllers.administrator.owners.verify.Verify,
+        ])
+      })
+      .prefix('owners')
+      .as('owners')
+
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.reports.paginate.Paginate])
+        router.put(':id/resolution', [
+          controllers.administrator.reports.resolve.Resolve,
+        ])
+      })
+      .prefix('reports')
+      .as('reports')
+  })
+  .prefix('administrator')
+  .as('administrator')
+  .use(middleware.auth())
+  .use(middleware.role([USER_ROLE.ADMINISTRATOR, USER_ROLE.MODERATOR]))
 
 /**
  * Attachments, at the authenticated root like `/account`. Open to the staff, who see the whole

@@ -10,6 +10,7 @@ import {
 import { ListingSchema } from '#database/schema'
 import ListingPhoto from '#models/listing-photo'
 import Neighborhood from '#models/neighborhood'
+import User from '#models/user'
 
 /**
  * The property ad, with the owner denormalized in `owner_*` (`docs/DECISIONS.md`, decided with the
@@ -50,6 +51,10 @@ export default class Listing extends ListingSchema {
 
   @belongsTo(() => Neighborhood)
   declare neighborhood: BelongsTo<typeof Neighborhood>
+
+  /** The account that wrote the ad, whose verification the storefront reads. Null for the seeded ads. */
+  @belongsTo(() => User, { foreignKey: 'ownerId' })
+  declare owner: BelongsTo<typeof User>
 
   @hasMany(() => ListingPhoto)
   declare photos: HasMany<typeof ListingPhoto>

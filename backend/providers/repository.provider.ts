@@ -4,6 +4,7 @@ import TransactionContext from '#core/transaction-context'
 import ListingRepository from '#repositories/listing/listing.repository'
 import NeighborhoodRepository from '#repositories/neighborhood/neighborhood.repository'
 import PlaceRepository from '#repositories/place/place.repository'
+import ReportRepository from '#repositories/report/report.repository'
 import SessionTokenRepository from '#repositories/session-token/session-token.repository'
 import StorageRepository from '#repositories/storage/storage.repository'
 import UnitOfWork from '#repositories/unit-of-work/unit-of-work'
@@ -51,6 +52,11 @@ export default class RepositoryProvider {
       const { default: PlaceLucidRepository } =
         await import('#repositories/place/place.lucid.repository')
       return resolver.make(PlaceLucidRepository)
+    })
+    this.app.container.bind(ReportRepository, async (resolver) => {
+      const { default: ReportLucidRepository } =
+        await import('#repositories/report/report.lucid.repository')
+      return resolver.make(ReportLucidRepository)
     })
     this.app.container.bind(SessionTokenRepository, async (resolver) => {
       const { default: SessionTokenLucidRepository } =

@@ -108,7 +108,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 
 | Id | Abuso | Probabilidade | Impacto | Prioridade | Mitigação | Evidência |
 |---|---|---|---|---|---|---|
-| TM-001 | Golpe de anúncio: conta de dono publica imóvel que não existe, com foto roubada, para cobrar sinal | alta | alto | alta | Planejado: moderação antes ou depois de publicar, selo "dono verificado", "atualizado há X dias" e canal de denúncia; hoje o anúncio só existe como exemplo | Ainda sem teste (domínio não existe); tela do selo em `frontend/src/components/common/owner-card/owner-card.tsx` |
+| TM-001 | Golpe de anúncio: conta de dono publica imóvel que não existe, com foto roubada, para cobrar sinal | alta | alto | alta | Planejado: moderação antes ou depois de publicar, selo "dono verificado", "atualizado há X dias" e canal de denúncia; moderação antes de publicar, selo na conta do dono, denúncia pública com limite por IP e fila da equipe; falta provar o filtro de foto roubada, que a moderação faz à mão | E2E de navegador `moderation.spec.ts` e E2E do backend de `administrator/*`; tela do selo em `frontend/src/components/common/owner-card/owner-card.tsx` |
 | TM-002 | Dono lê, altera ou apaga arquivo ou anúncio de outro dono trocando o id | média | alto | alta | `/storages` fechado a `ADMINISTRATOR` e `MODERATOR` até haver policy de posse; anúncio do dono precisa nascer com escopo pela sessão e 404 igual ao inexistente | `backend/start/routes.ts`, `backend/app/middleware/role.middleware.e2e.spec.ts`, `backend/app/policies/storage.policy.unit.spec.ts` |
 | TM-003 | Abrir `/storages` ao papel `OWNER` sem policy de posse | média | alto | alta | Regra em `RULES.md` §2: a mudança pede pergunta; a tarefa de fotos precisa entregar a policy antes | `backend/start/routes.ts` |
 | TM-004 | Força bruta contra conta da equipe | média | alto | alta | 5 tentativas por minuto por IP e 20 por hora por conta, com bloqueio de 10 minutos; o mesmo orçamento vale para a troca de senha | `backend/start/limiter.ts`, `backend/app/features/authentication/session/sign-in/sign-in.e2e.spec.ts` |
@@ -177,6 +177,8 @@ C = confidencialidade, I = integridade, D = disponibilidade.
   a pessoa entra em seguida. Não há confirmação de e-mail por enquanto: nenhum anúncio publica sem
   moderação. E-mail já usado responde `409`, o que permite descobrir se um e-mail tem conta; o
   limite por IP é o freio e fica como risco aceito até haver provedor de e-mail.
+- Papéis da equipe: tudo em `/administrator` exige `ADMINISTRATOR` ou `MODERATOR`; o dono recebe 403. A equipe vê o e-mail da conta do dono. Verificar só vale para conta `OWNER` viva.
+- Denúncia pública: `POST /storefront/reports` com limite de 5 por hora por IP, campo isca `website` que responde 201 sem gravar e 404 igual para anúncio que não está no ar.
 - Anúncio do dono: a posse é regra de domínio e de policy (`listing.policy.ts`); anúncio de outro dono e anúncio sem dono respondem o mesmo 404 do inexistente. O anúncio nasce em análise e `update` nunca muda `status`, `slug` nem dono. Trocar nome ou WhatsApp do contato limpa a verificação. Escrita limitada a 60 por hora por conta (`listingWriteThrottle`).
 - `/storages` está aberto ao `OWNER` com policy por dono do arquivo: arquivo alheio responde 404, a coleção inteira só a equipe lê, e arquivo ligado a uma foto não se apaga (409). Foto aceita só imagem. Falta provar o upload ponta a ponta com bucket real.
 - Os cookies de sessão levam o prefixo do projeto (`aporta-access-token` e `aporta-refresh-token`).
@@ -238,7 +240,9 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 |---|---|---|---|---|
 | Nome e e-mail da conta | entrar e identificar quem opera ou anuncia | execução de contrato (a confirmar com o dono) | enquanto a conta existir | arquivamento lógico hoje; anonimização em prazo ainda não definida |
 | Nome e WhatsApp do dono no anúncio | o visitante falar com o dono | execução de contrato e consentimento do dono ao publicar (a confirmar com o dono) | enquanto o anúncio estiver publicado; as colunas `owner_name` e `owner_whatsapp` ficam em `listings` mesmo arquivado, e a API pública não devolve anúncio arquivado | definir com a política de anúncio parado (`PRD.md` §8) |
-| Rascunho do cadastro | não perder o que foi digitado | consentimento implícito do uso do formulário | no navegador do dono, até o dono limpar os dados do site: o cadastro ainda não envia, então o rascunho não é apagado | o dono limpa os dados do site; quando o envio existir, apagar no envio com sucesso |
+| Rascunho do cadastro | não perder o que foi digitado | consentimento implícito do uso do formulário | no navegador do dono, até o dono limpar os dados do site; é apagado quando o envio cria o anúncio | apagado no envio com sucesso; o dono pode limpar os dados do site antes |
+| Denúncia de golpe | a equipe apurar o anúncio | legítimo interesse na segurança da plataforma (a confirmar com o dono) | o motivo e o texto livre (até 500 caracteres, podem citar terceiros) ficam sem prazo definido; do IP guarda-se só um HMAC com a `APP_KEY`, pseudonimização que deixa de casar se a chave mudar | prazo e anonimização a definir; a equipe só vê os 12 primeiros caracteres do hash |
+| Motivo de recusa e nota de resolução | explicar a decisão ao dono e registrar quem decidiu | execução de contrato | enquanto o anúncio ou a denúncia existir | acompanha o registro |
 | Foto do imóvel | mostrar o imóvel | execução de contrato | enquanto o anúncio existir | apagar o objeto do bucket junto com o anúncio (a implementar) |
 
 A base legal e os prazos são proposta técnica, não parecer jurídico: o dono do produto confirma

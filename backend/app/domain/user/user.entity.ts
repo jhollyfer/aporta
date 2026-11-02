@@ -2,13 +2,18 @@ import {
   ACTIVE_STATUS,
   left,
   right,
+  USER_ROLE,
   type ActiveStatus,
   type Either,
   type Merge,
   type UserRole,
 } from '@aporta/shared'
 
-import type { UserAlreadyArchived, UserNotArchived } from './user.errors.ts'
+import type {
+  UserAlreadyArchived,
+  UserNotArchived,
+  UserNotVerifiable,
+} from './user.errors.ts'
 
 /**
  * The account state. `avatarId` points to `storages`, another aggregate, and
@@ -25,6 +30,11 @@ export type UserProps = {
   role: UserRole
   status: ActiveStatus
   avatarId: string | null
+  /**
+   * The moment the staff confirmed the person behind the account, the "verified owner" seal the
+   * storefront shows on every ad of the account. Null is "not verified".
+   */
+  verifiedAt: Date | null
   deletedAt: Date | null
 }
 
@@ -75,6 +85,7 @@ export default class User {
       role: input.role,
       status: input.status ?? ACTIVE_STATUS.ACTIVE,
       avatarId: input.avatarId ?? null,
+      verifiedAt: null,
       deletedAt: null,
     })
     user.#password = input.password
@@ -161,6 +172,26 @@ export default class User {
       return left({ code: 'USER_NOT_ARCHIVED' })
 
     return right(this)
+  }
+
+  /**
+   * Gives the account the "verified owner" seal. Only a live `OWNER` account carries it: the seal
+   * tells a visitor "the platform confirmed this advertiser", and it means nothing on an account
+   * that does not advertise. Verifying twice keeps the first instant, so repeating the call does
+   * not rewrite when the person was confirmed.
+   */
+  verify(at: Date): Either<UserNotVerifiable, User> {
+    if (this.props.role !== USER_ROLE.OWNER || this.props.deletedAt !== null)
+      return left({ code: 'USER_NOT_VERIFIABLE' })
+
+    this.props.verifiedAt ??= at
+    return right(this)
+  }
+
+  /** Takes the seal away. Always possible: removing trust never needs a reason the entity checks. */
+  unverify(): User {
+    this.props.verifiedAt = null
+    return this
   }
 
   /**

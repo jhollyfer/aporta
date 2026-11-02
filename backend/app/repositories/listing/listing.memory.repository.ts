@@ -11,10 +11,12 @@ import RepositoryFailure from '#core/repository-failure'
 import { UNIQUE_CONFLICT, type UniqueConflict } from '#core/unique-conflict'
 import Listing, { type ListingProps } from '#domain/listing/listing.entity'
 import ListingRepository, {
+  type ListingAccount,
   type ListingNeighborhood,
   type ListingOwnedCriteria,
   type ListingPublishedCriteria,
   type ListingRecord,
+  type ListingReviewCriteria,
   type ListingSortColumn,
 } from '#repositories/listing/listing.repository'
 
@@ -41,10 +43,16 @@ export default class ListingMemoryRepository extends ListingRepository {
   readonly #rows = new Map<string, Row>()
   readonly #neighborhoods = new Map<string, ListingNeighborhood>()
   readonly #files = new Map<string, StorageFileShowResponse>()
+  readonly #accounts = new Map<string, ListingAccount>()
 
   /** A neighborhood the listings can point to, by the key the entity carries. */
   putNeighborhood(id: string, neighborhood: ListingNeighborhood): void {
     this.#neighborhoods.set(id, structuredClone(neighborhood))
+  }
+
+  /** The account an ad points to by `ownerId`: its seal is the one the record reports. */
+  putAccount(account: ListingAccount): void {
+    this.#accounts.set(account.id, structuredClone(account))
   }
 
   /** A live `UPLOADED` file a photo may show, by the key the photo carries. */
@@ -64,6 +72,37 @@ export default class ListingMemoryRepository extends ListingRepository {
     if (!found || found.row.deletedAt !== null) return Promise.resolve(null)
 
     return Promise.resolve(this.record(found))
+  }
+
+  findAnyById(id: string): Promise<Listing | null> {
+    const row = this.#rows.get(id)
+    if (!row) return Promise.resolve(null)
+
+    return Promise.resolve(this.entity(row))
+  }
+
+  findAnyRecordById(id: string): Promise<ListingRecord | null> {
+    const found = this.visible().find(({ row }) => row.id === id)
+    if (!found) return Promise.resolve(null)
+
+    return Promise.resolve(this.record(found))
+  }
+
+  paginateForReview(
+    criteria: ListingReviewCriteria,
+  ): Promise<Paginated<ListingRecord>> {
+    const found = this.visible().filter(
+      ({ row }) =>
+        (criteria.status === undefined || row.status === criteria.status) &&
+        MemoryRows.contains([row.title, row.description], criteria.search),
+    )
+
+    return Promise.resolve(
+      MemoryRows.page(found, criteria, {
+        sortValue: ({ row }) => this.sortValue(row, criteria.sort),
+        toItem: (each) => this.record(each),
+      }),
+    )
   }
 
   paginateOwned(
@@ -219,12 +258,33 @@ export default class ListingMemoryRepository extends ListingRepository {
   private record({ row, neighborhood }: Stored): ListingRecord {
     const { props, createdAt, updatedAt } = this.split(row)
 
+    const account = this.accountOf(props)
+
     return {
       listing: Listing.restore(props),
       neighborhood: structuredClone(neighborhood),
+      account,
+      // The same rule as Lucid: the account's seal when there is an account, the ad's own otherwise.
+      ownerVerifiedAt: this.sealOf(account, props),
       files: this.filesOf(props),
       createdAt,
       updatedAt: updatedAt ?? createdAt,
     }
+  }
+
+  private accountOf(props: ListingProps): ListingAccount | null {
+    const account = this.#accounts.get(props.ownerId ?? '')
+    if (!account) return null
+
+    return structuredClone(account)
+  }
+
+  private sealOf(
+    account: ListingAccount | null,
+    props: ListingProps,
+  ): Date | null {
+    if (account) return account.verifiedAt
+
+    return props.owner.verifiedAt
   }
 }

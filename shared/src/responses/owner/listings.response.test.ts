@@ -6,6 +6,7 @@ const LISTING = {
   id: '00000000-0000-4000-8000-000000000001',
   slug: 'kitnet-centro-porto',
   status: 'PENDING',
+  review: null,
   type: 'KITNET',
   title: 'Kitnet mobiliada perto do porto',
   description: 'Kitnet com cama, geladeira e fogão.',
@@ -70,5 +71,30 @@ describe('OwnerListingShowResponse', () => {
       OwnerListingShowResponse.safeParse({ ...LISTING, status: 'SOLD' })
         .success,
     ).toBe(false)
+  })
+})
+
+describe('OwnerListingShowResponse review', () => {
+  it('when the staff sent the ad back, it carries the reason and the instant', () => {
+    const result = OwnerListingShowResponse.safeParse({
+      ...LISTING,
+      status: 'DRAFT',
+      review: {
+        note: 'Faltam fotos do banheiro e da cozinha.',
+        reviewedAt: '2026-10-31T12:00:00.000Z',
+      },
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('when the review field is missing, it refuses: null is the way to say never reviewed', () => {
+    const withoutReview = Object.fromEntries(
+      Object.entries(LISTING).filter(([key]) => key !== 'review'),
+    )
+
+    expect(OwnerListingShowResponse.safeParse(withoutReview).success).toBe(
+      false,
+    )
   })
 })

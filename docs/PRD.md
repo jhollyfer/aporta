@@ -88,7 +88,7 @@ Só entram métricas que a equipe consegue medir com o que o sistema registra ou
 - [ ] Quem verifica o dono e como: documento, visita, confirmação por WhatsApp, indicação da UFAM? O selo "dono verificado" depende disso. Quem responde: dono do produto.
 - [ ] Política de anúncio parado: depois de quantos dias sem atualização o anúncio perde o selo, sai do ar ou pede confirmação ao dono? A tela já mostra "atualizado há X dias". Quem responde: dono do produto.
 - [ ] Qual o número de WhatsApp institucional do Aporta (denúncia de golpe, suporte ao dono) e onde ele aparece? Quem responde: dono do produto.
-- [ ] A moderação é antes de publicar ou depois? Quem compõe a equipe (ADMINISTRATOR e MODERATOR)? Quem responde: dono do produto.
+- [x] A moderação é antes de publicar (`DECISIONS.md` #14). Falta definir quem compõe a equipe (ADMINISTRATOR e MODERATOR). Quem responde: dono do produto.
 - [x] Como a conta de dono (`OWNER`) nasce: cadastro aberto, sem confirmação de e-mail por enquanto (`DECISIONS.md` #12). Reabrir quando houver provedor de e-mail.
 - [ ] Quem confere os bairros e as coordenadas? Os seis bairros e os pontos do mapa são aproximados. Quem responde: quem conhece a cidade, indicado pelo dono.
 - [ ] Quem fotografa os imóveis e qual o tamanho máximo de uma foto? O teto atual de upload (`UPLOAD_MAX_SIZE`, 1 GiB) vale para qualquer arquivo e é alto demais para foto de anúncio. Quem responde: dono do produto.

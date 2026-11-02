@@ -55,5 +55,19 @@
   "OWNER_LISTING_SHOW_ERROR": "Erro interno do servidor",
   "OWNER_LISTING_UPDATE_ERROR": "Erro interno do servidor",
   "OWNER_LISTING_ARCHIVE_ERROR": "Erro interno do servidor",
-  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Erro interno do servidor"
+  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Erro interno do servidor",
+  "LISTING_NOT_PENDING": "Anúncio fora da fila de análise",
+  "LISTING_REVIEW_NOTE_INVALID": "Motivo da recusa inválido",
+  "REPORT_NOT_FOUND": "Denúncia não encontrada",
+  "REPORT_ALREADY_RESOLVED": "Denúncia já resolvida",
+  "REPORT_NOTE_INVALID": "Nota da resolução inválida",
+  "USER_NOT_VERIFIABLE": "Só a conta de quem anuncia pode ser verificada",
+  "ADMINISTRATOR_LISTING_PAGINATE_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_LISTING_SHOW_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_LISTING_REVIEW_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_LISTING_ARCHIVE_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_OWNER_VERIFY_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_REPORT_PAGINATE_ERROR": "Erro interno do servidor",
+  "ADMINISTRATOR_REPORT_RESOLVE_ERROR": "Erro interno do servidor",
+  "STOREFRONT_REPORT_CREATE_ERROR": "Erro interno do servidor"
 }

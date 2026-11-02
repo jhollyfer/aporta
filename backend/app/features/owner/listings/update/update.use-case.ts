@@ -8,7 +8,10 @@ import {
   type OwnerListingShowResponse,
 } from '@aporta/shared'
 
+import type RepositoryFailure from '#core/repository-failure'
 import Translation from '#core/translation'
+import type { UniqueConflict } from '#core/unique-conflict'
+import type { ListingProps } from '#domain/listing/listing.entity'
 import Neighborhood from '#domain/neighborhood/neighborhood.entity'
 import HTTPException from '#exceptions/http.exception'
 import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
@@ -17,6 +20,7 @@ import ListingRefusal from '#features/owner/_shared.listing-refusal'
 import ListingPresenter from '#features/owner/_shared.listing.presenter'
 import ListingRepository from '#repositories/listing/listing.repository'
 import NeighborhoodRepository from '#repositories/neighborhood/neighborhood.repository'
+import UserRepository from '#repositories/user/user.repository'
 import StorageContract from '#services/storage/storage.contract'
 import type { OwnerListingUpdatePayload } from '#validators/owner/listings.validator'
 
@@ -26,14 +30,16 @@ type Response = Either<HTTPException, OwnerListingShowResponse>
 /**
  * Edits an ad. Who may was decided by `ListingPolicy` in the controller; this reads the ad again
  * (the second read the standard accepts), resolves the new neighborhood when one was sent, lets
- * the entity apply the change and check its invariants, and writes. The status never moves here:
- * the entity's `update` has no verb for it.
+ * the entity apply the change and check its invariants, and writes. `update` itself has no verb for
+ * the status: the only move is `submit`, which hands a `DRAFT` (an ad the staff sent back) to the
+ * queue again and leaves every other status where it is.
  */
 @inject()
 export default class OwnerListingUpdateUseCase {
   constructor(
     private readonly listings: ListingRepository,
     private readonly neighborhoods: NeighborhoodRepository,
+    private readonly users: UserRepository,
     private readonly storage: StorageContract,
   ) {}
 
@@ -64,11 +70,24 @@ export default class OwnerListingUpdateUseCase {
           )
       }
 
+      const before = listing.snapshot()
       const updated = listing.update(
-        ListingInput.changes(payload, listing.snapshot(), neighborhood),
+        ListingInput.changes(payload, before, neighborhood),
       )
 
       if (updated.isLeft()) return left(ListingRefusal.http(updated.value))
+
+      // An ad the staff sent back returns to the queue by being edited: the owner has no other
+      // button, and an edit is exactly the "I fixed it" the refusal asked for. A no-op elsewhere.
+      listing.submit()
+
+      // The seal is the account's, so a new contact on any of its ads takes the seal off the
+      // account (`Listing.update` clears only the ad's own copy). Before the write on purpose: if
+      // this step fails the ad stays as it was, and if the next one fails the owner lost a seal he
+      // can have back, which is the safe side to fail on.
+      const unsealed = await this.withdrawSeal(before, listing.snapshot())
+
+      if (unsealed) return left(this.failure(unsealed))
 
       const saved = await this.listings.save(listing)
 
@@ -82,6 +101,31 @@ export default class OwnerListingUpdateUseCase {
     } catch (error) {
       return left(this.failure(error))
     }
+  }
+
+  /**
+   * Takes the account's "verified owner" seal off when the contact on the ad changed. The staff
+   * confirmed a person behind a number; a new number is a new person until confirmed again. Nothing
+   * to do for an ad with no account, whose own column `Listing.update` already cleared.
+   */
+  private async withdrawSeal(
+    before: Readonly<ListingProps>,
+    after: Readonly<ListingProps>,
+  ): Promise<RepositoryFailure | UniqueConflict | null> {
+    const contactChanged =
+      before.owner.name !== after.owner.name ||
+      before.owner.whatsapp !== after.owner.whatsapp
+
+    if (!contactChanged || after.ownerId === null) return null
+
+    const account = await this.users.findById(after.ownerId)
+    if (!account || account.snapshot().verifiedAt === null) return null
+
+    const saved = await this.users.save(account.unverify())
+
+    if (saved.isLeft()) return saved.value
+
+    return null
   }
 
   private failure(cause: unknown): HTTPException {

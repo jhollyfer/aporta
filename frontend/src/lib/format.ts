@@ -35,3 +35,10 @@ export function dayOfMonth(iso: string): number {
 export function shortMonth(iso: string, locale: string): string {
   return DateTime.fromISO(iso).setLocale(locale).toFormat('LLL')
 }
+
+/** Dia e hora curtos no idioma, para a fila da equipe: "2 nov. 2026, 14:30". */
+export function formatDateTime(iso: string, locale: string): string {
+  return DateTime.fromISO(iso)
+    .setLocale(locale)
+    .toLocaleString(DateTime.DATETIME_MED)
+}

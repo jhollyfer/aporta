@@ -41,3 +41,6 @@ export const NEIGHBORHOOD_SORT_COLUMNS = ['name'] as const
 
 /** Which columns the public city guide list can be sorted by. */
 export const PLACE_SORT_COLUMNS = ['name'] as const
+
+/** Which columns the staff's scam report queue can be sorted by. */
+export const REPORT_SORT_COLUMNS = ['createdAt'] as const

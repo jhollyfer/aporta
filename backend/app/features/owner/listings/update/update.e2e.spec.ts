@@ -3,6 +3,7 @@ import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 import ListingModel from '#models/listing'
+import UserModel from '#models/user'
 import { resetDatabase } from '#tests/database-fixtures'
 import { body, errorBody, object } from '#tests/response-fixtures'
 import { authenticateAsOwnerAccount } from '#tests/session-fixtures'
@@ -82,6 +83,10 @@ test.group('owner > listings > update', (group) => {
   }) => {
     const centro = await neighborhood()
     const { session, userId } = await authenticateAsOwnerAccount(client)
+    // The seal is the account's now; the ad's own column is a leftover that must not outlive it.
+    await UserModel.query()
+      .where('id', userId)
+      .update({ verifiedAt: DateTime.now() })
     const row = await listingWithStatus(LISTING_STATUS.PUBLISHED, {
       neighborhoodId: centro.id,
       ownerId: userId,
@@ -97,6 +102,7 @@ test.group('owner > listings > update', (group) => {
     assert.isFalse(object(body(response).owner).verified)
     const stored = await ListingModel.findOrFail(row.id)
     assert.isNull(stored.ownerVerifiedAt)
+    assert.isNull((await UserModel.findOrFail(userId)).verifiedAt)
     assert.equal(stored.ownerWhatsapp, '5597999990099')
   })
 

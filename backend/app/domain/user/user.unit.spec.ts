@@ -166,3 +166,49 @@ test.group('domain > user > session', () => {
     assert.isFalse(archivedUser.canOpenSession())
   })
 })
+
+test.group('domain > user > verification', () => {
+  const AT = new Date('2026-11-01T12:00:00.000Z')
+
+  test('when an owner account is verified, it carries the instant; verifying again keeps the first', ({
+    assert,
+  }) => {
+    const user = stored({ role: USER_ROLE.OWNER })
+
+    assert.isNull(user.snapshot().verifiedAt)
+    assert.isTrue(user.verify(AT).isRight())
+    assert.equal(user.snapshot().verifiedAt, AT)
+
+    user.verify(new Date('2026-11-02T12:00:00.000Z'))
+
+    assert.equal(user.snapshot().verifiedAt, AT)
+  })
+
+  test('when the account is staff or archived, it cannot be verified', ({
+    assert,
+  }) => {
+    const moderator = stored({ role: USER_ROLE.MODERATOR })
+    const archivedOwner = stored({ role: USER_ROLE.OWNER })
+    archivedOwner.archive(ARCHIVED_AT)
+
+    assert.deepEqual(moderator.verify(AT).value, {
+      code: 'USER_NOT_VERIFIABLE',
+    })
+    assert.deepEqual(archivedOwner.verify(AT).value, {
+      code: 'USER_NOT_VERIFIABLE',
+    })
+    assert.isNull(moderator.snapshot().verifiedAt)
+  })
+
+  test('when unverified, the seal goes away, and the sessions stay', ({
+    assert,
+  }) => {
+    const user = stored({ role: USER_ROLE.OWNER })
+    user.verify(AT)
+
+    user.unverify()
+
+    assert.isNull(user.snapshot().verifiedAt)
+    assert.isFalse(user.credentials().revokeSessions)
+  })
+})

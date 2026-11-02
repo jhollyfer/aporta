@@ -1,6 +1,11 @@
 import {
   AccountProfileShowResponse,
   AccountProfileUpdateResponse,
+  AdministratorListingPaginateResponse,
+  AdministratorListingShowResponse,
+  AdministratorOwnerVerifyResponse,
+  AdministratorReportPaginateResponse,
+  AdministratorReportShowResponse,
   OwnerListingPaginateResponse,
   OwnerListingPhotoCreateResponse,
   OwnerListingShowResponse,
@@ -13,6 +18,7 @@ import {
   StorefrontListingShowResponse,
   StorefrontNeighborhoodPaginateResponse,
   StorefrontPlacePaginateResponse,
+  StorefrontReportCreateResponse,
 } from '@aporta/shared'
 
 import type { ResponseSchema } from '#core/openapi/types'
@@ -43,6 +49,16 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
   'authentication/session/sign-up': AccountProfileShowResponse,
 
   /**
+   * The staff's moderation. `show`, `review` answer the ad as the staff reads it; `archive`
+   * answers `204`. The report `resolve` answers the report it closed.
+   */
+  'administrator/listings': AdministratorListingShowResponse,
+  'administrator/listings/paginate': AdministratorListingPaginateResponse,
+  'administrator/owners': AdministratorOwnerVerifyResponse,
+  'administrator/reports': AdministratorReportShowResponse,
+  'administrator/reports/paginate': AdministratorReportPaginateResponse,
+
+  /**
    * The owner's ads. `show`, `create` and `update` answer the same shape; `paginate` has its own
    * key, and the photos answer with the whole ad. `archive` answers `204` and needs no entry.
    */
@@ -68,4 +84,5 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
   'storefront/listings/paginate': StorefrontListingPaginateResponse,
   'storefront/neighborhoods/paginate': StorefrontNeighborhoodPaginateResponse,
   'storefront/places/paginate': StorefrontPlacePaginateResponse,
+  'storefront/reports': StorefrontReportCreateResponse,
 }

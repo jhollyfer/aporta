@@ -1,8 +1,9 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test as base, expect } from '@playwright/test'
-import type { Locator } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 
 import { E2eAccount } from './account'
+import type { E2eSession } from './account'
 import { E2eEnv } from './env'
 
 type UnexpectedErrors = {
@@ -113,28 +114,97 @@ export const test = base.extend<Fixtures>({
   },
 })
 
-type OwnerSession = Awaited<ReturnType<typeof E2eAccount.session>>
+type Sessions = { owner: E2eSession; staff: E2eSession }
+
+/**
+ * As duas contas do worker, criadas sob demanda e **uma vez por worker**, não por teste,
+ * para não gastar o limite de entrada da API (5 por minuto por IP): o dono é cadastrado e
+ * entra, a equipe é a moderadora do seeder.
+ */
+/**
+ * Guardadas no módulo (que existe uma vez por processo de worker) e não só no fixture: o
+ * Playwright monta de novo os fixtures de worker quando o teste seguinte vem de outro
+ * `test` (`ownerTest`, `staffTest`, `test`), e cada montagem seria uma entrada a mais no
+ * limite de 5 por minuto por IP.
+ */
+const sessions: { owner?: Promise<E2eSession>; staff?: Promise<E2eSession> } =
+  {}
+
+const withSessions = test.extend<object, Sessions>({
+  owner: [
+    async ({ playwright }, provide) => {
+      sessions.owner ??= (async () => {
+        const request = await playwright.request.newContext()
+        const session = await E2eAccount.session(request)
+
+        await request.dispose()
+
+        return session
+      })()
+
+      await provide(await sessions.owner)
+    },
+    { scope: 'worker', timeout: 120_000 },
+  ],
+  staff: [
+    async ({ playwright }, provide) => {
+      sessions.staff ??= (async () => {
+        const request = await playwright.request.newContext()
+        const session = await E2eAccount.staffSession(request)
+
+        await request.dispose()
+
+        return session
+      })()
+
+      await provide(await sessions.staff)
+    },
+    { scope: 'worker', timeout: 120_000 },
+  ],
+})
 
 /**
  * O `test` de quem já está logado como dono: o mesmo `test` da casa, com o navegador aberto
- * numa sessão. A conta é criada e entra **uma vez por worker** (`owner`), não por teste, para
- * não gastar o limite de entrada da API (5 por minuto por IP).
+ * numa sessão.
  */
-export const ownerTest = test.extend<
-  { storageState: OwnerSession['storageState'] },
-  { owner: OwnerSession }
->({
-  owner: [
-    async ({ playwright }, provide) => {
-      const request = await playwright.request.newContext()
-
-      await provide(await E2eAccount.session(request))
-      await request.dispose()
-    },
-    { scope: 'worker' },
-  ],
+export const ownerTest = withSessions.extend<{
+  storageState: E2eSession['storageState']
+}>({
   storageState: async ({ owner }, provide) => {
     await provide(owner.storageState)
+  },
+})
+
+type Actors = {
+  storageState: E2eSession['storageState']
+  /** A página do dono, em outro contexto: duas pessoas no mesmo teste sem trocar de conta. */
+  ownerPage: Page
+  /** A página de quem não entrou: o visitante da vitrine. */
+  visitorPage: Page
+}
+
+/**
+ * O `test` da equipe: `page` já entra como moderadora, e `ownerPage` e `visitorPage` são os
+ * outros dois papéis do fluxo de moderação, cada um num contexto de navegador próprio.
+ */
+export const staffTest = withSessions.extend<Actors>({
+  storageState: async ({ staff }, provide) => {
+    await provide(staff.storageState)
+  },
+  ownerPage: async ({ browser, owner }, provide) => {
+    const context = await browser.newContext({
+      baseURL: E2eEnv.baseUrl,
+      storageState: owner.storageState,
+    })
+
+    await provide(await context.newPage())
+    await context.close()
+  },
+  visitorPage: async ({ browser }, provide) => {
+    const context = await browser.newContext({ baseURL: E2eEnv.baseUrl })
+
+    await provide(await context.newPage())
+    await context.close()
   },
 })
 

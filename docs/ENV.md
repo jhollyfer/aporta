@@ -35,6 +35,7 @@ boot quando falta, conforme o schema.
 | `STORAGE_ENDPOINT` | api | sim | não | endereço da API S3: MinIO local, ou S3, R2 ou Spaces em produção | `http://localhost:9006` |
 | `STORAGE_FORCE_PATH_STYLE` | api | não | não | `true` para MinIO, que só serve `endpoint/bucket/chave`; em produção (R2, S3, Spaces), remover | `true` |
 | `SEED_OWNER_EMAIL` | api | não | não | e-mail do primeiro administrador criado pelo seeder; "owner" aqui é o dono da plataforma, não o papel `OWNER` | `administrator@mail.com` |
+| `E2E_OWNER_PASSWORD` | e2e | não | **sim** | a mesma senha do seed: o E2E entra com ela como administrador, como dono de exemplo e como a moderadora semeada (`moderador.exemplo@aporta.example`). No CI nasce por rodada, mascarada | a mesma de `SEED_OWNER_PASSWORD` |
 | `SEED_OWNER_PASSWORD` | api | não (o seeder, rodado à mão, exige) | **sim** | senha do primeiro administrador. Sem default: sem ela o seeder para, para não criar conta com credencial conhecida. O seeder roda só em desenvolvimento e teste | defina um valor forte |
 
 ### Só do `docker compose` local (`backend/docker-compose.yml`)

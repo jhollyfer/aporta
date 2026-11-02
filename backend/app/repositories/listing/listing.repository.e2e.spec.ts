@@ -9,9 +9,11 @@ import {
   SORT_DIRECTION,
   UPLOAD_STATUS,
   type Either,
+  type ListingStatus,
   type StorageFileShowResponse,
 } from '@aporta/shared'
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 
 import { UserFactory } from '#database/factories/user.factory'
 import type Listing from '#domain/listing/listing.entity'
@@ -23,7 +25,7 @@ import type ListingRepository from '#repositories/listing/listing.repository'
 import LucidMapping from '#repositories/shared/lucid-mapping'
 import { resetDatabase, storageRecord } from '#tests/database-fixtures'
 import { listingDraft, listingIn } from '#tests/listing-fixtures'
-import { ARCHIVED_AT, storageFile } from '#tests/repository-fixtures'
+import { ARCHIVED_AT, recorded, storageFile } from '#tests/repository-fixtures'
 import { neighborhood, seedListing } from '#tests/storefront-fixtures'
 
 /**
@@ -37,6 +39,8 @@ type Subject = {
   neighborhood(slug: string, name: string): Promise<string>
   /** An account that exists for the implementation: `owner_id` is a foreign key to `users`. */
   account(): Promise<string>
+  /** An account the staff already verified: its seal is what the ads that point to it show. */
+  verifiedAccount(): Promise<string>
   /** A live `UPLOADED` file the account sent, which a photo can show. */
   file(ownerId: string): Promise<StorageFileShowResponse>
   /** A file a photo may point to but a visitor must not be given: it never finished uploading. */
@@ -52,6 +56,8 @@ const IMPLEMENTATIONS = {
       return row.id
     },
     account: async () => (await UserFactory.create()).id,
+    verifiedAccount: async () =>
+      (await UserFactory.merge({ verifiedAt: DateTime.now() }).create()).id,
     file: async (ownerId: string) => {
       const row = await storageRecord({ ownerId })
       return fileOf(LucidMapping.file(row))
@@ -77,7 +83,11 @@ const IMPLEMENTATIONS = {
         repository.putNeighborhood(id, { slug, name })
         return Promise.resolve(id)
       },
-      account: () => Promise.resolve(randomUUID()),
+      account: () => Promise.resolve(accountIn(repository, null)),
+      verifiedAccount: () =>
+        Promise.resolve(
+          accountIn(repository, new Date('2026-10-01T12:00:00Z')),
+        ),
       file: () => {
         const file = storageFile()
         repository.putFile(file)
@@ -92,6 +102,22 @@ const IMPLEMENTATIONS = {
     }
   },
 } satisfies Record<string, () => Promise<Subject>>
+
+/** An account the memory repository knows, as Postgres knows the `users` row an ad points to. */
+function accountIn(
+  repository: ListingMemoryRepository,
+  verifiedAt: Date | null,
+): string {
+  const id = randomUUID()
+  repository.putAccount({
+    id,
+    name: 'Dona Maria',
+    email: `${id}@mail.com`,
+    verifiedAt,
+  })
+
+  return id
+}
 
 /** The mapped file, or the failure on the spot: a row the spec just created is never missing. */
 function fileOf(file: StorageFileShowResponse | null): StorageFileShowResponse {
@@ -670,6 +696,184 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.isNull(await repository.findPublishedRecordBySlug('saindo'))
     })
 
+    test('when reading the seal, the account decides for an ad that has one, and the ad own column only for one that has none', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        verifiedAccount,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const seal = new Date('2026-10-01T12:00:00.000Z')
+      const own = { name: 'Seu Raimundo', whatsapp: '5597999990002' }
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'conta-verificada',
+          neighborhoodId: centro,
+          ownerId: await verifiedAccount(),
+          owner: { ...own, verifiedAt: null },
+        }),
+      )
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'conta-comum',
+          neighborhoodId: centro,
+          ownerId: await account(),
+          // A leftover seal on the ad's own column: the account says no, and the account wins.
+          owner: { ...own, verifiedAt: seal },
+        }),
+      )
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'sem-conta',
+          neighborhoodId: centro,
+          ownerId: null,
+          owner: { ...own, verifiedAt: seal },
+        }),
+      )
+
+      const verified =
+        await repository.findPublishedRecordBySlug('conta-verificada')
+      const plain = await repository.findPublishedRecordBySlug('conta-comum')
+      const orphan = await repository.findPublishedRecordBySlug('sem-conta')
+
+      assert.instanceOf(verified?.ownerVerifiedAt, Date)
+      assert.isNull(plain?.ownerVerifiedAt)
+      assert.instanceOf(orphan?.ownerVerifiedAt, Date)
+      assert.isNull(orphan?.account)
+      assert.instanceOf(verified?.account?.verifiedAt, Date)
+    })
+
+    test('when the staff reads, the trash is included and the status and the search narrow it', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      const ad = (slug: string, status: ListingStatus, title: string) =>
+        listingIn(
+          status,
+          { slug, title, neighborhoodId: centro, ownerId },
+          trashedAt(status),
+        )
+      await seed(ad('no-ar', LISTING_STATUS.PUBLISHED, 'Casa ampla no centro'))
+      await seed(ad('na-fila', LISTING_STATUS.PENDING, 'Kitnet perto do porto'))
+      await seed(ad('arquivada', LISTING_STATUS.ARCHIVED, 'Quarto na orla'))
+
+      const all = await repository.paginateForReview(PAGE)
+      const pending = await repository.paginateForReview({
+        ...PAGE,
+        status: LISTING_STATUS.PENDING,
+      })
+      const archived = await repository.paginateForReview({
+        ...PAGE,
+        status: LISTING_STATUS.ARCHIVED,
+      })
+      const searched = await repository.paginateForReview({
+        ...PAGE,
+        search: 'porto',
+      })
+
+      assert.sameMembers(
+        all.data.map((each) => each.listing.snapshot().slug),
+        ['no-ar', 'na-fila', 'arquivada'],
+      )
+      assert.equal(all.meta.total, 3)
+      assert.deepEqual(
+        pending.data.map((each) => each.listing.snapshot().slug),
+        ['na-fila'],
+      )
+      assert.deepEqual(
+        archived.data.map((each) => each.listing.snapshot().slug),
+        ['arquivada'],
+      )
+      assert.deepEqual(
+        searched.data.map((each) => each.listing.snapshot().slug),
+        ['na-fila'],
+      )
+      assert.equal(all.data[0]?.account?.id, ownerId)
+    })
+
+    test('when the staff reads one ad, the trashed one is found, and the owner read still does not find it', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const entity = listingIn(
+        LISTING_STATUS.ARCHIVED,
+        { slug: 'lixeira', neighborhoodId: centro, ownerId: await account() },
+        ARCHIVED_AT,
+      )
+      await seed(entity)
+
+      assert.equal((await repository.findAnyById(entity.id))?.id, entity.id)
+      assert.equal(
+        (await repository.findAnyRecordById(entity.id))?.listing.id,
+        entity.id,
+      )
+      assert.isNull(await repository.findById(entity.id))
+      assert.isNull(await repository.findAnyById(randomUUID()))
+    })
+
+    test('when a decision is saved, the instant, the reason and the author come back', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const reviewer = await account()
+      const refused = listingIn(LISTING_STATUS.PENDING, {
+        slug: 'recusada',
+        neighborhoodId: centro,
+        ownerId: await account(),
+      })
+      const approved = listingIn(LISTING_STATUS.PENDING, {
+        slug: 'aprovada',
+        neighborhoodId: centro,
+        ownerId: await account(),
+      })
+      const at = new Date('2026-11-01T12:00:00.000Z')
+      recorded(refused.refuse('Faltam fotos.', reviewer, at))
+      recorded(approved.approve(reviewer, at))
+
+      const savedRefusal = recordedSave(await repository.save(refused))
+      const savedApproval = recordedSave(await repository.save(approved))
+
+      assert.deepEqual(savedRefusal.listing.snapshot().review, {
+        note: 'Faltam fotos.',
+        at,
+        by: reviewer,
+      })
+      assert.equal(savedRefusal.listing.snapshot().status, LISTING_STATUS.DRAFT)
+      assert.deepEqual(savedApproval.listing.snapshot().publishedAt, at)
+      assert.isNull(savedApproval.listing.snapshot().review?.note)
+
+      refused.submit()
+      const resubmitted = recordedSave(await repository.save(refused))
+
+      assert.isNull(resubmitted.listing.snapshot().review)
+      assert.equal(
+        resubmitted.listing.snapshot().status,
+        LISTING_STATUS.PENDING,
+      )
+    })
+
     test('when the slug is taken by another ad, even a trashed one, save answers UNIQUE_CONFLICT and writes nothing', async ({
       assert,
     }) => {
@@ -715,6 +919,13 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.containsSubset(saved.value, { code: 'REPOSITORY_FAILURE' })
     })
   })
+}
+
+/** Only an archived ad is in the trash. */
+function trashedAt(status: ListingStatus): Date | null {
+  if (status === LISTING_STATUS.ARCHIVED) return ARCHIVED_AT
+
+  return null
 }
 
 /** A published listing built without a database. */

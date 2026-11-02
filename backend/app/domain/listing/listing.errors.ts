@@ -28,6 +28,14 @@ export type ListingAlreadyArchived = {
   readonly code: 'LISTING_ALREADY_ARCHIVED'
 }
 
+/** Approving or refusing an ad that is not waiting in the queue: it was already decided, or never sent. */
+export type ListingNotPending = { readonly code: 'LISTING_NOT_PENDING' }
+
+/** A refusal without a reason the owner can act on (`REVIEW_NOTE_MIN` to `REVIEW_NOTE_MAX` characters). */
+export type ListingReviewNoteInvalid = {
+  readonly code: 'LISTING_REVIEW_NOTE_INVALID'
+}
+
 export type ListingError =
   | ListingTitleEmpty
   | ListingPriceRequired
@@ -36,3 +44,10 @@ export type ListingError =
   | ListingPhotosLimit
   | ListingPhotoDuplicated
   | ListingAlreadyArchived
+
+/**
+ * What the staff's decision refuses. Apart from `ListingError` on purpose: those are the facts
+ * the owner's actions can run into, and the owner's translation table must not have to answer for
+ * a review he can never trigger.
+ */
+export type ListingReviewError = ListingNotPending | ListingReviewNoteInvalid

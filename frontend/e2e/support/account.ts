@@ -123,7 +123,7 @@ export class E2eAccount {
   }
 
   /**
-   * Entra na conta da equipe que o seeder criou (a moderadora de exemplo). Não se cria
+   * Entra na conta da equipe que o seeder de demonstração criou (o moderador). Não se cria
    * conta de equipe pela API: o cadastro público só faz `OWNER`, e a equipe nasce do seeder
    * ou do administrador. Mesmo orçamento de entrada de `session`: uma vez por worker.
    */
@@ -131,7 +131,7 @@ export class E2eAccount {
     return E2eAccount.signIn(
       request,
       E2eEnv.moderatorEmail,
-      E2eEnv.ownerPassword(),
+      E2eEnv.demoPassword(),
     )
   }
 

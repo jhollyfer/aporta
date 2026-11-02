@@ -26,6 +26,7 @@ import handler from '@tanstack/react-start/server-entry'
 import { env } from './env'
 import { createNonce, runWithNonce } from './lib/csp-nonce.server'
 import { buildContentSecurityPolicy } from './lib/security-headers'
+import { INDEXABLE } from './lib/site'
 import { paraglideMiddleware } from './paraglide/server'
 
 const API_ORIGIN = new URL(env.VITE_API_URL).origin
@@ -41,10 +42,30 @@ function isHtml(response: Response): boolean {
   return response.headers.get('Content-Type')?.includes('text/html') ?? false
 }
 
+/**
+ * Fora de produção (`SITE_ENV`) toda resposta, não só o HTML, leva `X-Robots-Tag: noindex`: o
+ * `robots.txt` com `Disallow: /` impede o rastreio, e o cabeçalho impede a indexação de uma
+ * URL que mesmo assim foi descoberta.
+ */
+function withRobots(response: Response): Response {
+  if (INDEXABLE) return response
+
+  const headers = new Headers(response.headers)
+  headers.set('X-Robots-Tag', 'noindex, nofollow')
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
 export default {
   async fetch(request: Request): Promise<Response> {
     if (!import.meta.env.PROD) {
-      return paraglideMiddleware(request, () => handler.fetch(request))
+      return withRobots(
+        await paraglideMiddleware(request, () => handler.fetch(request)),
+      )
     }
 
     const nonce = createNonce()
@@ -52,7 +73,7 @@ export default {
       paraglideMiddleware(request, () => handler.fetch(request)),
     )
 
-    if (!isHtml(response)) return response
+    if (!isHtml(response)) return withRobots(response)
 
     // Cópia, não `response.headers.set`: os cabeçalhos de uma resposta do `fetch` interno
     // podem ser imutáveis. O corpo passa adiante como está, sem ler, para o streaming do SSR
@@ -69,10 +90,12 @@ export default {
     )
     if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-cache')
 
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    })
+    return withRobots(
+      new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }),
+    )
   },
 }

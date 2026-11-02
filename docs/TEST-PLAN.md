@@ -25,6 +25,20 @@
 | Guarda de ciclo de chunk | `frontend/scripts/check-chunk-cycles.mjs`, depois do build | `.output/` | pull request e push na `main` |
 | E2E do frontend | Playwright (Chromium), contra o build do app e o backend reais | `frontend/e2e/*.spec.ts` | pull request e push na `main`, job "Frontend - E2E (Playwright)"; localmente `pnpm --filter ./frontend test:e2e` com `E2E_BASE_URL` e `E2E_API_URL` |
 
+**Projetos de viewport do E2E do frontend** (`frontend/e2e/playwright.config.ts`, `_standards/frontend.md`
+§11.2): `setup` (`auth.setup.ts`: cria o dono, entra como dono e como moderadora e grava as sessões em
+`frontend/playwright/.auth/`, ignorado pelo git) e, dependendo dele, `mobile` (360x740, toque, base
+`devices['Pixel 5']`), `tablet` (768x1024) e `desktop` (1440x900), que rodam os mesmos specs. Rodar um
+por vez: `--project=mobile|tablet|desktop`; no CI cada projeto é um job com banco próprio. Localmente,
+entre um projeto e outro, `delete from rate_limits` (entrada 5 por minuto e denúncia 5 por hora por
+IP). Dois specs novos: `responsive.spec.ts` abre toda tela do visitante, do dono e da equipe e reprova
+rolagem horizontal, texto cortado sem `truncate`/`line-clamp` e violação `serious`/`critical` do axe;
+`touch-targets.spec.ts` só roda no `mobile` e reprova controle com lado menor que 44 px (exceto link no
+meio de texto corrido). As listas de telas moram em `e2e/support/screens.ts`, compartilhadas com
+`a11y.spec.ts`. A fixture do axe ignora o interior de `<iframe>` e mantém o próprio `<iframe>`
+checado. Os specs do mapa abrem `?view=map`, porque abaixo de `lg` o mapa só aparece depois do botão
+"Mapa"; `listings.spec.ts` cobre o botão (só `mobile` e `tablet`).
+
 **E2E do frontend.** 37 testes, todos verdes contra `.output/server` e o `node ace serve` com o
 catálogo semeado: `health.spec.ts` (`/health-check` do app e da API, `200`, `no-store`, e
 `GET /storefront/listings` com `200`, 12 itens e `meta.total` 12), `search.spec.ts`,

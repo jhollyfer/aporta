@@ -27,7 +27,7 @@
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|
-| 1 | abre o site | mostra a proposta, a busca em pílula (tipo, bairro, período), a faixa de categorias por tipo e os 6 imóveis atualizados há menos tempo; sem nenhum anúncio publicado, a seção "Disponíveis agora" some | `/` |
+| 1 | abre o site | mostra a proposta, a busca em pílula (tipo, bairro, período), a faixa de categorias por tipo e os 6 imóveis atualizados há menos tempo (o convite a anunciar é um link, e a busca é o único botão cheio da tela); sem nenhum anúncio publicado, a seção "Disponíveis agora" some | `/` |
 | 2 | escolhe tipo, bairro e período na pílula e toca em buscar (ou toca numa categoria) | abre a listagem já com esses filtros na URL | `/listings?type=&neighborhood=&period=` |
 | 3 | ajusta tipo, bairro, período e faixa de preço na barra de filtros | atualiza a lista e o contador "Mostrar N imóveis"; os chips mostram o que restringe e o botão "Limpar" zera tudo | `/listings` |
 | 4 | no celular, toca no botão flutuante para ver o mapa | alterna para o mapa (`view=map`); cada imóvel é um pin com o preço | `/listings?view=map` |

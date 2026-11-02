@@ -24,7 +24,15 @@
 
 ## Parou em
 
-Branch `chore/vitrine-paginacao-limites-deploy`, empilhada sobre `feat/moderacao-fila-verificacao` (PR
+Branch `chore/sync-maiyu-pattern`: alinhamento de ambiente, CI e deploy à régua nova (`_standards/backend.md`
+§6, `tooling.md` §7 e §8, `DECISIONS.md` #271 a #274 da régua). `.env.example` do backend e do frontend
+iguais ao modelo; `STAFF_*` saíram (o `staff:create` pede a senha só por prompt, `DECISIONS.md` #16);
+`VITE_UPLOAD_MAX_SIZE` declarada no `frontend/src/env.ts`; deploy lê os seis secrets de nome fixo e
+reprova com causa; `ci.yml` ganhou o job `changes`; o Playwright virou job próprio em matriz de
+viewport (`mobile`, `tablet`, `desktop`), só no PR. Depende de o `e2e/playwright.config.ts` ter esses três
+projetos. Nenhum workflow rodou no GitHub ainda.
+
+Antes disso, a branch `chore/vitrine-paginacao-limites-deploy`, empilhada sobre `feat/moderacao-fila-verificacao` (PR
 #20), que está sobre o PR #19. Entrou o fechamento da vitrine: listagem paginada, mapa pela janela
 visível (`/storefront/listings/pins`), limite de 120 leituras por minuto por IP com `Cache-Control` curto,
 ícones, manifesto e prévia de compartilhamento, cabeçalhos de segurança do app (CSP com nonce), o
@@ -41,18 +49,26 @@ Não verificado: o CI do GitHub; o envio de arquivo ao bucket; os 42 testes de s
 Lighthouse; a CSP só roda no build de produção; o limite por IP atrás do Traefik real; `staff:create`
 num terminal de produção; os idiomas en e es só por chave.
 
+Frontend na régua nova (mesma branch): títulos fluidos (`text-display`, `text-headline`, `text-title`),
+44 px no celular vindo do kit, três projetos de viewport no Playwright, sem animação de entrada, pílula
+só uma por tela, contadores com `=0`/um/plural nas três línguas. Em aberto: `STORAGE_PUBLIC_URL` é chave
+fora do catálogo (`backend.md` §6.2); a CSP precisa da origem do bucket em `connect-src` (PUT assinado do
+navegador) e em `img-src`, e nenhuma saída segura existe sem o backend informar essa origem (por exemplo,
+na resposta de criação do upload, antes de a CSP da página ser emitida). Decidir com o dono. A rota
+coringa responde 200 para endereço inexistente (soft 404); não foi mexido.
+
 ## Próximos passos
 
 1. Mesclar os PRs na ordem (#19, #20 e este) e seguir a lista de entrega (`ENV.md` §9): sem
    `CORS_ORIGINS=https://aporta.maiyu.com.br` a vitrine não carrega no cliente.
 2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono e a política de
    anúncio parado: elas destravam a moderação (5.4 a 5.6).
-3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
+3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os seis secrets do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
 5. Contrair as colunas do dono denormalizado de `listings` (`DECISIONS.md` #10), agora que todo anúncio
    tem conta, e paginar sitemap, bairros e guia acima de 100.
-6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
+6. Rodar os 42 testes de storage com MinIO (8.3) e cadastrar os secrets do Coolify (9.1).
 7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).
 
@@ -76,7 +92,7 @@ num terminal de produção; os idiomas en e es só por chave.
   primeira conta de administrador em produção ainda não tem procedimento.
 - Portas locais próprias: Postgres 5435, MinIO 9006 e 9007, app 3000, API 3333.
 - Domínios: app em `aporta.maiyu.com.br`, API em `api-aporta.maiyu.com.br`. As variáveis
-  `COOLIFY_URL`, `COOLIFY_UUID_API` e `COOLIFY_UUID_APP` ainda não foram fornecidas pelo dono.
+  `COOLIFY_URL`, `COOLIFY_API_UUID` e `COOLIFY_APP_UUID` (secrets) ainda não foram fornecidos pelo dono.
 - Autor único `Jhollyfer Rodrigues`; branch `tipo/escopo-assunto`, sem nome de agente.
 - Contato de segurança, prazo de resposta e orçamento de desempenho ainda não foram definidos pelo
   dono; ficam como perguntas abertas.

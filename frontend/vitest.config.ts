@@ -48,6 +48,13 @@ export default defineConfig({
      */
     environment: 'node',
     /*
+     * A `VITE_API_URL` é obrigatória no `env.ts`, e vários módulos testados
+     * (`http.ts`, as queries, as rotas) o importam. Sem um valor aqui o import
+     * lançaria antes do primeiro teste rodar. O endereço nunca é chamado: nenhum
+     * teste de unidade faz rede.
+     */
+    env: { VITE_API_URL: 'http://localhost:3333' },
+    /*
      * Os dois lugares onde há teste, e não o default do Vitest.
      *
      * `scripts/` entra por nome próprio: `check-chunk-cycles.test.ts` guarda o

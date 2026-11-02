@@ -52,7 +52,8 @@ boot quando falta, conforme o schema.
 | Variável | App | Obrigatória | Segredo | O que é | Exemplo |
 |---|---|---|---|---|---|
 | `VITE_SITE_URL` | web | não (tem default local) | não | endereço público do site, sem barra no fim; vira canônico, sitemap e `og:url`. Entra no bundle em tempo de build | `http://localhost:3000` |
-| `VITE_API_URL` | web | não | não | base da API AdonisJS. **Declarada, mas nenhuma tela a lê hoje**: o frontend usa os dados de `src/lib/data`. O comentário do `.env.example` diz que, sem ela, o frontend usa esses dados, o que hoje vale também com ela. Entra no bundle em tempo de build | `http://localhost:3333` |
+| `VITE_API_URL` | web | **sim** (`z.url()`, sem default) | não | base da API AdonisJS, sem barra no fim. O navegador chama a API direto a partir dela, e o SSR a usa quando `SERVER_API_URL` não existe. Sem ela o frontend não sobe: não há mais dado de exemplo para cair. Entra no bundle em tempo de build | `http://localhost:3333` |
+| `SERVER_API_URL` | web | não | não | endereço da API visto só pelo servidor de SSR, pela rede interna do Coolify, para o pedido não sair para a internet e voltar. Sem o prefixo `VITE_` de propósito: nunca entra no bundle. Ausente, o servidor usa `VITE_API_URL`. Lida de `process.env` em tempo de execução. O sitemap também a usa | `http://api:3333` |
 | `PORT` | web | não | não | porta do servidor Nitro; o `Dockerfile-production` fixa `3000` | `3000` |
 | `E2E_BASE_URL` | e2e | sim, para rodar o E2E | não | o app sob teste; sem default, `e2e/support/env.ts` para dizendo qual falta | `http://localhost:3000` |
 | `E2E_API_URL` | e2e | sim, para rodar o E2E | não | a API sob teste, cujo `/health-check` o E2E confere | `http://localhost:3333` |
@@ -63,6 +64,9 @@ Regras (detalhe em `backend.md` §6):
 - Segredo e credencial **não têm default**: o app não sobe sem eles.
 - Default inseguro é escrito no comentário do `.env.example`, com o motivo.
 - `VITE_*` vai para o navegador: nunca segredo.
+- `VITE_API_URL` sem valor derruba o boot do frontend. O Vitest define `test.env.VITE_API_URL` em
+  `frontend/vitest.config.ts` para os módulos que importam `env.ts` não lançarem; nenhum teste de
+  unidade faz rede.
 
 ## 2. Exemplo
 
@@ -111,7 +115,8 @@ SEED_OWNER_PASSWORD=
 
 ```dotenv
 VITE_SITE_URL=http://localhost:3000
-# VITE_API_URL=http://localhost:3333
+VITE_API_URL=http://localhost:3333
+# SERVER_API_URL=http://api:3333
 ```
 
 ## 3. Segredo fora do Git
@@ -132,15 +137,15 @@ só com container local e senha de banco de teste (banco separado `aporta_test` 
 
 | Ambiente | De onde vêm os valores | Observação |
 |---|---|---|
-| Desenvolvimento | `backend/.env` copiado de `backend/.env.example`; `frontend/.env` se precisar mudar a URL do site | localhost, chaves de dev; CORS aberto |
+| Desenvolvimento | `backend/.env` copiado de `backend/.env.example`; `frontend/.env` copiado de `frontend/.env.example` (`VITE_API_URL` é obrigatória) | localhost, chaves de dev; a API aceita qualquer origem (`NODE_ENV=development`), então `CORS_ORIGINS` não é preciso |
 | Teste | `backend/.env.test` (versionado) | banco `aporta_test` e bucket `aporta-test` descartáveis |
-| CI | `env` de cada passo do workflow | `APP_KEY` de mentira; a senha do administrador de teste nasce por execução, mascarada no log |
-| Produção, API | painel do Coolify | `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, banco e bucket reais; nunca em arquivo no servidor de build |
-| Produção, app | `VITE_*` no passo de build do workflow (`main-check-frontend.yml`); `PORT` do Dockerfile | `VITE_SITE_URL=https://aporta.maiyu.com.br` e `VITE_API_URL=https://api-aporta.maiyu.com.br` estão escritos no workflow, então trocar o domínio exige alterar o workflow |
+| CI | `env` de cada passo do workflow | `APP_KEY` de mentira; a senha do administrador de teste nasce por execução, mascarada no log. No job de check do frontend o build leva `VITE_API_URL=https://api-aporta.maiyu.com.br`; no job de E2E o build leva `VITE_API_URL=http://localhost:3333`, a API do próprio job, que roda em desenvolvimento e por isso dispensa `CORS_ORIGINS` |
+| Produção, API | painel do Coolify | `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, banco e bucket reais; nunca em arquivo no servidor de build. `CORS_ORIGINS=https://aporta.maiyu.com.br` é obrigatória: o navegador chama `/storefront` direto na navegação do cliente, e sem a origem na lista a vitrine só carrega no primeiro acesso (SSR) |
+| Produção, app | `VITE_*` no passo de build do workflow (`main-check-frontend.yml`); `PORT` do Dockerfile; `SERVER_API_URL` opcional no painel, em tempo de execução | `VITE_SITE_URL=https://aporta.maiyu.com.br` e `VITE_API_URL=https://api-aporta.maiyu.com.br` estão escritos no workflow, então trocar o domínio exige alterar o workflow. `SERVER_API_URL` não está configurada em lugar nenhum do repositório: sem ela o SSR usa o endereço público |
 
 ## 5. Primeira configuração
 
-- [ ] `cp backend/.env.example backend/.env`
+- [ ] `cp backend/.env.example backend/.env` e `cp frontend/.env.example frontend/.env`.
 - [ ] Gerar `APP_KEY` com `node ace generate:key` (dentro de `backend/`) e definir `SEED_OWNER_PASSWORD`.
 - [ ] Subir os serviços locais: `docker compose up -d` em `backend/` (Postgres na 5435, MinIO na 9006 e 9007).
 - [ ] Criar o banco de teste uma vez: `docker compose exec database createdb -U aporta aporta_test`.

@@ -7,15 +7,16 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 3 · Domínio de anúncios no backend (leitura pública feita; faltam a escrita do dono e a ligação do frontend) | 43% (29 de 67 tarefas) | Pré-MVP: a API pública de bairros, anúncios e guia existe, e o frontend ainda lê dados de exemplo |
+| 2026-11-02 | 3 · Domínio de anúncios (leitura pública feita e lida pelo frontend; falta a escrita do dono) | 43% (30 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
 - Monorepo pnpm com `backend/` (AdonisJS 7), `frontend/` (TanStack Start) e `shared/`.
 - Backend genérico: sessão por cookie, conta e perfil, upload multipart assinado em S3 ou MinIO,
   health-check, OpenAPI, guardas de padrão, papéis `ADMINISTRATOR`, `MODERATOR` e `OWNER`.
-- Frontend com dados de exemplo: home, listagem com mapa, detalhe, guia, cadastro do dono em seis
-  etapas com rascunho local, três idiomas, tema claro e escuro, kit de componentes e cenas SVG.
+- Frontend: home, listagem com mapa, detalhe, guia, cadastro do dono em seis etapas com rascunho
+  local, três idiomas, tema claro e escuro, kit de componentes e cenas SVG. Home, listagem, detalhe,
+  guia e sitemap leem a API pública (`frontend/src/integrations/tanstack-query/`); `lib/data` saiu.
 - API pública de leitura em `/storefront` (listagem e detalhe de anúncio por `slug`, bairros e
   guia), com tabelas, entidades, repositories, seeders de desenvolvimento, contrato em `shared/` e
   OpenAPI (`ARCHITECTURE.md` §4 e §5).
@@ -23,32 +24,42 @@
 
 ## Parou em
 
-Trabalho na branch `feat/anuncios-api-publica`, sobre a `main` com o refino visual mesclado: o
-commit `44f5ebe` traz o contrato em `shared/`, o `4692ac0` traz o backend (migrations, domínio,
-repositories, as quatro rotas e os seeders). O `01f86eb` e o `255f80e` consertam o cadastro do frontend. Os
-documentos de `docs/` foram atualizados para esse estado em 2026-11-02.
+Trabalho na branch `feat/frontend-vitrine-api`, sobre a `main` que já tem a API pública do PR #16. O
+frontend deixou de ler `frontend/src/lib/data` (a pasta saiu, e `filterListings` e `monthlyEquivalent`
+com ela: a faixa de preço mora no backend, em `COALESCE(price_monthly, price_daily * 30)`) e passou a
+chamar `/storefront` por `request(schema, path, init)`, que valida o corpo com o schema Zod do
+`@aporta/shared`. O layout `_public` pré-carrega os bairros, a home pede os 6 anúncios mais recentes,
+a listagem pede `perPage=100` com o filtro da URL, o detalhe vira 404 só com `code ===
+LISTING_NOT_FOUND`, e o sitemap busca a lista na API (`ARCHITECTURE.md` §6). `VITE_API_URL` agora é
+obrigatória e há `SERVER_API_URL` opcional para o SSR (`ENV.md`).
 
-Verificado nesta data: `shared/` com 103 testes; backend com 226 testes unitários, `pattern:check`,
-`depcruise`, `authz:check`, `validators:check` (10 pares), `openapi:check` (16 de 16 operações) e
-`di:check` (28 classes). No E2E do backend, 231 testes passam e 42 falham, todos de storage, porque
-este ambiente não tem MinIO. O CI nunca rodou no GitHub.
+Verificado nesta data: Vitest com 43 testes em 8 arquivos; E2E de navegador com 37 testes contra o
+backend semeado; `tsc`, ESLint, Prettier, build e `check-chunk-cycles` verdes (40 chunks, nenhum ciclo).
+O HTML do servidor já traz os anúncios (SSR conferido com `curl`). Com `SERVER_API_URL` apontando para
+uma API morta, `/listings` e o detalhe respondem 500 com a tela "Algo deu errado" em cerca de 0,15 s, e
+`/listings/nao-existe` responde 404. Do backend, o que já estava verificado segue: `shared/` com 103
+testes, 226 unitários, `pattern:check`, `depcruise`, `authz:check`, `validators:check` (10 pares),
+`openapi:check` (16 de 16) e `di:check` (28 classes), e no E2E do backend 231 passam e 42 falham, todos de
+storage, sem MinIO.
 
-O frontend ainda lê `frontend/src/lib/data`: nenhuma tela chama a API nova. A ligação (`TASKS.md`
-3.6) é o PR seguinte, o PR B. O cadastro (7.15) deixou de fingir envio: o último passo valida o
-formulário e diz que o envio ainda não está no ar.
+Não verificado: o CI do GitHub nunca rodou; o SSR com API caída foi conferido à mão com `curl`, não por
+E2E (8.4); os 42 testes de storage seguem sem rodar (8.3); a imagem Docker do frontend não foi
+construída. O cadastro (7.15) continua sem enviar: o último passo valida o formulário e diz que o envio
+ainda não está no ar.
 
 ## Próximos passos
 
-1. PR B: trocar `frontend/src/lib/data` por `queryOptions` sobre `/storefront` (3.6), com estados de
-   carregando e erro, lendo `VITE_API_URL`.
+1. Mesclar a branch e configurar `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção antes do
+   deploy do frontend (9.4): sem ela a navegação no cliente não carrega a vitrine.
 2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono, a política de
    anúncio parado e como nasce a conta `OWNER`: elas destravam a fase 5 e o `POST` do dono (3.5).
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
-   (9.1).
-4. Fase 4: policy de posse por dono antes de abrir `/storages` ao `OWNER`, depois o upload de fotos e a
+   (9.1, 9.3).
+4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
+5. Fase 4: policy de posse por dono antes de abrir `/storages` ao `OWNER`, depois o upload de fotos e a
    chave de `listing_photos` para `storages`.
-5. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
-6. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
+6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
+7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).
 
 ## Contexto importante
@@ -56,9 +67,10 @@ formulário e diz que o envio ainda não está no ar.
 - Os telefones de exemplo usam o prefixo `5597999990` e são fictícios; as coordenadas dos seis
   bairros são aproximadas; os dez lugares do guia são exemplos. Nada disso pode ir a público sem
   conferência (`TASKS.md` 7.10).
-- O frontend não chama a API para anúncios, bairros nem guia. `VITE_API_URL` está declarada e
-  nenhuma tela a lê. O cadastro não envia nada: valida e mostra "Anúncio pronto", e o rascunho segue
-  no aparelho.
+- O frontend lê anúncios, bairros e guia da API; sem a API de pé ele só mostra a tela de erro, porque
+  não há mais dado local. Para ver anúncios em desenvolvimento, rode `node ace db:seed` no backend. O
+  cadastro não envia nada: valida e mostra "Anúncio pronto", e o rascunho segue no aparelho.
+- A listagem pede no máximo 100 anúncios (`MAX_PER_PAGE`), e o mapa mostra todos de uma vez (3.9).
 - A API pública devolve o WhatsApp do dono nas duas rotas de anúncio, e `photos[].url` sempre nulo
   (`listing_photos` não aponta para `storages`). Para ver dados nela, rode `node ace db:seed` em
   desenvolvimento: entram 6 bairros, 12 anúncios, 53 fotos (sem arquivo) e 10 lugares.
@@ -89,7 +101,8 @@ formulário e diz que o envio ainda não está no ar.
 | Problema | Onde | Contorno |
 |---|---|---|
 | 42 testes E2E de storage sem verificação (sem MinIO neste ambiente) | `backend/app/features/storage/` | subir `docker compose up -d` em `backend/` e rodar `pnpm test:e2e` (8.3) |
-| `VITE_API_URL` declarada e nunca lida; o comentário do `.env.example` sugere que ela liga a API, que já existe mas não é chamada | `frontend/src/env.ts`, `frontend/.env.example` | tratar como inativa até o PR B (3.6, 7.7) |
+| A listagem, o sitemap, os bairros e as abas do guia pedem `perPage=100`, o teto da API: passando de 100 registros o excedente some da tela | `frontend/src/integrations/tanstack-query/queries/storefront.ts`, `frontend/src/routes/_public/listings/-search.ts` | paginar (3.9) |
+| O SSR com a API fora do ar só foi conferido à mão com `curl`; nenhum E2E o cobre | `frontend/e2e/api-down.spec.ts` cobre só a navegação no cliente | 8.4 |
 | O validator do WhatsApp só confere o tamanho (10 a 13), não exige dígitos | `shared/src/validators/owner/listings.validator.ts` | o campo da tela filtra dígitos; a API precisa recusar o resto (7.5) |
 | A borda `line` dos campos tem contraste de 1,31:1 | `frontend/src/styles.css` | revisar contra o limite de 3:1 (7.2) |
 | `styles.css` zera animação e transição por regra global de `prefers-reduced-motion` | `frontend/src/styles.css` | trocar por `motion-reduce:` por componente (7.4) |

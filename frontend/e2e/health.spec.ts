@@ -21,3 +21,21 @@ for (const [name, origin] of TARGETS) {
     expect(await response.json()).toEqual({ status: 'ok' })
   })
 }
+
+/**
+ * A API pública de leitura, com o catálogo semeado (`backend/database/seeders`): o frontend
+ * lê anúncio, bairro e guia dela, e um catálogo vazio faria todos os outros specs falharem
+ * por um motivo que esta conferência diz de forma direta.
+ */
+test('quando se pede os anúncios da API, responde os 12 do catálogo semeado', async ({
+  request,
+}) => {
+  const response = await request.get(`${E2eEnv.apiUrl}/storefront/listings`)
+
+  expect(response.status()).toBe(200)
+
+  const body = await response.json()
+
+  expect(body.data).toHaveLength(12)
+  expect(body.meta.total).toBe(12)
+})

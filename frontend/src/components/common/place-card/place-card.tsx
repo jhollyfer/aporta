@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { Clock, MapPin } from '@phosphor-icons/react'
 
-import type { Place } from '@aporta/shared'
+import type { StorefrontPlaceShowResponse } from '@aporta/shared'
 
 import { WhatsAppCta } from '#/components/common/whatsapp-cta'
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
 import { dayOfMonth, shortMonth } from '#/lib/format'
 import { m } from '#/paraglide/messages'
 import { getLocale } from '#/paraglide/runtime'
@@ -14,8 +13,11 @@ import { getLocale } from '#/paraglide/runtime'
  * o botão de WhatsApp. Evento ganha a data em destaque, porque para quem acabou
  * de chegar a primeira pergunta sobre um evento é "quando".
  */
-export function PlaceCard({ place }: { place: Place }): React.JSX.Element {
-  const neighborhood = NEIGHBORHOODS.find((n) => n.slug === place.neighborhood)
+export function PlaceCard({
+  place,
+}: {
+  place: StorefrontPlaceShowResponse
+}): React.JSX.Element {
   const locale = getLocale()
 
   return (
@@ -37,7 +39,7 @@ export function PlaceCard({ place }: { place: Place }): React.JSX.Element {
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
           <span className="inline-flex items-center gap-1">
             <MapPin aria-hidden className="size-4" />
-            {place.address}, {neighborhood?.name}
+            {place.address}, {place.neighborhood.name}
           </span>
           <span className="inline-flex items-center gap-1">
             <Clock aria-hidden className="size-4" />

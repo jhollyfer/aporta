@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { X } from '@phosphor-icons/react'
 
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
@@ -12,6 +12,7 @@ type Chip = { key: string; label: string; remove: () => void }
 /** Cada filtro que restringe vira um chip com "x": ver o que está aplicado e tirar com um toque. */
 export function FilterBarChips(): React.JSX.Element | null {
   const { filters, onChange } = useFilterBar()
+  const neighborhoods = useNeighborhoods()
   const chips: Array<Chip> = []
 
   if (filters.type !== null) {
@@ -22,7 +23,7 @@ export function FilterBarChips(): React.JSX.Element | null {
     })
   }
 
-  const neighborhood = NEIGHBORHOODS.find(
+  const neighborhood = neighborhoods.find(
     (item) => item.slug === filters.neighborhood,
   )
   if (neighborhood !== undefined) {

@@ -3,7 +3,7 @@ import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query
 
 import { routeTree } from './routeTree.gen'
 import { getContext } from './integrations/tanstack-query/query-context'
-import { NotFoundPage } from '#/components/common/not-found-page'
+import { NotFoundPage, RouteError } from '#/components/common/not-found-page'
 import { ValidationMessage } from '@aporta/shared'
 
 import { deLocalizeUrl, getLocale, localizeUrl } from '#/paraglide/runtime'
@@ -42,9 +42,7 @@ export function getRouter() {
       output: ({ url }) => localizeUrl(url),
     },
     defaultNotFoundComponent: () => <NotFoundPage />,
-    defaultErrorComponent: ({ reset }) => (
-      <NotFoundPage variant="error" onRetry={reset} />
-    ),
+    defaultErrorComponent: ({ reset }) => <RouteError reset={reset} />,
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient })

@@ -1,106 +1,35 @@
 import { describe, expect, it } from 'vitest'
 
-import { LISTING_PERIOD, LISTING_TYPE } from '@aporta/shared'
-
-import { LISTINGS } from '#/lib/data/listings'
-import {
-  EMPTY_FILTERS,
-  activeFilterCount,
-  filterListings,
-  monthlyEquivalent,
-} from '#/lib/filters'
-
-describe('filterListings', () => {
-  it('sem filtro devolve todos os anúncios', () => {
-    expect(filterListings(LISTINGS, EMPTY_FILTERS)).toHaveLength(
-      LISTINGS.length,
-    )
-  })
-
-  it('filtra por tipo', () => {
-    const result = filterListings(LISTINGS, {
-      ...EMPTY_FILTERS,
-      type: LISTING_TYPE.KITNET,
-    })
-
-    expect(result.length).toBeGreaterThan(0)
-    expect(result.every((l) => l.type === LISTING_TYPE.KITNET)).toBe(true)
-  })
-
-  it('filtra por bairro', () => {
-    const result = filterListings(LISTINGS, {
-      ...EMPTY_FILTERS,
-      neighborhood: 'centro',
-    })
-
-    expect(result.every((l) => l.neighborhood === 'centro')).toBe(true)
-  })
-
-  it('filtra por período oferecido', () => {
-    const result = filterListings(LISTINGS, {
-      ...EMPTY_FILTERS,
-      period: LISTING_PERIOD.DAILY,
-    })
-
-    expect(result.every((l) => l.periods.includes(LISTING_PERIOD.DAILY))).toBe(
-      true,
-    )
-  })
-
-  it('respeita a faixa de preço nos dois extremos', () => {
-    const result = filterListings(LISTINGS, {
-      ...EMPTY_FILTERS,
-      minPrice: 600,
-      maxPrice: 900,
-    })
-
-    expect(
-      result.every((l) => {
-        const price = monthlyEquivalent(l)
-        return price >= 600 && price <= 900
-      }),
-    ).toBe(true)
-  })
-
-  it('combina os filtros com E, não com OU', () => {
-    const result = filterListings(LISTINGS, {
-      ...EMPTY_FILTERS,
-      type: LISTING_TYPE.KITNET,
-      neighborhood: 'centro',
-    })
-
-    expect(
-      result.every(
-        (l) => l.type === LISTING_TYPE.KITNET && l.neighborhood === 'centro',
-      ),
-    ).toBe(true)
-  })
-})
-
-describe('monthlyEquivalent', () => {
-  it('usa o mensal quando existe', () => {
-    const [first] = LISTINGS
-    expect(first?.price.monthly).not.toBeNull()
-    expect(first && monthlyEquivalent(first)).toBe(first?.price.monthly)
-  })
-
-  it('converte a diária do hotel em 30 dias', () => {
-    const hotel = LISTINGS.find((l) => l.price.monthly === null)
-
-    expect(hotel && monthlyEquivalent(hotel)).toBe(
-      (hotel?.price.daily ?? 0) * 30,
-    )
-  })
-})
+import { EMPTY_FILTERS, activeFilterCount } from '#/lib/filters'
 
 describe('activeFilterCount', () => {
-  it('conta a faixa de preço como um filtro só', () => {
+  it('quando nada restringe, é zero', () => {
+    expect(activeFilterCount(EMPTY_FILTERS)).toBe(0)
+  })
+
+  it('quando tipo, bairro e período restringem, conta um por filtro', () => {
     expect(
-      activeFilterCount({ ...EMPTY_FILTERS, minPrice: 100, maxPrice: 900 }),
+      activeFilterCount({
+        ...EMPTY_FILTERS,
+        type: 'KITNET',
+        neighborhood: 'centro',
+        period: 'SEMESTER',
+      }),
+    ).toBe(3)
+  })
+
+  it('quando só o mínimo ou só o máximo de preço está preenchido, a faixa conta uma vez', () => {
+    expect(activeFilterCount({ ...EMPTY_FILTERS, minPrice: 500 })).toBe(1)
+    expect(activeFilterCount({ ...EMPTY_FILTERS, maxPrice: 900 })).toBe(1)
+  })
+
+  it('quando mínimo e máximo estão preenchidos, a faixa conta uma vez só', () => {
+    expect(
+      activeFilterCount({ ...EMPTY_FILTERS, minPrice: 500, maxPrice: 900 }),
     ).toBe(1)
   })
 
-  it('é zero sem filtro', () => {
-    expect(activeFilterCount(EMPTY_FILTERS)).toBe(0)
+  it('quando o preço mínimo é zero, ainda é um filtro aplicado', () => {
+    expect(activeFilterCount({ ...EMPTY_FILTERS, minPrice: 0 })).toBe(1)
   })
 })

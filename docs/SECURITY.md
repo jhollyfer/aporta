@@ -8,7 +8,7 @@
 > nunca copiado.
 >
 > Estado em 2026-11-02: o backend lê anúncios, bairros e guia em rotas públicas (`/storefront`),
-> só `GET`, e ainda não escreve anúncio. Onde uma proteção só existe como plano, a linha diz
+> só `GET`, e o frontend as chama, no servidor (SSR) e direto do navegador; ainda não há escrita de anúncio. Onde uma proteção só existe como plano, a linha diz
 > "Planejado" e não conta como mitigação pronta.
 
 ## 1. Como reportar uma vulnerabilidade
@@ -39,7 +39,7 @@ flowchart LR
   user -->|GET sem sessão| pub[API pública /storefront]
   pub --> db
   user -->|PUT das partes assinadas| bucket[(Bucket S3)]
-  web -.->|futuro: consulta de anúncios| api
+  web -->|GET no SSR| pub
   api --> db[(PostgreSQL)]
   api -->|assina URLs e confere o objeto| bucket
   user -->|link wa.me| wa[WhatsApp]
@@ -49,11 +49,11 @@ flowchart LR
 
 | Fronteira | Entre | O que a protege | Evidência |
 |---|---|---|---|
-| internet para a API | navegador e API | cookie `httpOnly`, lista de origens (CORS), barreira de `Origin` nas escritas, limite de tentativas | `backend/config/session-token.ts`, `backend/config/cors.ts`, `backend/app/middleware/origin.middleware.ts`, `backend/start/limiter.ts` |
+| internet para a API | navegador e API | cookie `httpOnly`, lista de origens (CORS, `CORS_ORIGINS`, que o frontend em produção passa a exigir para ler `/storefront` do navegador), barreira de `Origin` nas escritas, limite de tentativas | `backend/config/session-token.ts`, `backend/config/cors.ts`, `backend/app/middleware/origin.middleware.ts`, `backend/start/limiter.ts` |
 | navegador para o bucket | navegador e S3 | URL de parte assinada (1 hora), `Content-Type` fixado na assinatura, bucket privado, CORS restrito à origem do app | `backend/app/services/multipart/multipart.service.ts`, `backend/infra/r2-cors.json` |
 | visitante para o app | navegador e SSR | busca validada por Zod com `.catch`, sem segredo no bundle (só `VITE_*`), sem HTML de usuário | `frontend/src/routes/_public/listings/-search.ts`, `frontend/src/env.ts` |
 | equipe para a documentação da API | navegador e `/openapi.json`, `/documentation` | só a equipe vê; os demais recebem 404 | `backend/app/middleware/documentation.middleware.ts` |
-| visitante para a API pública | navegador e `/storefront` | só `GET`; sem sessão por desenho; o repository corta a linha (`PUBLISHED` fora da lixeira), o presenter corta a coluna; `perPage` até 100 e `search` até 100 caracteres | `backend/start/routes.ts`, `backend/app/features/storefront/storefront.e2e.spec.ts`, `backend/app/features/storefront/*/*.presenter.ts` |
+| visitante para a API pública | navegador e `/storefront` | só `GET`; sem sessão por desenho; o repository corta a linha (`PUBLISHED` fora da lixeira), o presenter corta a coluna; `perPage` até 100 e `search` até 100 caracteres; o app chama sem cookie e sem credencial (`frontend/src/integrations/tanstack-query/http.ts`) | `backend/start/routes.ts`, `backend/app/features/storefront/storefront.e2e.spec.ts`, `backend/app/features/storefront/*/*.presenter.ts` |
 | papel para o grupo `/storages` | sessão e arquivos | sessão e papel `ADMINISTRATOR` ou `MODERATOR` | `backend/start/routes.ts` |
 | CI para o Coolify | GitHub Actions e a instância | `COOLIFY_TOKEN` como segredo, UUIDs e URL em `vars` do repositório | `.github/workflows/main-deploy-coolify.yml` |
 
@@ -101,7 +101,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | cadastro do dono | `/list-your-place` e `localStorage` | navegador | `frontend/src/routes/_public/list-your-place/`, `frontend/src/hooks/use-draft-storage.ts` |
 | pin do mapa | HTML do `divIcon` do Leaflet | navegador | `frontend/src/components/common/listing-map/listing-map-canvas.tsx` |
 | link de WhatsApp | `wa.me` com o número e a mensagem | navegador para o WhatsApp | `frontend/src/lib/whatsapp.ts` |
-| sitemap e robots | `/sitemap.xml`, `/robots.txt` | internet para o app | `frontend/src/lib/sitemap.ts` |
+| sitemap e robots | `/sitemap.xml` (busca a lista de anúncios na API, no servidor) e `/robots.txt` | internet para o app | `frontend/src/lib/sitemap.ts`, `frontend/src/routes/sitemap[.]xml.ts` |
 | healthcheck | `GET /health-check` nos dois apps | internet | `backend/app/features/health-check.controller.ts`, `frontend/src/routes/health-check.ts` |
 
 ### 2.6 Abusos priorizados
@@ -116,7 +116,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | TM-006 | Upload malicioso: SVG ou HTML servido do bucket, tipo falso, arquivo enorme | média | alto | alta | lista fechada de tipos sem SVG, tipo e extensão pelo `mimetype` declarado, conferência de assinatura e tamanho no `complete`, teto `UPLOAD_MAX_SIZE`, limite de 60 requisições por hora por usuário | `shared/src/enums/storage-mimetype.ts`, `backend/app/domain/shared/file-signature.value-object.unit.spec.ts`, `backend/app/domain/storage/storage.unit.spec.ts`, `backend/app/features/storage/files/complete/complete.e2e.spec.ts` |
 | TM-007 | Injeção de HTML no pin do mapa por texto do dono | média | médio | média | o HTML do pin leva só o preço formatado, nunca texto do dono | `frontend/src/components/common/listing-map/listing-map-canvas.tsx`; sem teste automatizado (lacuna em `TEST-PLAN.md`) |
 | TM-008 | Número de WhatsApp malformado ou com texto no link | média | médio | média | o link remove tudo que não é dígito e codifica a mensagem; o formulário só aceita dígitos. O validator de `shared/` só confere o tamanho (10 a 13), sem exigir dígitos: a API precisa recusar caractere não numérico | `frontend/src/lib/whatsapp.ts`, `frontend/src/lib/whatsapp.test.ts`, `shared/src/validators/owner/listings.validator.ts` |
-| TM-009 | Coleta em massa dos WhatsApps publicados para spam ou golpe | alta | médio | média | Aceito por desenho (o número é público para o contato direto). A API pública já devolve `owner.whatsapp` na listagem e no detalhe, até 100 anúncios por página, sem sessão e sem limite por IP. Planejado: avaliar limite por IP e não listar o número na resposta de listagem | `backend/app/features/storefront/listings/listings.presenter.ts`, `backend/app/features/storefront/listings/paginate/paginate.e2e.spec.ts`; sem teste que prove um limite, porque não há |
+| TM-009 | Coleta em massa dos WhatsApps publicados para spam ou golpe | alta | médio | média | Aceito por desenho (o número é público para o contato direto). A API pública já devolve `owner.whatsapp` na listagem e no detalhe, até 100 anúncios por página, sem sessão e sem limite por IP, e a listagem do app pede justamente 100 por vez para o mapa, então uma única chamada colhe todos os números do catálogo atual. Planejado: avaliar limite por IP e não listar o número na resposta de listagem | `backend/app/features/storefront/listings/listings.presenter.ts`, `backend/app/features/storefront/listings/paginate/paginate.e2e.spec.ts`; sem teste que prove um limite, porque não há |
 | TM-010 | Rascunho do cadastro (nome e WhatsApp) lido por quem usa o mesmo computador depois | média | médio | média | chave versionada e mantido só no navegador; o cadastro ainda não envia nada e não apaga o rascunho ao concluir, então ele fica no aparelho até o dono limpar os dados do site; o apagamento no envio volta quando o envio existir | `frontend/src/hooks/use-draft-storage.ts`; sem aviso ao dono sobre computador compartilhado (lacuna) |
 | TM-011 | Filtro de URL malformado derruba a página ou injeta valor | alta | baixo | baixa | cada campo da busca tem `.catch(undefined)` e o bairro é conferido contra a lista real; o React escapa o texto | `frontend/src/routes/_public/listings/-search.ts`, `frontend/src/routes/_public/listings/-search.test.ts` |
 | TM-012 | Segredo ou credencial no repositório ou no CI | média | alto | alta | varredura de segredo em todas as refs, `pnpm audit` em produção, seeder sem senha padrão e só fora de produção, workflows sem `pull_request_target` | `.github/workflows/ci.yml`, `.gitleaks.toml`, `backend/database/seeders/user.seed.ts` |
@@ -144,6 +144,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 - O teto `UPLOAD_MAX_SIZE` é global (1 GiB no exemplo): foto de anúncio precisa de teto próprio.
 - A origem de `backend/infra/r2-cors.json` já é a do app (`https://aporta.maiyu.com.br`); falta aplicar
   o arquivo no provedor do bucket e conferir o `ETag` exposto.
+- Conferir `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção: o navegador chama `/storefront` direto, e a lista não pode virar `*` nem ficar vazia (`ENV.md`).
 - Conferir em produção a colisão de cookies de sessão com outros projetos do domínio `maiyu.com.br` (TM-014).
 - Revisar cada rota de anúncio nova quanto a escopo por sessão, 404 igual ao inexistente e ao dado
   que a listagem pública devolve do dono.

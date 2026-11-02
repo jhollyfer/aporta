@@ -1,8 +1,10 @@
 import { z } from 'zod'
 
 import { LISTING_PERIOD, LISTING_TYPE } from '@aporta/shared'
+import type { StorefrontListingPaginatePayload } from '@aporta/shared'
 
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { MAX_PER_PAGE } from '#/integrations/tanstack-query/queries/storefront'
+
 import { EMPTY_FILTERS } from '#/lib/filters'
 import type { ListingFilters } from '#/lib/filters'
 
@@ -22,15 +24,13 @@ export const NEXT_VIEW: Record<ListingsView, ListingsView> = {
  *
  * Cada campo leva `.catch(undefined)`: endereço colado errado (`?type=castelo`)
  * vira "sem filtro" em vez de derrubar a página com a tela de erro do router.
- * `bairro` é conferido contra a lista real pelo mesmo motivo.
+ * O bairro é conferido só no formato (o mesmo teto do validator da API): a lista
+ * real mora no servidor e `validateSearch` é síncrono, então um slug que não existe
+ * passa e a API responde lista vazia, com a saída "limpar filtros" na tela.
  */
 export const listingsSearchSchema = z.object({
   type: z.enum(LISTING_TYPE).optional().catch(undefined),
-  neighborhood: z
-    .string()
-    .refine((slug) => NEIGHBORHOODS.some((item) => item.slug === slug))
-    .optional()
-    .catch(undefined),
+  neighborhood: z.string().trim().min(1).max(60).optional().catch(undefined),
   period: z.enum(LISTING_PERIOD).optional().catch(undefined),
   min: z.number().int().nonnegative().optional().catch(undefined),
   max: z.number().int().nonnegative().optional().catch(undefined),
@@ -61,4 +61,26 @@ export function toSearchPatch(patch: Partial<ListingFilters>): ListingsSearch {
   if ('minPrice' in patch) next.min = patch.minPrice ?? undefined
   if ('maxPrice' in patch) next.max = patch.maxPrice ?? undefined
   return next
+}
+
+/**
+ * O search da URL em parâmetros da API: só o que o servidor filtra (`view` e `selected`
+ * são da tela e não entram na chave de cache), com `min` e `max` nos nomes da API.
+ * É a chave do `loader` e do componente, que por isso leem o mesmo cache.
+ */
+export function toListingParams(
+  search: ListingsSearch,
+): StorefrontListingPaginatePayload {
+  return {
+    type: search.type,
+    neighborhood: search.neighborhood,
+    period: search.period,
+    minPrice: search.min,
+    maxPrice: search.max,
+    // O mapa mostra todos os pins de uma vez, então a listagem pede tudo numa página
+    // só, no teto da API. Limite conhecido: acima de 100 anúncios publicados os pins
+    // e os cards passam a cobrir só os 100 primeiros, e aí a listagem precisa de
+    // paginação (e o mapa de uma consulta própria por área).
+    perPage: MAX_PER_PAGE,
+  }
 }

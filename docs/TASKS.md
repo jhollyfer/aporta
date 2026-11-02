@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 67 tarefas · 29 feitas · 0 em andamento · 10 bloqueadas · 28 a fazer, atualizado 2026-11-02
+**Resumo:** 69 tarefas · 30 feitas · 0 em andamento · 10 bloqueadas · 29 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -31,7 +31,7 @@ Base genérica do backend, do `shared/` e do pipeline, sem nenhum recurso do pro
 
 ## Fase 2 · Frontend com dados de exemplo (9/9)
 
-Telas públicas completas, lendo `frontend/src/lib/data` em vez da API.
+Telas públicas completas. Nesta fase liam `frontend/src/lib/data` em vez da API; a 3.6 trocou essa fonte pela API e a pasta saiu.
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -43,13 +43,13 @@ Telas públicas completas, lendo `frontend/src/lib/data` em vez da API.
 | 2.6 | Cadastro do dono em seis etapas com progresso e rascunho local | Alta | Feita | o último passo só valida e diz que o envio não está no ar (7.15); o passo de fotos não envia arquivo |
 | 2.7 | Cenas SVG por ambiente no lugar de fotos | Média | Feita | `DECISIONS.md` #6 |
 | 2.8 | `sitemap.xml`, `robots.txt`, `/health-check` e `head` por rota | Média | Feita | |
-| 2.9 | Dados de exemplo: 12 imóveis, 10 lugares e 6 bairros | Média | Feita | telefones fictícios (`5597999990`) e coordenadas aproximadas, ver 7.10 |
+| 2.9 | Dados de exemplo: 12 imóveis, 10 lugares e 6 bairros | Média | Feita | telefones fictícios (`5597999990`) e coordenadas aproximadas, ver 7.10; hoje moram em `backend/database/data/` e chegam ao app pela API |
 
-## Fase 3 · Domínio de anúncios no backend (6/8)
+## Fase 3 · Domínio de anúncios no backend (7/9)
 
 A leitura pública entrou (commits `44f5ebe` e `4692ac0`): quatro rotas `GET` em `/storefront`, sem
-escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos tipos `Listing`,
-`Neighborhood` e `Place` de `shared/src/records/`.
+escrita. O frontend passou a lê-la (3.6, branch `feat/frontend-vitrine-api`). Falta o `POST` do dono e a
+paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `shared/src/records/`.
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -58,9 +58,10 @@ escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos t
 | 3.3 | Vitrine pública: listar com filtro e paginação, mostrar por `slug` | Alta | Feita | `GET /storefront/listings` e `GET /storefront/listings/:slug`; `ARCHITECTURE.md` §4 |
 | 3.4 | Lugares do guia (categoria, evento com data) | Média | Feita | `GET /storefront/places`, filtro `category`; só o evento tem `date` |
 | 3.5 | Validator VineJS par do `OwnerListingCreateValidator` e criação do anúncio pelo dono | Alta | A fazer | paridade por `validators:check`; depende de 5.1 para saber quem é o dono |
-| 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | A fazer | PR B: o frontend ainda lê `frontend/src/lib/data`; `VITE_API_URL` passa a ser lida; a API não devolve URL de foto, então a cena SVG continua |
+| 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | Feita | `frontend/src/lib/data` saiu; a camada está em `frontend/src/integrations/tanstack-query/` (`ARCHITECTURE.md` §6); `VITE_API_URL` é obrigatória (`ENV.md`); a API não devolve URL de foto, então a cena SVG continua. Verificado: Vitest 43 testes, E2E de navegador 37 contra o backend semeado, build e `check-chunk-cycles` verdes. Falta o CI no GitHub (9.3) e a imagem Docker, que não foi construída |
 | 3.7 | Responses de listagem em `shared/src/responses/` e documento OpenAPI | Média | Feita | `shared/src/responses/storefront/`; `openapi:check` com 16 de 16 operações; a response do `POST` do dono entra com 3.5 |
 | 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | Feita | as quatro rotas de `/storefront`, `TEST-PLAN.md` §3 e §3.1; o `POST` do dono leva as linhas dele |
+| 3.9 | Paginar a listagem e o mapa: hoje `/listings` pede `perPage=100` (o teto da API, `MAX_PER_PAGE`) e mostra todos os pins de uma vez; passando de 100 anúncios publicados os pins e os cards cobrem só os 100 primeiros, e o sitemap, os bairros e as abas do guia têm o mesmo corte | Média | A fazer | paginação na listagem e consulta do mapa por área; vale antes de o catálogo chegar a 100 anúncios, `ARCHITECTURE.md` §10 |
 
 ## Fase 4 · Fotos dos anúncios (0/5)
 
@@ -102,9 +103,9 @@ escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos t
 | 7.4 | Trocar a regra global de `prefers-reduced-motion` por `motion-reduce:` por componente | Baixa | A fazer | `DESIGN.md` §9 |
 | 7.5 | Validator do WhatsApp só com dígitos, em `shared/` e no par do backend | Alta | A fazer | hoje só confere o tamanho, `SECURITY.md` TM-008 |
 | 7.6 | Origem de `backend/infra/r2-cors.json` alinhada ao app | Alta | Feita | `https://aporta.maiyu.com.br`; falta aplicar no provedor |
-| 7.7 | Corrigir o comentário de `VITE_API_URL` no `.env.example` e o de `vitest.config.ts` (cita um teste de `rich-text` e 229 testes que este projeto não tem) | Baixa | A fazer | |
+| 7.7 | Corrigir o comentário de `vitest.config.ts` (cita um teste de `rich-text` e 229 testes que este projeto não tem) | Baixa | A fazer | o comentário do `.env.example` sobre `VITE_API_URL` já foi corrigido na 3.6 |
 | 7.8 | Cabeçalhos de segurança no app (CSP, `Referrer-Policy`, `X-Frame-Options`) | Média | A fazer | `SECURITY.md` §2.8 |
-| 7.9 | Testes que faltam: `guideSearchSchema`, `listing-draft.validator.ts`, `/health-check` do app, paridade das chaves de i18n | Média | A fazer | `TEST-PLAN.md` §3.1 |
+| 7.9 | Testes que faltam: `guideSearchSchema`, `listing-draft.validator.ts`, paridade das chaves de i18n | Média | A fazer | `TEST-PLAN.md` §3.1; o `/health-check` do app já é conferido em `e2e/health.spec.ts` |
 | 7.10 | Conferir telefones, coordenadas e lugares de exemplo antes de abrir ao público | Alta | Bloqueada | exige o dono e quem conhece a cidade |
 | 7.11 | Escrever o procedimento de rotação de `APP_KEY` e das credenciais | Média | A fazer | `SECURITY.md` §6 |
 | 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | A fazer | o link mandado por WhatsApp sai sem prévia |
@@ -112,13 +113,14 @@ escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos t
 | 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
 | 7.15 | A tela do cadastro dizia "Anúncio recebido" com um envio que não gravava nada: trocar o texto por um estado honesto | Alta | Feita | commit `01f86eb`: o stub saiu, o último passo "Finalizar cadastro" só valida o formulário inteiro e mostra "Anúncio pronto", avisa que o envio ainda não está no ar e mantém o rascunho |
 
-## Fase 8 · E2E (1/3)
+## Fase 8 · E2E (1/4)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 8.1 | Playwright no frontend com `e2e/playwright.config.ts` | Alta | Feita | 35 testes verdes localmente (25 s): health-check, busca, detalhe, guia, cadastro, idiomas e axe nos dois temas; o job do CI ainda não rodou no GitHub |
-| 8.2 | Specs dos fluxos críticos de `USER-FLOWS.md` que dependem da API | Alta | A fazer | os fluxos públicos com mocks já têm spec (8.1); faltam os que dependem das fases 3 a 5 |
+| 8.1 | Playwright no frontend com `e2e/playwright.config.ts` | Alta | Feita | 37 testes de navegador verdes contra o backend semeado: health-check e `GET /storefront/listings` (200, 12 itens, `meta.total` 12), busca, detalhe, guia, cadastro, idiomas, API fora do ar com a página aberta e axe nos dois temas; o job do CI ainda não rodou no GitHub |
+| 8.2 | Specs dos fluxos críticos de `USER-FLOWS.md` que dependem da API | Alta | A fazer | os fluxos públicos de leitura já têm spec contra a API real (8.1); faltam os que dependem das fases 4 e 5 |
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
+| 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
 ## Fase 9 · Deploy e produção (0/9)
 
@@ -127,7 +129,7 @@ escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos t
 | 9.1 | Fornecer `COOLIFY_URL`, `COOLIFY_UUID_API` e `COOLIFY_UUID_APP` e conferir os três segredos | Alta | Bloqueada | valores ainda não fornecidos pelo dono, `ENV.md` §6 |
 | 9.2 | Subir Node 24 e pnpm 11 no ambiente de desenvolvimento | Média | A fazer | o ambiente desta sessão tinha Node 22 e pnpm 10 |
 | 9.3 | Primeiro run do CI no GitHub e correção do que falhar | Alta | A fazer | depende de 8.1 |
-| 9.4 | Configurar o painel: migration pós-deploy, `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, healthcheck em `/health-check` | Alta | A fazer | `ARCHITECTURE.md` §9.1 |
+| 9.4 | Configurar o painel: migration pós-deploy, `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, healthcheck em `/health-check` | Alta | A fazer | `ARCHITECTURE.md` §9.1; `CORS_ORIGINS=https://aporta.maiyu.com.br` passou a ser requisito da vitrine, porque o navegador chama a API direto; `SERVER_API_URL` é opcional |
 | 9.5 | Aplicar o CORS do bucket e agendar `storages:prune` | Alta | A fazer | depende de 7.6 |
 | 9.6 | Primeira conta de administrador em produção | Alta | Bloqueada | procedimento ainda não definido: o seeder não roda em produção |
 | 9.7 | Provisionar o PostgreSQL e o bucket de produção | Alta | A fazer | |

@@ -1,8 +1,10 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { NotFoundPage } from '#/components/common/not-found-page'
-import { LISTINGS } from '#/lib/data/listings'
+import { HTTP_ERROR_CODE } from '#/integrations/tanstack-query/http'
+import { storefrontListingQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { pageHead } from '#/lib/head'
+import { loadOrNotFound } from '#/lib/load-or-not-found'
 
 /**
  * O detalhe do imóvel. Anúncio que não existe é `notFound()` no loader, e a rota
@@ -10,14 +12,20 @@ import { pageHead } from '#/lib/head'
  * genérica do router, fora da casca pública.
  */
 export const Route = createFileRoute('/_public/listings/$slug')({
-  loader: ({ params }) => {
-    const listing = LISTINGS.find((item) => item.slug === params.slug)
-    if (listing === undefined) throw notFound()
-    return { listing }
-  },
-  head: ({ loaderData }) => {
-    if (loaderData === undefined) return {}
-    const { listing } = loaderData
+  // O `loader` devolve o anúncio para o `head` (título e descrição entram no HTML do
+  // servidor); o componente lê do mesmo cache por `useSuspenseQuery`. Só o `code` de
+  // recurso ausente vira 404: API fora do ar é erro, não "anúncio inexistente".
+  loader: ({ context, params }) =>
+    loadOrNotFound(
+      () =>
+        context.queryClient.query({
+          ...storefrontListingQueryOptions(params.slug),
+          staleTime: 'static',
+        }),
+      HTTP_ERROR_CODE.LISTING_NOT_FOUND,
+    ),
+  head: ({ loaderData: listing }) => {
+    if (listing === undefined) return {}
     return pageHead({
       path: `/listings/${listing.slug}`,
       title: listing.title,

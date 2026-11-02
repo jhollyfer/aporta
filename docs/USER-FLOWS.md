@@ -5,15 +5,15 @@
 > Um fluxo por funcionalidade do `PRD.md` §4. Tela nova ou fluxo novo entra aqui no mesmo
 > commit. O teste de ponta a ponta segue estes passos (`TEST-PLAN.md`).
 >
-> Estado em 2026-11-01: as telas públicas leem dados de exemplo de `frontend/src/lib/data`, e a
-> API ainda não tem anúncios. Cada fluxo diz o que já funciona e o que depende da API.
+> Estado em 2026-11-02: as telas públicas leem a API pública (`/storefront`), que hoje serve o
+> catálogo de exemplo semeado no banco. Cada fluxo diz o que já funciona e o que ainda falta.
 
 ## Jornadas principais
 
 | Fluxo | Quem | Tela inicial | Resultado | Estado |
 |---|---|---|---|---|
-| [Procuro onde morar](#procuro-onde-morar) | calouro, servidor, trabalhador, viajante | `/` | visitante abre o WhatsApp do dono com a mensagem pronta | Pronto, com dados de exemplo |
-| [Guia da cidade](#guia-da-cidade) | turista, calouro | `/guide` | visitante acha um lugar e, se houver, fala no WhatsApp dele | Pronto, com dados de exemplo |
+| [Procuro onde morar](#procuro-onde-morar) | calouro, servidor, trabalhador, viajante | `/` | visitante abre o WhatsApp do dono com a mensagem pronta | Pronto, lendo a API com catálogo de exemplo |
+| [Guia da cidade](#guia-da-cidade) | turista, calouro | `/guide` | visitante acha um lugar e, se houver, fala no WhatsApp dele | Pronto, lendo a API com catálogo de exemplo |
 | [Tenho um imóvel para anunciar](#tenho-um-imóvel-para-anunciar) | dono | `/list-your-place` | anúncio enviado para revisão | Formulário pronto; o envio não grava |
 | [Trocar de idioma](#trocar-de-idioma) | qualquer visitante | qualquer tela pública | a mesma tela em pt-BR, es ou en | Pronto |
 | [Moderação futura](#moderação-futura) | equipe | a definir | anúncio aprovado ou arquivado | Não existe |
@@ -27,7 +27,7 @@
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|
-| 1 | abre o site | mostra a proposta, a busca em pílula (tipo, bairro, período), a faixa de categorias por tipo e os imóveis em destaque | `/` |
+| 1 | abre o site | mostra a proposta, a busca em pílula (tipo, bairro, período), a faixa de categorias por tipo e os 6 imóveis atualizados há menos tempo; sem nenhum anúncio publicado, a seção "Disponíveis agora" some | `/` |
 | 2 | escolhe tipo, bairro e período na pílula e toca em buscar (ou toca numa categoria) | abre a listagem já com esses filtros na URL | `/listings?type=&neighborhood=&period=` |
 | 3 | ajusta tipo, bairro, período e faixa de preço na barra de filtros | atualiza a lista e o contador "Mostrar N imóveis"; os chips mostram o que restringe e o botão "Limpar" zera tudo | `/listings` |
 | 4 | no celular, toca no botão flutuante para ver o mapa | alterna para o mapa (`view=map`); cada imóvel é um pin com o preço | `/listings?view=map` |
@@ -39,15 +39,16 @@
 
 | Situação | Resposta |
 |---|---|
-| Filtros sem resultado | estado vazio com cena do rio, texto que orienta e botão "Limpar filtros" |
+| Filtros sem resultado | estado vazio com cena do rio, texto que orienta e botão "Limpar filtros"; vale também para um bairro de endereço que a API não conhece, que volta lista vazia |
+| API fora do ar ou lenta demais (15 s) | tela "Algo deu errado" com "Tentar de novo" e "Voltar ao início"; o botão refaz o carregamento. No navegador a API é tentada de novo até 2 vezes antes do erro, e no servidor não |
 | Valor inválido na URL (`?type=castelo`, bairro que não existe) | o campo é ignorado e a página abre sem esse filtro, sem tela de erro |
-| Imóvel com `slug` que não existe | página 404 própria da área pública, com caminho de volta para a home |
+| Imóvel com `slug` que não existe | página 404 própria da área pública, com caminho de volta para a home; só o erro `LISTING_NOT_FOUND` da API vira 404, e API fora do ar é a tela de erro |
 | Imóvel sem foto de um ambiente | a galeria desenha a cena SVG do ambiente (ainda não há fotos reais) |
-| Hotel que anuncia só diária | o card e a página mostram a diária; para a faixa de preço a diária conta como 30 vezes o valor |
+| Hotel que anuncia só diária | o card e a página mostram a diária; para a faixa de preço a API conta a diária como 30 vezes o valor |
 | Link do WhatsApp aberto em desktop sem o app | o `wa.me` abre o WhatsApp Web; a falha do app do visitante é fora do site |
 | Falha de rede ao carregar o mapa | o mapa pode ficar sem ladrilhos; a lista e os filtros não dependem dele |
 
-Depende da API: trocar `lib/data` por consulta ao servidor, com filtro em `loaderDeps` e na chave da consulta, estados de carregando e de erro por bloco.
+A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta paginação (`TASKS.md` 3.9). A foto real continua fora: a galeria desenha a cena SVG.
 
 ---
 
@@ -68,7 +69,8 @@ Depende da API: trocar `lib/data` por consulta ao servidor, com filtro em `loade
 |---|---|
 | `category` inválida na URL | cai na aba Comer |
 | Lugar sem WhatsApp cadastrado | o cartão aparece sem o botão |
-| Categoria sem lugares | Não se aplica hoje: as quatro categorias têm lugares de exemplo; com a API, a aba vazia precisa de estado vazio (tarefa em `TASKS.md`) |
+| Categoria sem lugares | Não verificado: as quatro categorias têm lugares no catálogo semeado, então a aba vazia nunca foi vista |
+| API fora do ar | a mesma tela "Algo deu errado" da busca |
 
 ---
 
@@ -121,7 +123,7 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 | Situação | Resposta |
 |---|---|
 | Link antigo sem prefixo | abre em português |
-| Texto do anúncio ou do guia (dado, não interface) | hoje está só em português nos dados de exemplo; tradução de conteúdo de dono é pergunta em aberto (`MEMORY.md`) |
+| Texto do anúncio ou do guia (dado, não interface) | hoje está só em português no catálogo semeado; tradução de conteúdo de dono é pergunta em aberto (`MEMORY.md`) |
 
 ---
 

@@ -3,6 +3,7 @@ import { Outlet, createFileRoute } from '@tanstack/react-router'
 
 import { SiteFooter } from './-components/site-footer'
 import { SiteHeader } from './-components/site-header'
+import { storefrontNeighborhoodsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { m } from '#/paraglide/messages'
 
 /**
@@ -11,6 +12,14 @@ import { m } from '#/paraglide/messages'
  * desenharem a tela sozinhos, sem menu quebrado.
  */
 export const Route = createFileRoute('/_public')({
+  // Os bairros alimentam a busca da home, a barra de filtros e o formulário de
+  // anunciar, ou seja, quase toda página. O `loader` do layout roda em paralelo com o
+  // da rota filha, então carregá-los aqui não cria cascata.
+  loader: ({ context }) =>
+    context.queryClient.query({
+      ...storefrontNeighborhoodsQueryOptions(),
+      staleTime: 'static',
+    }),
   component: RouteComponent,
 })
 

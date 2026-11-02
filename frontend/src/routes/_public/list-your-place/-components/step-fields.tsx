@@ -9,7 +9,7 @@ import {
 } from '@aporta/shared'
 import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
 
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import {
   LISTING_PERIOD_LABELS,
   LISTING_TYPE_LABELS,
@@ -88,6 +88,8 @@ export function TypeStep({ control }: StepProps): React.JSX.Element {
 }
 
 export function PlaceStep({ control }: StepProps): React.JSX.Element {
+  const neighborhoods = useNeighborhoods()
+
   return (
     <>
       <Controller
@@ -106,7 +108,7 @@ export function PlaceStep({ control }: StepProps): React.JSX.Element {
               className={CONTROL}
             >
               <option value="">{m.field_select()}</option>
-              {NEIGHBORHOODS.map((item) => (
+              {neighborhoods.map((item) => (
                 <option key={item.slug} value={item.slug}>
                   {item.name}
                 </option>

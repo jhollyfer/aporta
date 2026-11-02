@@ -1,18 +1,21 @@
 import * as React from 'react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
+import { FEATURED_PARAMS } from '../-featured'
 import { ListingCard } from '#/components/common/listing-card'
 import { PillButton } from '#/components/common/pill-button'
-import { LISTINGS } from '#/lib/data/listings'
+import { storefrontListingsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { m } from '#/paraglide/messages'
 
-/** Quantos anúncios a home mostra: o suficiente para dar a ideia, sem virar a listagem. */
-const FEATURED_COUNT = 6
+/** "Disponíveis agora": a ordem e o recorte vêm do servidor (`FEATURED_PARAMS`). */
+export function Featured(): React.JSX.Element | null {
+  const { data: items } = useSuspenseQuery(
+    storefrontListingsQueryOptions(FEATURED_PARAMS),
+  ).data
 
-/** "Disponíveis agora": os mais recentemente atualizados primeiro, porque anúncio parado é o que o visitante teme. */
-export function Featured(): React.JSX.Element {
-  const items = [...LISTINGS]
-    .sort((a, b) => b.owner.updatedAt.localeCompare(a.owner.updatedAt))
-    .slice(0, FEATURED_COUNT)
+  // Sem anúncio publicado a seção inteira sai, título e botão junto: "Disponíveis
+  // agora" sobre uma grade vazia diria o contrário do que quer dizer.
+  if (items.length === 0) return null
 
   return (
     <section

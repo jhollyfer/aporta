@@ -7,16 +7,18 @@
 
 ## 1. Visão geral
 
-Estado em 2026-11-02. A API já responde anúncios, bairros e guia em `/storefront`, mas a seta
-pontilhada ainda não existe: o app lê dados de exemplo de `frontend/src/lib/data` e não chama essas
-rotas. A ligação é a tarefa 3.6 de `TASKS.md`.
+Estado em 2026-11-02. O app lê anúncios, bairros e guia da API pública (`/storefront`): o servidor de
+SSR chama a API na primeira navegação, e o navegador a chama direto nas navegações seguintes (por isso
+a API precisa de `CORS_ORIGINS`, `ENV.md`). Não há dado de exemplo no frontend. Foto de anúncio ainda
+não existe: `photos[].url` vem sempre nulo e a cena SVG segue sendo o desenho.
 
 ```
-Visitante (navegador) ──HTTPS──▶ Web (TanStack Start, SSR em Nitro) ─ ─ ─▶ API (AdonisJS 7) ──▶ PostgreSQL
-        │                              │                (/storefront: pronta, ainda sem uso)      │
-        │                              └──── @aporta/shared ─────────────────────────────────────┤
-        │                                    (validators Zod, enums, records, responses, Either) │
-        └──PUT direto das partes do upload──▶ Bucket S3 (MinIO local; S3 ou R2 em produção) ◀────┘
+Visitante (navegador) ──HTTPS──▶ Web (TanStack Start, SSR em Nitro) ──GET /storefront──▶ API (AdonisJS 7) ──▶ PostgreSQL
+        │                              │            (SERVER_API_URL ou VITE_API_URL)          ▲                  │
+        │                              └──── @aporta/shared ──────────────────────────────────┤                  │
+        │                                    (validators Zod, enums, records, responses)      │                  │
+        ├──GET /storefront (navegação no cliente, VITE_API_URL, exige CORS_ORIGINS)───────────┘                  │
+        └──PUT direto das partes do upload──▶ Bucket S3 (MinIO local; S3 ou R2 em produção) ◀──────────────────┘
                                                 (a API só assina as URLs)
 Visitante ──▶ wa.me (WhatsApp do dono)         Visitante ──▶ tile.openstreetmap.org (mapa)
 ```
@@ -45,7 +47,6 @@ aqui: se corrige ou muda no `maiyu-pattern`.
 
 | Pasta | Por quê |
 |---|---|
-| `frontend/src/lib/data/` | Dados de exemplo (imóveis, lugares do guia, bairros) até a API de anúncios existir; sai quando as telas passarem a consultar a API (`DECISIONS.md` #4) |
 | `frontend/src/components/common/` | Kit do produto, um componente por pasta com compound components onde há partes (`DESIGN.md` §7) |
 | `shared/src/records/` | Tipos de registro que os dois lados leem (`Listing`, `Neighborhood`, `Place`), sem schema |
 | `shared/src/validators/client/` | Validator do rascunho do cadastro, dado que nasce e fica no navegador |
@@ -64,7 +65,7 @@ substantivo no plural, a ação é verbo.
 | documentation | openapi, reference | show | desenvolvedores | Feito |
 | Anúncios do dono | listings | criar, editar, listar os próprios, arquivar | `OWNER` | A criar |
 | Anúncios da equipe | listings | revisar, aprovar, arquivar, verificar dono | `MODERATOR`, `ADMINISTRATOR` | A criar |
-| storefront | listings, neighborhoods, places | listings: paginate, show (por `slug`); neighborhoods e places: paginate | visitante sem login | Feito no backend (só `GET`); o frontend ainda não a chama |
+| storefront | listings, neighborhoods, places | listings: paginate, show (por `slug`); neighborhoods e places: paginate | visitante sem login | Feito (só `GET`); o frontend a lê, ver §6 |
 
 Raiz de `app/features/`: também `health-check.controller.ts` (`GET /health-check`). Os nomes dos
 módulos novos saem da árvore da casa quando forem criados.
@@ -145,17 +146,46 @@ e nome. Entram 6 bairros, 12 anúncios, 53 fotos e 10 lugares. Não rodam no amb
 
 ## 6. Fluxo de dados
 
-**Busca pela API (existe, ainda não usada pelo app):** `GET /storefront/listings?type=KITNET&neighborhood=centro`
+**Busca pela API:** `GET /storefront/listings?type=KITNET&neighborhood=centro`
 → validator confere o filtro (422 com o campo se algo sai da lista) → use-case chama
 `ListingRepository.paginatePublished` → o repository corta `PUBLISHED` fora da lixeira, aplica os
 filtros e a ordem (`createdAt` decrescente se nada for pedido) → `ListingPresenter` monta cada item
 campo a campo. `GET /storefront/listings/:slug` devolve o anúncio ou `404` `LISTING_NOT_FOUND`, o
 mesmo para rascunho, em análise, arquivado, na lixeira e inexistente.
 
-**Busca hoje no app** (dados de exemplo): visitante abre `/listings?type=KITNET&neighborhood=centro` →
-`validateSearch` valida a URL com Zod e descarta o valor inválido → a tela lê `LISTINGS` de
-`lib/data` e filtra em `filterListings` (hotel entra na faixa de preço pela diária vezes 30) →
-`ListingCard` e `ListingMap` desenham a lista e os pins.
+**Frontend para a API.** A camada mora em `frontend/src/integrations/tanstack-query/`:
+
+- `http.ts`: `request(schema, path, init)` faz o `fetch` e valida o corpo com o schema Zod `...Response`
+  do `@aporta/shared`, o mesmo do OpenAPI. Toda falha sai como `HTTPError` com `status` e `code` (rede
+  fora do ar vira status 0 e `NETWORK_ERROR`; corpo fora do contrato vira `INVALID_RESPONSE`). Timeout de
+  15 s, sem cookie e sem credencial: a leitura pública não tem sessão.
+- `http.server.ts`: no SSR a base é `SERVER_API_URL`, quando existe, e senão `VITE_API_URL`; o navegador
+  sempre usa `VITE_API_URL`.
+- `query-context.ts`: um `QueryClient` por requisição, `staleTime` de 1 minuto e `retry` que no servidor
+  é zero e no navegador são 2 tentativas, só para 5xx ou falha de rede.
+- `queries/storefront.ts` e `hooks/tanstack-query/_query-keys.ts`: os `queryOptions` e as chaves de
+  cache. `lib/query-string.ts` monta a query; `lib/load-or-not-found.ts` e `hooks/use-neighborhoods.ts`
+  completam a camada.
+
+Cada rota pré-carrega no `loader` o que a tela lê:
+
+| Rota | Pedido | Detalhe |
+|---|---|---|
+| layout `_public` | bairros | alimentam a busca da home, a barra de filtros e o formulário de anunciar |
+| `/` | 6 anúncios | `perPage=6`, `updatedAt` decrescente; sem anúncio, a seção "Disponíveis agora" some |
+| `/listings` | anúncios filtrados | `loaderDeps` é `toListingParams(search)`, e não o search inteiro: `view` e `selected` são só da tela. `perPage=100`, o teto da API (`MAX_PER_PAGE`): o mapa mostra todos os pins, e passando de 100 anúncios publicados é preciso paginar (`TASKS.md` 3.9) |
+| `/listings/$slug` | um anúncio | só `code === LISTING_NOT_FOUND` vira `notFound()`; o status 404 puro não basta, porque um `VITE_API_URL` errado também responde 404 |
+| `/guide` | lugares da aba | passa `category` e `perPage=100`; a API só ordena por nome, então o evento é ordenado por data no cliente |
+| `/sitemap.xml` | até 100 anúncios | `fetch` direto no servidor; se a API falhar, sai só com as páginas fixas (12 URLs, 4 por idioma) e `cache-control: no-store`; com a API de pé saem 48 URLs com os 12 anúncios semeados |
+
+Filtro de bairro com slug que não existe passa pelo `validateSearch` (que só confere o formato), a API
+devolve lista vazia e a tela mostra o estado vazio com "Limpar". A regra de faixa de preço (hotel entra
+pela diária vezes 30) mora no backend, descrita acima; o frontend só mantém `EMPTY_FILTERS`,
+`activeFilterCount` e o tipo `ListingFilters` em `lib/filters.ts`.
+
+**Erro de carregamento.** Falha de API vira a tela "Algo deu errado" (`RouteError`, em
+`components/common/not-found-page/`): "Tentar de novo" chama `router.invalidate()` e depois `reset()`,
+para o `loader` rodar de novo, e não só remontar o componente.
 
 **Cadastro hoje:** `/list-your-place` valida cada etapa com `OwnerListingCreateValidator` (de
 `shared/`) e grava o rascunho no `localStorage` com `ClientListingDraftValidator`. O último passo,
@@ -219,10 +249,10 @@ quebra sem erro no log.
 | `node ace migration:run --force` como *Post-deployment command* da aplicação da API | painel do Coolify | o `Dockerfile-production` do backend não tem `ENTRYPOINT` de propósito: subir uma réplica não é o mesmo evento que mudar o esquema |
 | `COOKIE_DOMAIN=.maiyu.com.br` no serviço da API | painel do Coolify | app e API ficam em hosts diferentes; sem a variável o cookie nasce só do host da API, o SSR do app nunca o recebe e todo F5 em rota privada desloga. App e API são hosts irmãos, então `.maiyu.com.br` é o menor domínio que cobre os dois e o cookie fica visível aos outros projetos da casa (`DECISIONS.md` #9) |
 | `TRUSTED_PROXIES` no serviço da API, com a rede do proxy (ex.: `loopback,uniquelocal`) | painel do Coolify | atrás do Traefik, sem ela `request.ip()` devolve o IP do proxy e os limites por IP viram um balde só; nunca `true` |
-| `CORS_ORIGINS=https://aporta.maiyu.com.br` na API | painel do Coolify | fora do desenvolvimento a lista vazia recusa toda chamada de outra origem, e a barreira de `Origin` das escritas usa a mesma lista |
+| `CORS_ORIGINS=https://aporta.maiyu.com.br` na API | painel do Coolify | fora do desenvolvimento a lista vazia recusa toda chamada de outra origem. O navegador chama `/storefront` direto nas navegações do cliente, então sem a origem do app a vitrine só aparece na primeira carga, feita pelo SSR. A barreira de `Origin` das escritas usa a mesma lista |
 | Healthcheck das duas aplicações apontando para `/health-check` | painel do Coolify | o painel sobrepõe o `HEALTHCHECK` do Dockerfile; apontar o app para `/` mediria a home inteira e uma API lenta derrubaria o frontend junto |
 | Portas públicas: app em 3000 e API em 3333 | painel do Coolify | são as portas que os Dockerfiles expõem e que o `HEALTHCHECK` testa |
-| `VITE_API_URL` e `VITE_SITE_URL` no build do frontend | passo de build do workflow e painel | entram no bundle em tempo de build; valor errado só aparece depois do deploy |
+| `VITE_API_URL` e `VITE_SITE_URL` no build do frontend; `SERVER_API_URL` opcional no serviço do app | passo de build do workflow e painel | as `VITE_*` entram no bundle em tempo de build, e `VITE_API_URL` é obrigatória: valor errado só aparece depois do deploy, como tela de erro. `SERVER_API_URL` aponta o SSR para a API pela rede interna e é lida em tempo de execução |
 | Domínios `aporta.maiyu.com.br` e `api-aporta.maiyu.com.br` | painel do Coolify e DNS | o smoke test do deploy confere os dois endereços |
 | CORS do bucket com `PUT`, `GET`, `HEAD` e `ETag` exposto, para a origem do app | provedor do storage, a partir de `backend/infra/r2-cors.json` | sem o `ETag` exposto o navegador não confirma as partes e o upload multipart não fecha; o arquivo não é aplicado pelo deploy. Conferir a origem: o arquivo lista `https://aporta.com.br`, e o app é `https://aporta.maiyu.com.br` |
 | Bucket privado, leitura só por URL assinada curta | provedor do storage | nada é servido por URL pública |
@@ -233,8 +263,10 @@ quebra sem erro no log.
 
 ## 10. Escala e limites conhecidos
 
-- A busca do app ainda lê todos os anúncios na tela e filtra no cliente: aceitável com 12 exemplos.
-  A API já pagina e filtra no servidor (`perPage` até 100), e o app passa a usá-la com a tarefa 3.6.
+- A listagem do app filtra no servidor, mas pede uma página só de 100 (`MAX_PER_PAGE`), porque o mapa
+  mostra todos os pins de uma vez. Hoje são 12 anúncios; passando de 100 publicados, a listagem, o
+  sitemap, os bairros e as abas do guia cortam o excedente, e a listagem precisa de paginação e o mapa de
+  uma consulta própria por área (`TASKS.md` 3.9).
 - A busca por texto da API usa `ILIKE '%termo%'` em título e descrição, sem índice próprio: serve ao
   volume de uma cidade e vira varredura da tabela se o catálogo crescer muito.
 - O limitador de requisições usa o Postgres: cada tentativa de login e cada passo de upload gera

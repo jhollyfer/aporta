@@ -1,10 +1,11 @@
 import type * as React from 'react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router'
 
 import { Gallery } from '#/components/common/gallery'
 import { OwnerCard } from '#/components/common/owner-card'
 import { WhatsAppCta } from '#/components/common/whatsapp-cta'
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { storefrontListingQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { formatCurrency, formatDate } from '#/lib/format'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
@@ -31,25 +32,25 @@ const STICKY_BAR =
  * celular, onde a pessoa já rolou a página inteira até decidir.
  */
 function RouteComponent(): React.JSX.Element {
-  const { listing } = route.useLoaderData()
-  const locale = getLocale()
-  const neighborhood = NEIGHBORHOODS.find(
-    (item) => item.slug === listing.neighborhood,
+  const { slug } = route.useParams()
+  const { data: listing } = useSuspenseQuery(
+    storefrontListingQueryOptions(slug),
   )
+  const locale = getLocale()
   const { monthly, daily } = listing.price
   let minimum = m.detail_minimum_value({ count: listing.minimumStayMonths })
   if (listing.minimumStayMonths === 1) minimum = m.detail_minimum_one()
 
   const message = m.whatsapp_message({
     title: listing.title,
-    neighborhood: neighborhood?.name ?? '',
+    neighborhood: listing.neighborhood.name,
   })
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8">
       <header className="enter flex flex-col gap-2">
         <p className="text-sm font-bold text-moss">
-          {LISTING_TYPE_LABELS[listing.type]()} · {neighborhood?.name}
+          {LISTING_TYPE_LABELS[listing.type]()} · {listing.neighborhood.name}
         </p>
         <h1 className="max-w-4xl text-[clamp(2rem,4.6vw,4.25rem)] leading-[1.04] font-extrabold tracking-tight text-ink">
           {listing.title}

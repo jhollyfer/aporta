@@ -87,13 +87,13 @@ jobs:
       # 200 with HTML for a missing file.
       - name: Smoke test
         env:
-          API_URL: https://api-aporta.maiyu.com.br
-          APP_URL: https://aporta.maiyu.com.br
+          APP_SERVER_URL: https://api-aporta.maiyu.com.br
+          APP_CLIENT_URL: https://aporta.maiyu.com.br
           REVISION: ${{ github.sha }}
         run: |
           for attempt in $(seq 1 8); do
-            api=$(curl -fsS --max-time 10 "$API_URL/health-check" || true)
-            app=$(curl -fsS --max-time 10 "$APP_URL/revision.txt" || true)
+            api=$(curl -fsS --max-time 10 "$APP_SERVER_URL/health-check" || true)
+            app=$(curl -fsS --max-time 10 "$APP_CLIENT_URL/revision.txt" || true)
             if printf '%s' "$api" | grep -q '"ok"' && [ "$app" = "$REVISION" ]; then
               echo "API e app no ar com $REVISION (tentativa $attempt)."
               exit 0

@@ -9,13 +9,15 @@
     "dev": "vite dev --host --port 3000",
     "build": "vite build",
     "preview": "vite preview",
+    "i18n:compile": "paraglide-js compile --project ./project.inlang --silent",
+    "i18n:check": "inlang check --project ./project.inlang --source ./src",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "check-cycles": "node scripts/check-chunk-cycles.mjs",
     "lint": "eslint --max-warnings 0",
     "format": "prettier --write . && eslint --fix",
-    "check": "pnpm lint && pnpm typecheck && prettier --check .",
-    "test:unit": "vitest run",
+    "check": "pnpm i18n:compile && pnpm i18n:check && pnpm lint && pnpm typecheck && prettier --check .",
+    "test:unit": "pnpm i18n:compile && vitest run",
     "test:e2e": "playwright test --config e2e/playwright.config.ts"
   },
   "dependencies": {
@@ -48,6 +50,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@inlang/cli": "^3.5.0",
     "@inlang/paraglide-js": "^2.13.1",
     "@playwright/test": "1.64.1",
     "@rolldown/plugin-babel": "^0.2.3",

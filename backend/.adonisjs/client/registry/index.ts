@@ -32,6 +32,12 @@ const routes = {
     tokens: [[0,"storefront"],[0,"listings"]],
     types: placeholder as Registry['storefront.listings.paginate']['types'],
   },
+  'storefront.listings.pins': {
+    methods: ["GET","HEAD"],
+    pattern: '/storefront/listings/pins',
+    tokens: [[0,"storefront"],[0,"listings"],[0,"pins"]],
+    types: placeholder as Registry['storefront.listings.pins']['types'],
+  },
   'storefront.listings.show': {
     methods: ["GET","HEAD"],
     pattern: '/storefront/listings/:slug',
@@ -49,6 +55,12 @@ const routes = {
     pattern: '/storefront/places',
     tokens: [[0,"storefront"],[0,"places"]],
     types: placeholder as Registry['storefront.places.paginate']['types'],
+  },
+  'storefront.reports.create': {
+    methods: ["POST"],
+    pattern: '/storefront/reports',
+    tokens: [[0,"storefront"],[0,"reports"]],
+    types: placeholder as Registry['storefront.reports.create']['types'],
   },
   'authentication.sign_in': {
     methods: ["POST"],
@@ -121,6 +133,48 @@ const routes = {
     pattern: '/owner/listings/:id/photos',
     tokens: [[0,"owner"],[0,"listings"],[1,"id"],[0,"photos"]],
     types: placeholder as Registry['owner.listings.photos']['types'],
+  },
+  'administrator.listings.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/administrator/listings',
+    tokens: [[0,"administrator"],[0,"listings"]],
+    types: placeholder as Registry['administrator.listings.paginate']['types'],
+  },
+  'administrator.listings.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/administrator/listings/:id',
+    tokens: [[0,"administrator"],[0,"listings"],[1,"id"]],
+    types: placeholder as Registry['administrator.listings.show']['types'],
+  },
+  'administrator.listings.review': {
+    methods: ["PUT"],
+    pattern: '/administrator/listings/:id/review',
+    tokens: [[0,"administrator"],[0,"listings"],[1,"id"],[0,"review"]],
+    types: placeholder as Registry['administrator.listings.review']['types'],
+  },
+  'administrator.listings.archive': {
+    methods: ["DELETE"],
+    pattern: '/administrator/listings/:id',
+    tokens: [[0,"administrator"],[0,"listings"],[1,"id"]],
+    types: placeholder as Registry['administrator.listings.archive']['types'],
+  },
+  'administrator.owners.verify': {
+    methods: ["PUT"],
+    pattern: '/administrator/owners/:id/verification',
+    tokens: [[0,"administrator"],[0,"owners"],[1,"id"],[0,"verification"]],
+    types: placeholder as Registry['administrator.owners.verify']['types'],
+  },
+  'administrator.reports.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/administrator/reports',
+    tokens: [[0,"administrator"],[0,"reports"]],
+    types: placeholder as Registry['administrator.reports.paginate']['types'],
+  },
+  'administrator.reports.resolve': {
+    methods: ["PUT"],
+    pattern: '/administrator/reports/:id/resolution',
+    tokens: [[0,"administrator"],[0,"reports"],[1,"id"],[0,"resolution"]],
+    types: placeholder as Registry['administrator.reports.resolve']['types'],
   },
   'storages.paginate': {
     methods: ["GET","HEAD"],

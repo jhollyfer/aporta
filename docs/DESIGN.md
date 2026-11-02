@@ -29,16 +29,16 @@ em `@media (prefers-color-scheme: dark)`, sem tocar nos nomes.
 
 | Token | Claro | Escuro | Papel (onde e por quê) |
 |---|---|---|---|
-| `paper` | `#f7f5ef` | `#14201a` | fundo da página |
+| `paper` | `#f3f5f0` | `#14201a` | fundo da página: cinza-esverdeado, sem o amarelo creme |
 | `surface` | `#ffffff` | `#1b2a22` | cartão, campo, pílula de busca |
 | `ink` | `#1f2a22` | `#eef0e8` | texto principal |
-| `ink-soft` | `#58645b` | `#aab8ad` | texto de apoio e metadado |
+| `ink-soft` | `#445049` | `#aab8ad` | texto de apoio e metadado (7,68:1 sobre o papel) |
 | `line` | `#dcd8cc` | `#2f4136` | contorno fino e divisor; borda de todo elemento por padrão |
 | `moss` | `#2f5d46` | `#7fc29b` | ação principal da área, link de destaque, foco; botão `moss` |
 | `moss-deep` | `#234838` | `#a6dbbb` | hover do `moss` e texto sobre `moss-wash` |
 | `moss-wash` | `#e4eee6` | `#213a2d` | fundo suave de chip, aba, estado vazio e barra de progresso |
 | `clay` | `#a8643d` | `#e0a47c` | terroso de apoio nas cenas e em detalhes |
-| `clay-wash` | `#f1e3d6` | `#3a2a20` | fundo suave terroso |
+| `clay-wash` | `#ece3dd` | `#3a2a20` | fundo suave terroso, de croma baixo |
 | `sun` | `#f2b134` | `#f2b134` | acento quente reservado ao clique de contato e ao convite a anunciar |
 | `sun-deep` | `#d99a1d` | `#ffc65a` | hover do `sun` |
 | `river` | `#4f7f86` | `#86b8bf` | azul de rio, detalhes e cenas |
@@ -59,16 +59,16 @@ de terceiros.
 
 | Par | Claro | Escuro | Resultado |
 |---|---|---|---|
-| `ink` sobre `paper` | 13,64 | 14,60 | passa |
-| `ink-soft` sobre `paper` | 5,68 | 8,13 | passa |
-| `ink-soft` sobre `surface` | 6,20 | 7,26 | passa |
-| `paper` sobre `moss` (botão `moss`) | 6,94 | 8,07 | passa |
-| `moss` sobre `paper` (link, selo) | 6,94 | 8,07 | passa |
+| `ink` sobre `paper` | 13,54 | 14,60 | passa |
+| `ink-soft` sobre `paper` | 7,68 | 8,13 | passa |
+| `ink-soft` sobre `surface` | 8,44 | 7,26 | passa |
+| `paper` sobre `moss` (botão `moss`) | 6,89 | 8,07 | passa |
+| `moss` sobre `paper` (link, selo) | 6,89 | 8,07 | passa |
 | `moss-deep` sobre `moss-wash` (chip, aba) | 8,60 | 7,89 | passa |
-| `danger` sobre `paper` (erro de campo) | 5,19 | 7,00 | passa |
+| `danger` sobre `paper` (erro de campo) | 5,15 | 7,00 | passa |
 | `on-sun` sobre `sun` (botão de WhatsApp) | 7,87 | 7,87 | passa nos dois temas (token fixo `--on-sun`) |
 | `on-sun` sobre `sun-deep` (hover do botão) | 6,08 | 9,54 | passa nos dois temas |
-| `line` sobre `paper` (borda de campo) | 1,31 | 1,38 sobre `surface` | abaixo dos 3:1 pedidos para componente |
+| `line` sobre `paper` (borda de campo) | 1,30 | 1,38 sobre `surface` | abaixo dos 3:1 pedidos para componente |
 
 No tema escuro `ink` vira claro, e os botões `sun` seguem com texto `text-ink`: o texto do botão de
 WhatsApp fica quase invisível no escuro. A falha está registrada em `MEMORY.md` ("Problemas
@@ -92,7 +92,7 @@ papel (`--text-heading` e semelhantes) é uma melhoria pendente, e não existe h
 | Subtítulo | `text-xl` e `text-2xl` | extrabold | `h2` e título de bloco |
 | Corpo | `text-base` (16 px) e `text-lg` no texto de abertura | normal | texto e campos; nunca abaixo de 16 px em campo |
 | Secundário | `text-sm`, cor `ink-soft` | normal a bold | rótulo, dica, metadado |
-| Legenda | `text-xs`, `font-semibold` | semibold | selo do card |
+| Legenda | `text-xs` (redefinido para 13px no tema), `font-semibold` | semibold | selo do card; nada que se leia fica abaixo de 13px |
 
 Número de preço em `text-4xl` extrabold no detalhe. Texto corrido com `max-w-3xl` ou `max-w-2xl`
 (medida de leitura).
@@ -114,8 +114,10 @@ Número de preço em `text-4xl` extrabold no detalhe. Texto corrido com `max-w-3
 
 ## 5. Elevação e camadas
 
-- Plano por padrão: cartões usam fio fino (`border-line`) e não sombra. Sombra só em pílula de busca
-  (`shadow-lg`), botão flutuante e resumo do mapa (`shadow-xl`), barra fixa do WhatsApp e pin do mapa.
+- Plano por padrão: cartões e a pílula de busca se separam do fundo por troca de tom (`surface` sobre
+  `paper`), sem borda e sem sombra. Sombra só no que flutua de verdade: botão de mapa, resumo sobre o
+  mapa, barra do WhatsApp (`sticky` no fim do detalhe, para não cobrir o rodapé) e pin do mapa. O
+  linter de design da casa confere isso, e cada exceção leva `taste-skill-ignore` com o motivo.
 - Camadas em uso (classes soltas, ainda sem token nomeado): cabeçalho e barras fixas `z-40`, resumo
   sobre o mapa `z-[500]` (o Leaflet usa valores altos de z-index internamente), link "pular para o
   conteúdo" `z-[70]`. Tokens de z-index nomeados são melhoria pendente.
@@ -165,12 +167,19 @@ Ilustração de estado vazio: a cena SVG do rio, desenhada com os tokens de cena
 
 ## 9. Movimento
 
-- Só transição de cor e de largura da barra de progresso, com `motion-reduce:transition-none`. Não
-  há animação decorativa. A rolagem suave (`scroll-behavior: smooth`) volta ao padrão com
-  `prefers-reduced-motion`.
-- `styles.css` também zera `animation-duration` e `transition-duration` para quem pede menos
-  movimento, por uma regra global. `_standards/frontend.md` §10 pede caminho por componente
-  (`motion-reduce:`); a regra global é desvio a corrigir (`TASKS.md`).
+Só `transform` e `opacity`, e só para quem não pediu menos movimento
+(`@media (prefers-reduced-motion: no-preference)` em `styles.css`):
+
+- `.enter`: a entrada do que aparece na primeira tela, escalonada por `--i` (80ms por passo), no hero,
+  no cabeçalho de cada página e no cadastro.
+- `.reveal`: a entrada de cada bloco ao entrar na janela, guiada pela rolagem
+  (`animation-timeline: view()`), sem JavaScript e sem observador, o que importa na internet lenta
+  do Alto Solimões. Onde o navegador não conhece a propriedade, o bloco aparece parado.
+- Toque: `active:scale-[0.97]` nos botões, com `motion-reduce:active:scale-100`.
+- Nunca em bloco de texto de baixo contraste, como o rodapé: com opacidade parcial o axe lê o texto
+  semitransparente e reprova o contraste. O E2E cobre isso nos dois temas.
+- A regra global de `prefers-reduced-motion` no `styles.css` zera as durações. `_standards/frontend.md`
+  §10 pede caminho por componente (`motion-reduce:`); a regra global é desvio a corrigir (`TASKS.md`).
 
 ## 10. Acessibilidade
 

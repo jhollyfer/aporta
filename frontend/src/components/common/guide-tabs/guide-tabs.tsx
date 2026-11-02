@@ -15,14 +15,16 @@ import { cn } from '#/lib/cn'
  */
 export function GuideTabs({
   active,
+  className,
 }: {
   active: PlaceCategory
+  className?: string
 }): React.JSX.Element {
   return (
-    <nav aria-label="Categorias">
-      <ul className="rail flex gap-2 overflow-x-auto">
+    <nav aria-label="Categorias" className={className}>
+      <ul className="flex flex-wrap gap-2">
         {PLACE_CATEGORIES.map((category) => (
-          <li key={category} className="shrink-0">
+          <li key={category}>
             <Link
               to="/guide"
               search={{ category }}

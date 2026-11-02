@@ -19,6 +19,13 @@ export const Route = createLazyFileRoute('/_public/listings/$slug')({
 const route = getRouteApi('/_public/listings/$slug')
 
 /**
+ * A barra do celular é `sticky` dentro do contêiner da página e não `fixed`: ela gruda no rodapé da
+ * tela enquanto o conteúdo rola e para no fim dele, em vez de cobrir o rodapé do site.
+ */
+const STICKY_BAR =
+  'sticky bottom-0 z-40 -mx-4 bg-paper p-3 shadow-[0_-4px_16px_rgb(0_0_0/0.12)] lg:hidden' // taste-skill-ignore: barra fixa
+
+/**
  * O detalhe: galeria por ambiente, o valor com o que está incluso, as regras da
  * casa e o dono. O botão de WhatsApp é a ação principal e fica preso ao rodapé no
  * celular, onde a pessoa já rolou a página inteira até decidir.
@@ -39,18 +46,18 @@ function RouteComponent(): React.JSX.Element {
   })
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8 pb-28 lg:pb-0">
-      <header className="flex flex-col gap-2">
+    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8">
+      <header className="enter flex flex-col gap-2">
         <p className="text-sm font-bold text-moss">
           {LISTING_TYPE_LABELS[listing.type]()} · {neighborhood?.name}
         </p>
-        <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-ink sm:text-5xl">
+        <h1 className="max-w-4xl text-[clamp(2rem,4.6vw,4.25rem)] leading-[1.04] font-extrabold tracking-tight text-ink">
           {listing.title}
         </h1>
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <Gallery listing={listing}>
+        <Gallery listing={listing} className="enter [--i:1]">
           <Gallery.Tabs />
           <Gallery.Main />
           <Gallery.Thumbs />
@@ -59,7 +66,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="flex flex-col gap-6">
           <section
             aria-labelledby="price-title"
-            className="flex flex-col gap-2"
+            className="reveal flex flex-col gap-2"
           >
             <h2 id="price-title" className="sr-only">
               {m.detail_price_title()}
@@ -83,7 +90,7 @@ function RouteComponent(): React.JSX.Element {
             <Costs costs={listing.costs} />
           </section>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+          <dl className="reveal grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
             <div>
               <dt className="font-bold text-ink-soft">
                 {m.detail_available()}
@@ -125,7 +132,7 @@ function RouteComponent(): React.JSX.Element {
 
       <section
         aria-labelledby="about-title"
-        className="flex max-w-3xl flex-col gap-3"
+        className="reveal flex max-w-3xl flex-col gap-3"
       >
         <h2 id="about-title" className="text-2xl font-extrabold text-ink">
           {m.detail_about_title()}
@@ -135,7 +142,7 @@ function RouteComponent(): React.JSX.Element {
 
       <section
         aria-labelledby="rules-title"
-        className="flex max-w-3xl flex-col gap-3"
+        className="reveal flex max-w-3xl flex-col gap-3"
       >
         <h2 id="rules-title" className="text-2xl font-extrabold text-ink">
           {m.detail_rules_title()}
@@ -147,8 +154,8 @@ function RouteComponent(): React.JSX.Element {
         </ul>
       </section>
 
-      {/* A barra fixa do celular. Fora do fluxo para não cobrir o fim da página: o `pb-28` do contêiner reserva o espaço. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-paper p-3 shadow-[0_-4px_16px_rgb(0_0_0/0.12)] lg:hidden">
+      {/* A barra do celular: última filha do contêiner, para o `sticky` parar acima do rodapé do site. */}
+      <div className={STICKY_BAR}>
         <WhatsAppCta
           phone={listing.owner.whatsapp}
           message={message}

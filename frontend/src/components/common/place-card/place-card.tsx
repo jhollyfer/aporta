@@ -19,7 +19,7 @@ export function PlaceCard({ place }: { place: Place }): React.JSX.Element {
   const locale = getLocale()
 
   return (
-    <article className="flex gap-4 rounded-card bg-surface p-4 shadow-sm">
+    <article className="flex gap-4 rounded-card bg-surface p-4">
       {place.date !== null && (
         <time
           dateTime={place.date}

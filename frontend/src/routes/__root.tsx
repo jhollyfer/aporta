@@ -62,7 +62,7 @@ function RootDocument({
         <meta
           name="theme-color"
           media="(prefers-color-scheme: light)"
-          content="#f7f5ef"
+          content="#f3f5f0"
         />
         <meta
           name="theme-color"

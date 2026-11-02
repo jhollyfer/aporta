@@ -24,14 +24,17 @@ test.describe('cadastro do imóvel', () => {
     await page.getByLabel('Tipo de imóvel').selectOption('ROOM')
     await page.getByLabel('O imóvel é mobiliado').check()
 
-    // O rascunho grava depois de uma pausa: espera a gravação em vez de dormir.
+    // O rascunho grava depois de uma pausa e junta os dois campos: espera os dois no que foi
+    // gravado, e não só o primeiro, senão o reload corre na frente do segundo salvamento.
     await expect
       .poll(() =>
         page.evaluate(() =>
           window.localStorage.getItem('aporta:listing-draft:v1'),
         ),
       )
-      .toContain('"type":"ROOM"')
+      .toMatch(
+        /"type":"ROOM".*"furnished":true|"furnished":true.*"type":"ROOM"/,
+      )
 
     await page.reload()
 

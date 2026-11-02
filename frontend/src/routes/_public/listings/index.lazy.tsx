@@ -70,7 +70,7 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-8">
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+      <h1 className="enter text-[clamp(2.25rem,5vw,4.5rem)] leading-[1.02] font-extrabold tracking-tight text-ink">
         {m.listings_title()}
       </h1>
 
@@ -108,7 +108,7 @@ function RouteComponent(): React.JSX.Element {
               className="grid scroll-mt-24 gap-x-6 gap-y-10 sm:grid-cols-2"
             >
               {results.map((listing, index) => (
-                <li key={listing.id}>
+                <li key={listing.id} className="reveal">
                   <ListingCard listing={listing}>
                     <ListingCard.Photo priority={index < 2} />
                     <ListingCard.Badge />

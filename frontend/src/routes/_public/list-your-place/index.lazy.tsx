@@ -136,8 +136,8 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 pt-8">
-      <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-5xl">
+      <header className="enter flex flex-col gap-3">
+        <h1 className="text-[clamp(2.25rem,5vw,4.5rem)] leading-[1.02] font-extrabold tracking-tight text-ink">
           {m.owner_title()}
         </h1>
         <p className="text-lg text-ink-soft">{m.owner_lead()}</p>
@@ -147,6 +147,7 @@ function RouteComponent(): React.JSX.Element {
         steps={STEPS.map((spec) => ({ id: spec.id, label: spec.label() }))}
         current={step}
         onCurrentChange={setStep}
+        className="enter [--i:1]"
       >
         <Stepper.Progress />
         <form

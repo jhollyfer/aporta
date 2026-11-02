@@ -15,6 +15,10 @@ const OFFER: Record<ListingsView, Spec> = {
   [LISTINGS_VIEW.MAP]: { label: () => m.view_show_list(), Glyph: ListBullets },
 }
 
+/** Flutua sobre a lista que rola: overlay de verdade, com sombra. */
+const FLOATING =
+  'fixed bottom-5 left-1/2 z-40 inline-flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-6 text-sm font-extrabold text-paper shadow-xl transition-transform active:scale-[0.97] motion-reduce:transition-none lg:hidden' // taste-skill-ignore: botão flutuante
+
 /**
  * O botão flutuante do rodapé que alterna lista e mapa no celular, como o
  * Airbnb faz. Some a partir do `lg`, onde os dois cabem lado a lado.
@@ -29,11 +33,7 @@ export function ViewToggle({
   const { label, Glyph } = OFFER[view]
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="fixed bottom-5 left-1/2 z-40 inline-flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-6 text-sm font-extrabold text-paper shadow-xl lg:hidden"
-    >
+    <button type="button" onClick={onToggle} className={FLOATING}>
       <Glyph aria-hidden weight="bold" className="size-5" />
       {label()}
     </button>

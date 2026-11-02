@@ -55,7 +55,7 @@ export function SearchPillSegment({
   const id = React.useId()
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl px-4 py-2 hover:bg-moss-wash/60 sm:rounded-full sm:border-r sm:border-line sm:last:border-r-0">
+    <div className="flex flex-1 flex-col rounded-2xl px-4 py-2 hover:bg-moss-wash/60 sm:rounded-full">
       <label htmlFor={id} className="text-xs font-bold text-ink">
         {spec.label()}
       </label>

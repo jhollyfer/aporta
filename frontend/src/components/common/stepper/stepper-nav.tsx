@@ -51,7 +51,7 @@ export function StepperNav({
         onClick={() => void handleNext()}
         disabled={pending}
         aria-busy={pending}
-        className="h-12 rounded-full bg-moss px-7 text-sm font-extrabold text-paper hover:bg-moss-deep disabled:opacity-60"
+        className="h-12 rounded-full bg-moss px-7 text-sm font-extrabold text-paper transition-[background-color,transform] hover:bg-moss-deep active:scale-[0.97] disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100"
       >
         {pending && m.stepper_sending()}
         {!pending && last && m.stepper_submit()}

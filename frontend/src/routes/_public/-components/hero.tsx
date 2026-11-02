@@ -35,15 +35,17 @@ export function Hero(): React.JSX.Element {
   return (
     <section aria-labelledby="hero-title" className="relative">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8 pb-10 sm:pt-14">
-        <div className="flex max-w-3xl flex-col gap-5">
+        <div className="flex max-w-6xl flex-col gap-5">
           <h1
             id="hero-title"
-            className="text-4xl leading-[1.05] font-extrabold tracking-tight text-ink sm:text-6xl"
+            className="enter text-[clamp(2.25rem,6.4vw,6rem)] leading-[1.02] font-extrabold tracking-tight text-ink"
           >
             {m.hero_title()}
           </h1>
-          <p className="max-w-xl text-lg text-ink-soft">{m.hero_lead()}</p>
-          <div className="flex flex-wrap gap-3">
+          <p className="enter max-w-xl text-lg text-ink-soft [--i:1]">
+            {m.hero_lead()}
+          </p>
+          <div className="enter flex flex-wrap gap-3 [--i:2]">
             <PillButton to="/listings" tone="moss" scale="lg">
               {m.hero_cta_search()}
             </PillButton>
@@ -54,6 +56,7 @@ export function Hero(): React.JSX.Element {
         </div>
 
         <SearchPill
+          className="enter [--i:3]"
           onSearch={(values) =>
             void navigate({ to: '/listings', search: toSearch(values) })
           }
@@ -64,7 +67,7 @@ export function Hero(): React.JSX.Element {
           <SearchPill.Submit />
         </SearchPill>
 
-        <CategoryRail>
+        <CategoryRail className="enter [--i:4]">
           {LISTING_TYPES.map((type) => (
             <CategoryRail.Item key={type} type={type} />
           ))}

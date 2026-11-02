@@ -12,7 +12,7 @@ export function GalleryTabs(): React.JSX.Element {
   const environments = [...new Set(listing.photos.map((p) => p.environment))]
 
   return (
-    <div role="tablist" className="rail flex gap-2 overflow-x-auto">
+    <div role="tablist" className="flex flex-wrap gap-2">
       {environments.map((environment) => (
         <button
           key={environment}
@@ -21,7 +21,7 @@ export function GalleryTabs(): React.JSX.Element {
           aria-selected={environment === current}
           onClick={() => jumpTo(environment)}
           className={cn(
-            'shrink-0 rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-soft',
+            'rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-soft',
             environment === current && 'border-moss bg-moss text-paper',
           )}
         >

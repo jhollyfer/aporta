@@ -27,7 +27,7 @@ export function OwnerCard({
   return (
     <section
       aria-label={m.owner_label()}
-      className="flex items-center gap-3 rounded-card border border-line bg-surface p-4"
+      className="flex items-center gap-3 rounded-card bg-surface p-4"
     >
       <UserCircle aria-hidden weight="duotone" className="size-12 text-moss" />
       <div className="flex flex-col gap-0.5">

@@ -18,7 +18,7 @@ import { cn } from '#/lib/cn'
  *   outline  a secundária, com o contorno no tom da tinta
  */
 const pillVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-full font-extrabold transition-colors motion-reduce:transition-none',
+  'inline-flex items-center justify-center gap-2 rounded-full font-extrabold transition-[color,background-color,transform] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100',
   {
     variants: {
       tone: {

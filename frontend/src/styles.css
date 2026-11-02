@@ -14,23 +14,23 @@
  * `--paper`, `--paper` sobre `--moss` e `--ink` sobre `--sun`.
  */
 :root {
-  --paper: #f7f5ef;
+  --paper: #f3f5f0;
   --surface: #ffffff;
   --ink: #1f2a22;
-  --ink-soft: #58645b;
+  --ink-soft: #445049;
   --line: #dcd8cc;
   --moss: #2f5d46;
   --moss-deep: #234838;
   --moss-wash: #e4eee6;
   --clay: #a8643d;
-  --clay-wash: #f1e3d6;
+  --clay-wash: #ece3dd;
   --sun: #f2b134;
   --sun-deep: #d99a1d;
   /* Texto sobre o amarelo: escuro nos dois temas. `--ink` vira claro no escuro, e claro sobre amarelo dá 1,64:1. */
   --on-sun: #1f2a22;
   /* Rodapé e fundo escuro de destaque: fixos nos dois temas. `--moss-deep` fica claro no escuro, e viraria um bloco verde-claro berrante. */
   --stage: #234838;
-  --on-stage: #f7f5ef;
+  --on-stage: #f3f5f0;
   --river: #4f7f86;
   --danger: #b3412f;
 
@@ -78,6 +78,9 @@
 }
 
 @theme inline {
+  /* Nada que se leia fica abaixo de 13px: o `text-xs` do Tailwind (12px) é pequeno demais num celular de sol forte. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
   --font-sans:
     'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --color-paper: var(--paper);
@@ -167,9 +170,8 @@
 /* O pin de preço do mapa, desenhado em `divIcon` e por isso fora do React. */
 .price-pin {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.18);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.22); /* taste-skill-ignore: o pin flutua sobre o mapa */
   color: var(--ink);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -178,6 +180,8 @@
   text-align: center;
   white-space: nowrap;
   /* O divIcon tem tamanho zero e o Leaflet ancora o canto: sem isto o pin sai deslocado do ponto. */
+  /* O `divIcon` tem largura zero: sem isto o pin encolhe até o preenchimento e o preço vaza para fora do círculo. */
+  width: max-content;
   transform: translate(-50%, -50%);
 }
 
@@ -185,4 +189,58 @@
   background: var(--moss);
   border-color: var(--moss);
   color: var(--paper);
+}
+
+/*
+ * A camada de movimento: só `transform` e `opacity`, e só para quem não pediu menos movimento.
+ *
+ * `.enter` é a entrada do que aparece na primeira tela, escalonada por `--i` (um passo de 80ms).
+ * `.reveal` é a entrada de cada bloco ao entrar na janela, guiada pela rolagem
+ * (`animation-timeline: view()`): sem JavaScript e sem observador, o que importa para a internet
+ * lenta do Alto Solimões. Onde o navegador não conhece essa propriedade o bloco simplesmente
+ * aparece parado, que é o comportamento certo de uma melhoria progressiva.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 80ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/*
+ * O Leaflet traz a própria fonte e tamanho: 'Lucida Console' (monoespaçada) nos botões de zoom
+ * e 12px na atribuição. Herda a família da casa e o piso de 13px.
+ */
+.leaflet-container {
+  font-family: inherit;
+  font-size: 0.8125rem;
+}
+
+.leaflet-control-zoom a,
+.leaflet-control-attribution {
+  font-family: inherit;
+}
+
+.leaflet-control-attribution {
+  font-size: 0.8125rem;
 }

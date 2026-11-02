@@ -5,6 +5,7 @@ import { PLACE_CATEGORY } from '@aporta/shared'
 
 import { GuideTabs } from '#/components/common/guide-tabs'
 import { PlaceCard } from '#/components/common/place-card'
+import { Scene, SCENE_KIND } from '#/components/common/scene'
 import { PLACES } from '#/lib/data/places'
 import { m } from '#/paraglide/messages'
 
@@ -30,17 +31,23 @@ function RouteComponent(): React.JSX.Element {
   )
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 pt-8">
-      <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-5xl">
-          {m.guide_title()}
-        </h1>
-        <p className="max-w-2xl text-lg text-ink-soft">{m.guide_lead()}</p>
-      </header>
-      <GuideTabs active={category} />
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-14">
+      <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
+        <header className="enter flex flex-col gap-3">
+          <h1 className="text-[clamp(2.25rem,5.2vw,4.75rem)] leading-[1.02] font-extrabold tracking-tight text-ink">
+            {m.guide_title()}
+          </h1>
+          <p className="max-w-md text-lg text-ink-soft">{m.guide_lead()}</p>
+        </header>
+        <GuideTabs active={category} className="enter [--i:1]" />
+        {/* No desktop a coluna da esquerda é mais curta que a lista: a cena fecha o vazio de baixo das abas. */}
+        <div className="enter hidden aspect-[4/3] overflow-hidden rounded-card [--i:2] lg:block">
+          <Scene kind={SCENE_KIND.HOUSE} />
+        </div>
+      </div>
       <ul className="flex flex-col gap-4">
         {places.map((place) => (
-          <li key={place.id}>
+          <li key={place.id} className="reveal">
             <PlaceCard place={place} />
           </li>
         ))}

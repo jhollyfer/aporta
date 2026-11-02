@@ -48,7 +48,7 @@ export function SearchPillRoot({
       <form
         onSubmit={handleSubmit}
         className={cn(
-          'flex flex-col gap-1 rounded-[1.75rem] border border-line bg-surface p-2 shadow-lg sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full',
+          'flex flex-col gap-1 rounded-[1.75rem] bg-surface p-2 sm:flex-row sm:items-stretch sm:gap-0 sm:rounded-full',
           className,
         )}
       >

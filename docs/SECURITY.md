@@ -187,8 +187,10 @@ C = confidencialidade, I = integridade, D = disponibilidade.
   é dele que a tela tira o tempo de espera do `429`.
 - No app, a rota privada abre só no cliente (`ssr: false` em `_private`) e a dica de sessão no
   `localStorage` apenas evita o piscar da tela: quem decide é sempre a API.
-- A primeira conta de administrador nasce do seeder, só em desenvolvimento e teste, e o seeder para
-  se faltar `SEED_OWNER_PASSWORD`.
+- A primeira conta de administrador nasce do seeder só se `SEED_OWNER_PASSWORD` tiver valor, e o seeder
+  para se faltar `SEED_OWNER_EMAIL`. As contas de demonstração (`moderator@example.com`,
+  `owner@example.com`) só existem onde `SEED_DEMO_PASSWORD` foi definida: em produção ela fica
+  ausente, e nunca se reaproveita a senha do administrador.
 
 ## 4. Autorização
 

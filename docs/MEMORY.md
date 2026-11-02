@@ -34,8 +34,8 @@ indexa; o resto responde `noindex` e `Disallow: /`), `E2E_DEMO_PASSWORD`, `E2E_C
 (`CHROMIUM_PATH` saiu); `STORAGE_PUBLIC_URL` já era de tempo de execução e só mudou de lugar no
 `.env.example`: a pendência abaixo, sobre ela, está fechada. O smoke test do deploy lê `APP_SERVER_URL` e
 `APP_CLIENT_URL`. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do
-backend com Postgres local (42 de storage falham sem MinIO), seed nos três cenários; **não rodei o E2E de
-navegador nem o CI do GitHub**.
+backend com Postgres local (42 de storage falham sem MinIO), seed nos três cenários; O rodapé do site ganhou `<MaiyuCredit />` (`common_maiyu_credit` com `.parts()` do paraglide; `footer_credit` saiu; `Picture` e `maiyu.png` vieram do interclasse). **Não rodei o E2E de
+navegador nem o CI do GitHub**: ficam para o CI do PR.
 
 Antes, na branch `chore/sync-maiyu-pattern`:
 

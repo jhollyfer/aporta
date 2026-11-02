@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { StorefrontListingShowResponse } from './listings.response.js'
+import {
+  LISTING_PINS_LIMIT,
+  StorefrontListingPinsResponse,
+  StorefrontListingShowResponse,
+} from './listings.response.js'
 
 const LISTING = {
   id: '00000000-0000-4000-8000-000000000001',
@@ -61,5 +65,35 @@ describe('StorefrontListingShowResponse', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+})
+
+describe('StorefrontListingPinsResponse', () => {
+  const PIN = {
+    id: LISTING.id,
+    slug: LISTING.slug,
+    type: 'KITNET',
+    lat: LISTING.lat,
+    lng: LISTING.lng,
+    price: LISTING.price,
+  }
+
+  it('when the pins carry only the light shape, it accepts it', () => {
+    const result = StorefrontListingPinsResponse.safeParse({
+      data: [PIN],
+      meta: { total: 1, limit: LISTING_PINS_LIMIT },
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('when a pin carries more than the map needs, it drops it instead of exposing it', () => {
+    const parsed = StorefrontListingPinsResponse.parse({
+      data: [{ ...PIN, owner: LISTING.owner, photos: LISTING.photos }],
+      meta: { total: 1, limit: LISTING_PINS_LIMIT },
+    })
+
+    expect(parsed.data[0]).not.toHaveProperty('owner')
+    expect(parsed.data[0]).not.toHaveProperty('photos')
   })
 })

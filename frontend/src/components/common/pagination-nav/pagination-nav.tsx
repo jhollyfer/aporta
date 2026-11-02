@@ -24,7 +24,7 @@ export function PaginationNav({
   return (
     <nav
       aria-label={m.pagination_label()}
-      className="flex items-center justify-between gap-3"
+      className="grid grid-cols-2 items-center gap-3 sm:flex sm:justify-between"
     >
       <ActionButton
         tone="outline"
@@ -33,7 +33,10 @@ export function PaginationNav({
       >
         {m.pagination_previous()}
       </ActionButton>
-      <p aria-live="polite" className="text-sm font-bold text-ink-soft">
+      <p
+        aria-live="polite"
+        className="order-first col-span-2 text-center text-sm font-bold text-ink-soft sm:order-none sm:col-span-1"
+      >
         {m.pagination_status({ page: meta.currentPage, total: meta.lastPage })}
       </p>
       <ActionButton

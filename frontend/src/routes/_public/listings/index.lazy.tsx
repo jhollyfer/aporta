@@ -2,10 +2,12 @@ import * as React from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router'
 
+import { ActionButton } from '#/components/common/action-button'
 import { EmptyState } from '#/components/common/empty-state'
 import { FilterBar } from '#/components/common/filter-bar'
 import { ListingCard } from '#/components/common/listing-card'
 import { ListingMap } from '#/components/common/listing-map'
+import { PaginationNav } from '#/components/common/pagination-nav'
 import { storefrontListingsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { EMPTY_FILTERS } from '#/lib/filters'
 import type { ListingFilters } from '#/lib/filters'
@@ -18,7 +20,10 @@ import {
   NEXT_VIEW,
   toFilters,
   toListingParams,
+  toPageParam,
+  toPinFilters,
   toSearchPatch,
+  withFirstPage,
 } from './-search'
 
 export const Route = createLazyFileRoute('/_public/listings/')({
@@ -35,30 +40,53 @@ const route = getRouteApi('/_public/listings/')
 function RouteComponent(): React.JSX.Element {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const resultsRef = React.useRef<HTMLUListElement>(null)
+  const resultsRef = React.useRef<HTMLParagraphElement>(null)
 
   const filters = toFilters(search)
   const { data: results, meta } = useSuspenseQuery(
     storefrontListingsQueryOptions(toListingParams(search)),
   ).data
+  const firstShown = (meta.currentPage - 1) * meta.perPage + 1
   const view = search.view ?? LISTINGS_VIEW.LIST
   const showingMap = view === LISTINGS_VIEW.MAP
 
   function handleChange(patch: Partial<ListingFilters>) {
     void navigate({
-      search: (previous) => ({ ...previous, ...toSearchPatch(patch) }),
+      search: (previous) =>
+        withFirstPage({ ...previous, ...toSearchPatch(patch) }),
       replace: true,
     })
   }
 
   function handleClear() {
     void navigate({
-      search: (previous) => ({
-        ...previous,
-        ...toSearchPatch(EMPTY_FILTERS),
-      }),
+      search: (previous) =>
+        withFirstPage({ ...previous, ...toSearchPatch(EMPTY_FILTERS) }),
       replace: true,
     })
+  }
+
+  /*
+   * Trocar de página é navegar de verdade (entra no histórico: o "voltar" volta à página
+   * anterior), e o router não rola nem move o foco por conta própria. Sem isto o clique em
+   * "Próxima" deixaria a pessoa no rodapé da lista nova, com o foco num botão que acabou de
+   * trocar de texto. O foco vai para a contagem ("Mostrando 13 a 24 de 30"), que é o que o
+   * leitor de tela precisa ouvir para saber que a lista mudou. `resetScroll: false` evita o salto ao topo da página, que passaria do
+   * começo da lista; quem leva o olho e o foco ao começo dela é esta função, depois que a
+   * página nova chegou.
+   */
+  async function handlePage(page: number) {
+    await navigate({
+      search: (previous) => ({
+        ...previous,
+        page: toPageParam(page),
+      }),
+      resetScroll: false,
+    })
+    const count = resultsRef.current
+    if (count === null) return
+    count.scrollIntoView({ behavior: 'auto', block: 'start' })
+    count.focus({ preventScroll: true })
   }
 
   /* "Mostrar N imóveis" leva o olho ao resultado e, no celular, sai do mapa. */
@@ -70,12 +98,16 @@ function RouteComponent(): React.JSX.Element {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  function handleSelect(slug: string | null) {
-    void navigate({
-      search: (previous) => ({ ...previous, selected: slug ?? undefined }),
-      replace: true,
-    })
-  }
+  const handleSelect = React.useCallback(
+    (slug: string | null) => {
+      void navigate({
+        search: (previous) => ({ ...previous, selected: slug ?? undefined }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
+  )
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-8">
@@ -96,8 +128,10 @@ function RouteComponent(): React.JSX.Element {
       </FilterBar>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className={cn(showingMap && 'hidden lg:block')}>
-          {results.length === 0 && (
+        <div
+          className={cn('flex flex-col gap-6', showingMap && 'hidden lg:flex')}
+        >
+          {results.length === 0 && meta.total === 0 && (
             <EmptyState
               title={m.listings_empty_title()}
               description={m.listings_empty_description()}
@@ -111,24 +145,48 @@ function RouteComponent(): React.JSX.Element {
               </button>
             </EmptyState>
           )}
-          {results.length > 0 && (
-            <ul
-              ref={resultsRef}
-              className="grid scroll-mt-24 gap-x-6 gap-y-10 sm:grid-cols-2"
+          {results.length === 0 && meta.total > 0 && (
+            <EmptyState
+              title={m.listings_page_missing_title()}
+              description={m.listings_page_missing_description()}
             >
-              {results.map((listing, index) => (
-                <li key={listing.id} className="reveal">
-                  <ListingCard listing={listing}>
-                    <ListingCard.Photo priority={index < 2} />
-                    <ListingCard.Badge />
-                    <ListingCard.Title />
-                    <ListingCard.Meta />
-                    <ListingCard.Price />
-                    <ListingCard.Available />
-                  </ListingCard>
-                </li>
-              ))}
-            </ul>
+              <ActionButton tone="moss" onClick={() => void handlePage(1)}>
+                {m.listings_page_first()}
+              </ActionButton>
+            </EmptyState>
+          )}
+          {results.length > 0 && (
+            <>
+              <p
+                ref={resultsRef}
+                tabIndex={-1}
+                className="scroll-mt-24 text-sm font-bold text-ink-soft outline-none"
+              >
+                {m.listings_range({
+                  from: firstShown,
+                  to: firstShown + results.length - 1,
+                  total: meta.total,
+                })}
+              </p>
+              <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
+                {results.map((listing, index) => (
+                  <li key={listing.id} className="reveal">
+                    <ListingCard listing={listing}>
+                      <ListingCard.Photo priority={index < 2} />
+                      <ListingCard.Badge />
+                      <ListingCard.Title />
+                      <ListingCard.Meta />
+                      <ListingCard.Price />
+                      <ListingCard.Available />
+                    </ListingCard>
+                  </li>
+                ))}
+              </ul>
+              <PaginationNav
+                meta={meta}
+                onPage={(page) => void handlePage(page)}
+              />
+            </>
           )}
         </div>
 
@@ -139,10 +197,12 @@ function RouteComponent(): React.JSX.Element {
           )}
         >
           <ListingMap
-            listings={results}
+            cards={results}
+            filters={toPinFilters(search)}
             activeSlug={search.selected ?? null}
             onSelect={handleSelect}
           >
+            <ListingMap.Status />
             <ListingMap.Summary />
           </ListingMap>
         </div>

@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 69 tarefas · 41 feitas · 0 em andamento · 5 bloqueadas · 23 a fazer, atualizado 2026-11-02
+**Resumo:** 69 tarefas · 45 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -45,7 +45,7 @@ Telas públicas completas. Nesta fase liam `frontend/src/lib/data` em vez da API
 | 2.8 | `sitemap.xml`, `robots.txt`, `/health-check` e `head` por rota | Média | Feita | |
 | 2.9 | Dados de exemplo: 12 imóveis, 10 lugares e 6 bairros | Média | Feita | telefones fictícios (`5597999990`) e coordenadas aproximadas, ver 7.10; hoje moram em `backend/database/data/` e chegam ao app pela API |
 
-## Fase 3 · Domínio de anúncios no backend (8/9)
+## Fase 3 · Domínio de anúncios no backend (9/9)
 
 A leitura pública entrou (commits `44f5ebe` e `4692ac0`): quatro rotas `GET` em `/storefront`, sem
 escrita. O frontend passou a lê-la (3.6, branch `feat/frontend-vitrine-api`). Falta o `POST` do dono e a
@@ -61,7 +61,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | Feita | `frontend/src/lib/data` saiu; a camada está em `frontend/src/integrations/tanstack-query/` (`ARCHITECTURE.md` §6); `VITE_API_URL` é obrigatória (`ENV.md`); a API não devolve URL de foto, então a cena SVG continua. Verificado: Vitest 43 testes, E2E de navegador 37 contra o backend semeado, build e `check-chunk-cycles` verdes. Falta o CI no GitHub (9.3) e a imagem Docker, que não foi construída |
 | 3.7 | Responses de listagem em `shared/src/responses/` e documento OpenAPI | Média | Feita | `shared/src/responses/storefront/`; `openapi:check` com 16 de 16 operações; a response do `POST` do dono entra com 3.5 |
 | 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | Feita | as quatro rotas de `/storefront`, `TEST-PLAN.md` §3 e §3.1; o `POST` do dono leva as linhas dele |
-| 3.9 | Paginar a listagem e o mapa: hoje `/listings` pede `perPage=100` (o teto da API, `MAX_PER_PAGE`) e mostra todos os pins de uma vez; passando de 100 anúncios publicados os pins e os cards cobrem só os 100 primeiros, e o sitemap, os bairros e as abas do guia têm o mesmo corte | Média | A fazer | paginação na listagem e consulta do mapa por área; vale antes de o catálogo chegar a 100 anúncios, `ARCHITECTURE.md` §10 |
+| 3.9 | Paginar a listagem e o mapa: hoje `/listings` pede `perPage=100` (o teto da API, `MAX_PER_PAGE`) e mostra todos os pins de uma vez; passando de 100 anúncios publicados os pins e os cards cobrem só os 100 primeiros, e o sitemap, os bairros e as abas do guia têm o mesmo corte | Média | Feita | listagem paginada (12 ou 24 por página, `page` na URL) e mapa pela janela visível em `GET /storefront/listings/pins`, com teto de 500 e aviso para aproximar; sitemap, bairros e abas do guia ainda cortam em 100 (`ARCHITECTURE.md` §10) |
 
 ## Fase 4 · Fotos dos anúncios (3/5)
 
@@ -93,7 +93,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 6.2 | Fila com Redis e worker, e segundo serviço no Coolify | Média | A fazer | `ARCHITECTURE.md` §9.1 |
 | 6.3 | Confirmação de e-mail e aviso ao dono | Média | A fazer | depende de 5.1, 6.1 e 6.2 |
 
-## Fase 7 · Correções e dívida conhecida (5/15)
+## Fase 7 · Correções e dívida conhecida (7/15)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -104,11 +104,11 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 7.5 | Validator do WhatsApp só com dígitos, em `shared/` e no par do backend | Alta | A fazer | hoje só confere o tamanho, `SECURITY.md` TM-008 |
 | 7.6 | Origem de `backend/infra/r2-cors.json` alinhada ao app | Alta | Feita | `https://aporta.maiyu.com.br`; falta aplicar no provedor |
 | 7.7 | Corrigir o comentário de `vitest.config.ts` (cita um teste de `rich-text` e 229 testes que este projeto não tem) | Baixa | A fazer | o comentário do `.env.example` sobre `VITE_API_URL` já foi corrigido na 3.6 |
-| 7.8 | Cabeçalhos de segurança no app (CSP, `Referrer-Policy`, `X-Frame-Options`) | Média | A fazer | `SECURITY.md` §2.8 |
+| 7.8 | Cabeçalhos de segurança no app (CSP, `Referrer-Policy`, `X-Frame-Options`) | Média | Feita | CSP com nonce por resposta (só em produção), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` e HSTS sem `includeSubDomains`; `e2e/headers.spec.ts` confere sem violação no console. Falta HSTS com `includeSubDomains` e `preload`, que mexe nos outros subdomínios de `maiyu.com.br` |
 | 7.9 | Testes que faltam: `guideSearchSchema`, `listing-draft.validator.ts`, paridade das chaves de i18n | Média | A fazer | `TEST-PLAN.md` §3.1; o `/health-check` do app já é conferido em `e2e/health.spec.ts` |
 | 7.10 | Conferir telefones, coordenadas e lugares de exemplo antes de abrir ao público | Alta | Bloqueada | exige o dono e quem conhece a cidade |
 | 7.11 | Escrever o procedimento de rotação de `APP_KEY` e das credenciais | Média | A fazer | `SECURITY.md` §6 |
-| 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | A fazer | o link mandado por WhatsApp sai sem prévia |
+| 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | Feita | favicon, ícones, manifesto e imagem de compartilhamento gerados por `frontend/scripts/generate-icons.mjs` e `generate-og.mjs`; a prévia usa a cena do tipo, não foto |
 | 7.13 | Fotos reais da cidade (acervos abertos com crédito, ou fotos do dono) no hero e no guia | Alta | Bloqueada | o inspetor de design reprova página só com ilustração; sem rede nesta sessão para buscar no Openverse e no Wikimedia |
 | 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
 | 7.15 | A tela do cadastro dizia "Anúncio recebido" com um envio que não gravava nada: trocar o texto por um estado honesto | Alta | Feita | commit `01f86eb`: o stub saiu, o último passo "Finalizar cadastro" só valida o formulário inteiro e mostra "Anúncio pronto", avisa que o envio ainda não está no ar e mantém o rascunho |
@@ -122,7 +122,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 | 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
-## Fase 9 · Deploy e produção (0/9)
+## Fase 9 · Deploy e produção (1/9)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -131,7 +131,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 9.3 | Primeiro run do CI no GitHub e correção do que falhar | Alta | A fazer | depende de 8.1 |
 | 9.4 | Configurar o painel: migration pós-deploy, `COOKIE_DOMAIN`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, healthcheck em `/health-check` | Alta | A fazer | `ARCHITECTURE.md` §9.1; `CORS_ORIGINS=https://aporta.maiyu.com.br` passou a ser requisito da vitrine, porque o navegador chama a API direto; `SERVER_API_URL` é opcional |
 | 9.5 | Aplicar o CORS do bucket e agendar `storages:prune` | Alta | A fazer | depende de 7.6 |
-| 9.6 | Primeira conta de administrador em produção | Alta | Bloqueada | procedimento ainda não definido: o seeder não roda em produção |
+| 9.6 | Primeira conta de administrador em produção | Alta | Feita | `node ace staff:create` cria o primeiro administrador sem seeder (`ENV.md` §8); falta rodá-lo em produção, que é do dono |
 | 9.7 | Provisionar o PostgreSQL e o bucket de produção | Alta | A fazer | |
 | 9.8 | Conferir os domínios e o smoke test do deploy | Média | A fazer | `aporta.maiyu.com.br` e `api-aporta.maiyu.com.br` |
 | 9.9 | Conferir a colisão de nome e de domínio dos cookies de sessão com os outros projetos de `maiyu.com.br` e decidir a correção | Alta | Bloqueada | decisão do dono: `DECISIONS.md` #9, `SECURITY.md` TM-014 |

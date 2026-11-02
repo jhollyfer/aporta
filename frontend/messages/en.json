@@ -412,5 +412,18 @@
   "staff_search_submit": "Search",
   "staff_search_clear": "Clear search",
   "staff_search_empty_title": "No listing with this text",
-  "staff_search_empty_text": "Nothing for \"{q}\" in this status. Try another part of the title, or another queue status."
+  "staff_search_empty_text": "Nothing for \"{q}\" in this status. Try another part of the title, or another queue status.",
+  "listings_range": "Showing {from} to {to} of {total} places",
+  "listings_page_missing_title": "This page does not exist",
+  "listings_page_missing_description": "The search has fewer pages than this. Go back to the start of the list.",
+  "listings_page_first": "Go to the first page",
+  "map_pins_limit": "The map shows {shown} of {total} places in this area. Zoom in to see them all.",
+  "map_pins_empty": "No places in this area. Move the map or zoom out to see more.",
+  "map_pins_error": "Could not load the places on the map.",
+  "map_pins_retry": "Try again",
+  "map_pins_rate_limited": "Too many map requests. Wait a moment and try again.",
+  "map_pins_rate_limited_wait": "Too many map requests. Try again in {seconds} s.",
+  "map_pin_open": "View listing: {type}",
+  "meta_og_image_alt": "Aporta, housing and city guide for Benjamin Constant",
+  "map_selected_label": "Place selected on the map"
 }

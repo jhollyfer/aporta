@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { NotFoundPage } from '#/components/common/not-found-page'
 import { HTTP_ERROR_CODE } from '#/integrations/tanstack-query/http'
 import { storefrontListingQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
-import { pageHead } from '#/lib/head'
+import { OG_IMAGE_BY_TYPE, pageHead } from '#/lib/head'
 import { loadOrNotFound } from '#/lib/load-or-not-found'
 
 /**
@@ -30,6 +30,7 @@ export const Route = createFileRoute('/_public/listings/$slug')({
       path: `/listings/${listing.slug}`,
       title: listing.title,
       description: listing.description,
+      image: OG_IMAGE_BY_TYPE[listing.type],
     })
   },
   notFoundComponent: () => <NotFoundPage />,

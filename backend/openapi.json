@@ -2721,6 +2721,16 @@
               }
             }
           },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Erro interno do servidor",
             "content": {
@@ -2760,6 +2770,46 @@
             "schema": {
               "type": "string",
               "maxLength": 100
+            }
+          },
+          {
+            "name": "minLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "minLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "maxLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "maxLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
             }
           },
           {
@@ -2848,6 +2898,169 @@
         ]
       }
     },
+    "/storefront/listings/pins": {
+      "get": {
+        "operationId": "storefrontListingsPins",
+        "summary": "GET /storefront/listings",
+        "tags": [
+          "Vitrine · Anúncios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontListingsPinsResponse200"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500ServerErrorStorefrontListingPinsError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Os pontos do mapa, sem autenticação: só o necessário para desenhar o pino e abrir o anúncio (`id`, `slug`, `type`, `lat`, `lng` e o preço). Sem fotos, sem contato do dono e sem paginação.\n\nAceita os mesmos filtros do catálogo (`?type`, `?neighborhood`, `?period`, `?minPrice`, `?maxPrice`, `?search`) e a janela do mapa: `?minLng`, `?minLat`, `?maxLng` e `?maxLat`, os quatro juntos ou nenhum, em graus decimais. Só volta o que cai dentro da janela.\n\nDevolve no máximo 500 pontos, do anúncio mais recente para o mais antigo. `meta.total` é quantos anúncios casam no total: se for maior que o tamanho de `data`, a janela tem mais do que o mapa desenha e a tela deve pedir para aproximar.",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "minLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "minLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "maxLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "maxLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "HOUSE",
+                "APARTMENT",
+                "KITNET",
+                "ROOM",
+                "HOTEL"
+              ]
+            }
+          },
+          {
+            "name": "neighborhood",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      }
+    },
     "/storefront/listings/{slug}": {
       "get": {
         "operationId": "storefrontListingsShow",
@@ -2882,6 +3095,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
                 }
               }
             }
@@ -2939,6 +3162,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
                 }
               }
             }
@@ -3035,6 +3268,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
                 }
               }
             }
@@ -6556,6 +6799,41 @@
           "code"
         ]
       },
+      "Error500ServerErrorStorefrontListingPinsError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "SERVER_ERROR",
+              "STOREFRONT_LISTING_PINS_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
       "Error500ServerErrorStorefrontListingShowError": {
         "type": "object",
         "properties": {
@@ -9723,6 +10001,233 @@
         "required": [
           "meta",
           "data"
+        ],
+        "additionalProperties": false
+      },
+      "StorefrontListingsPinsResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "photos",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt"
         ],
         "additionalProperties": false
       },

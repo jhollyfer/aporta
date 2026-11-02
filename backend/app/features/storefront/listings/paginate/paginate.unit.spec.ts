@@ -98,6 +98,45 @@ test.group('storefront > listings > paginate (unit)', () => {
     })
   })
 
+  test('when the payload has the four corners, it hands the window to the repository', async ({
+    assert,
+  }) => {
+    const neighborhoodId = randomUUID()
+    const listings = repositoryWith(neighborhoodId)
+    listings.put(
+      listingIn(LISTING_STATUS.PUBLISHED, {
+        slug: 'dentro',
+        neighborhoodId,
+        lat: -4.38,
+        lng: -70.03,
+      }),
+    )
+    listings.put(
+      listingIn(LISTING_STATUS.PUBLISHED, {
+        slug: 'fora',
+        neighborhoodId,
+        lat: -3,
+        lng: -60,
+      }),
+    )
+    const useCase = new StorefrontListingPaginateUseCase(
+      listings,
+      new StorageFake(),
+    )
+
+    const result = await useCase.execute({
+      minLng: -70.1,
+      minLat: -4.4,
+      maxLng: -70,
+      maxLat: -4.3,
+    })
+
+    assert.containsSubset(result.value, {
+      meta: { total: 1 },
+      data: [{ slug: 'dentro' }],
+    })
+  })
+
   test('when the repository fails, it answers 500 with the module code', async ({
     assert,
   }) => {

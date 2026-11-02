@@ -3,6 +3,7 @@ import type {
   AdministratorReportPaginatePayload,
   OwnerListingPaginatePayload,
   StorefrontListingPaginatePayload,
+  StorefrontListingPinsPayload,
   StorefrontNeighborhoodPaginatePayload,
   StorefrontPlacePaginatePayload,
 } from '@aporta/shared'
@@ -71,10 +72,12 @@ export const queryKeys = {
    * card de uma lista, nenhum dos dois abre sozinho.
    */
   storefront: {
-    listings: resource<StorefrontListingPaginatePayload>()(
-      'storefront',
-      'listings',
-    ),
+    listings: {
+      ...resource<StorefrontListingPaginatePayload>()('storefront', 'listings'),
+      /** Os pins da janela do mapa: uma entrada por filtro e janela arredondada. */
+      pins: (params: StorefrontListingPinsPayload) =>
+        ['storefront', 'listings', 'pins', params] as const,
+    },
     neighborhoods: resource<StorefrontNeighborhoodPaginatePayload>()(
       'storefront',
       'neighborhoods',

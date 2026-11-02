@@ -11,6 +11,7 @@ import { PAGINATION } from '#core/response'
 import Translation from '#core/translation'
 import HTTPException from '#exceptions/http.exception'
 import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
+import MapWindow from '#features/_shared.map-window'
 import { recentFirst } from '#features/_shared.sort'
 import ListingPresenter from '#features/storefront/listings/listings.presenter'
 import ListingRepository from '#repositories/listing/listing.repository'
@@ -22,7 +23,7 @@ type Response = Either<HTTPException, StorefrontListingPaginateResponse>
 
 /**
  * The public listing catalog: only `PUBLISHED` and outside the trash
- * (`ListingRepository.paginatePublished`), filtered by type, neighborhood, period and price.
+ * (`ListingRepository.paginatePublished`), filtered by type, neighborhood, period, price and map window.
  */
 @inject()
 export default class StorefrontListingPaginateUseCase {
@@ -46,6 +47,7 @@ export default class StorefrontListingPaginateUseCase {
         period: payload.period,
         minPrice: payload.minPrice,
         maxPrice: payload.maxPrice,
+        bounds: MapWindow.of(payload),
         sort,
         direction,
       })

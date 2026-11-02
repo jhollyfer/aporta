@@ -115,6 +115,10 @@ export class FailingListingRepository extends ListingRepository {
   paginatePublished(): never {
     throw new Error('database down')
   }
+
+  findPublishedPins(): never {
+    throw new Error('database down')
+  }
 }
 
 /**

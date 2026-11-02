@@ -21,7 +21,10 @@ import ListingPhotoModel from '#models/listing-photo'
 import NeighborhoodModel from '#models/neighborhood'
 import ListingRepository, {
   type ListingOwnedCriteria,
+  type ListingPinsCriteria,
+  type ListingPinsResult,
   type ListingPublishedCriteria,
+  type ListingPublishedFilters,
   type ListingRecord,
   type ListingReviewCriteria,
 } from '#repositories/listing/listing.repository'
@@ -216,8 +219,65 @@ export default class ListingLucidRepository extends ListingRepository {
   async paginatePublished(
     criteria: ListingPublishedCriteria,
   ): Promise<Paginated<ListingRecord>> {
-    const query = this.published()
+    const query = this.narrow(this.published(), criteria)
 
+    // `price` is not a column, so it is the expression that orders. `id` goes after it as the
+    // tie-break: two ads with the same price would otherwise swap places between pages.
+    if (criteria.sort === 'price') {
+      query.orderByRaw(
+        `${MONTHLY_EQUIVALENT} ${DIRECTION_SQL[criteria.direction]}`,
+      )
+
+      return LucidMapping.page(query, { ...criteria, sort: 'id' }, (row) =>
+        this.toRecord(row),
+      )
+    }
+
+    return LucidMapping.page(query, criteria, (row) => this.toRecord(row))
+  }
+
+  async findPublishedPins(
+    criteria: ListingPinsCriteria,
+  ): Promise<ListingPinsResult> {
+    // No relations: a pin is one row of `listings`. The count and the points share the filters
+    // through `narrow`, so "how many match" can never disagree with "which ones came back".
+    const total = await LucidMapping.count(
+      this.narrow(
+        ListingModel.query().withScopes((scopes) => scopes.published()),
+        criteria,
+      ),
+    )
+    const rows = await this.narrow(
+      ListingModel.query().withScopes((scopes) => scopes.published()),
+      criteria,
+    )
+      .select('id', 'slug', 'type', 'lat', 'lng', 'priceMonthly', 'priceDaily')
+      .orderBy('createdAt', 'desc')
+      .orderBy('id', 'asc')
+      .limit(criteria.limit)
+
+    return {
+      total,
+      pins: rows.map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        type: row.type,
+        lat: row.lat,
+        lng: row.lng,
+        priceMonthly: row.priceMonthly,
+        priceDaily: row.priceDaily,
+      })),
+    }
+  }
+
+  /**
+   * The storefront filters, applied once for the catalog and for the pins. Every value the visitor
+   * sends goes through a binding; the only interpolation is `MONTHLY_EQUIVALENT`, a constant.
+   */
+  private narrow(
+    query: ModelQueryBuilderContract<typeof ListingModel, ListingModel>,
+    criteria: ListingPublishedFilters,
+  ) {
     if (criteria.type) query.where('type', criteria.type)
 
     // A subquery on the slug and not `whereHas`: the relation's callback hands back a thenable
@@ -240,6 +300,13 @@ export default class ListingLucidRepository extends ListingRepository {
     if (criteria.maxPrice !== undefined)
       query.whereRaw(`${MONTHLY_EQUIVALENT} <= ?`, [criteria.maxPrice])
 
+    // `between` is inclusive, so a pin exactly on the edge of the window is inside it.
+    if (criteria.bounds) {
+      query
+        .whereBetween('lat', [criteria.bounds.minLat, criteria.bounds.maxLat])
+        .whereBetween('lng', [criteria.bounds.minLng, criteria.bounds.maxLng])
+    }
+
     if (criteria.search) {
       const search = `%${criteria.search}%`
 
@@ -248,19 +315,7 @@ export default class ListingLucidRepository extends ListingRepository {
       })
     }
 
-    // `price` is not a column, so it is the expression that orders. `id` goes after it as the
-    // tie-break: two ads with the same price would otherwise swap places between pages.
-    if (criteria.sort === 'price') {
-      query.orderByRaw(
-        `${MONTHLY_EQUIVALENT} ${DIRECTION_SQL[criteria.direction]}`,
-      )
-
-      return LucidMapping.page(query, { ...criteria, sort: 'id' }, (row) =>
-        this.toRecord(row),
-      )
-    }
-
-    return LucidMapping.page(query, criteria, (row) => this.toRecord(row))
+    return query
   }
 
   private published() {

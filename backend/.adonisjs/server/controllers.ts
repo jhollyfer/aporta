@@ -126,6 +126,9 @@ export const controllers = {
       paginate: {
         Paginate: () => import('#features/storefront/listings/paginate/paginate.controller'),
       },
+      pins: {
+        Pins: () => import('#features/storefront/listings/pins/pins.controller'),
+      },
       show: {
         Show: () => import('#features/storefront/listings/show/show.controller'),
       },

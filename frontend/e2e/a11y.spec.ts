@@ -1,6 +1,7 @@
 import type { APIRequestContext } from '@playwright/test'
 
 import { E2eListing } from './support/listing'
+import { E2eMap } from './support/map'
 import { expect, ownerTest, staffTest, test } from './support/test'
 
 /**
@@ -11,6 +12,7 @@ import { expect, ownerTest, staffTest, test } from './support/test'
 const PAGES = [
   '/',
   '/listings',
+  '/listings?view=map',
   '/listings/kitnet-centro-porto',
   '/guide',
   '/list-your-place',
@@ -126,6 +128,39 @@ for (const scheme of SCHEMES) {
       },
     )
 
+    // A segunda página e o resumo do pin só existem com a vitrine paginada e o mapa carregado:
+    // são estados novos da listagem e passam pelo axe como qualquer tela.
+    staffTest(
+      'quando a listagem está na página 2, mostra o título e não tem violação séria',
+      async ({ page, crowdedCatalog, expectNoBlockingViolations }) => {
+        void crowdedCatalog
+        await page.goto('/listings?page=2')
+
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await expect(
+          page.getByRole('navigation', { name: 'Paginação' }),
+        ).toBeVisible()
+        await expectNoBlockingViolations()
+      },
+    )
+
+    staffTest(
+      'quando o visitante toca num pin, o resumo sobre o mapa não tem violação séria',
+      async ({ page, expectHydrated, expectNoBlockingViolations }) => {
+        await page.goto('/listings')
+
+        const pin = E2eMap.firstPin(page)
+
+        await expect(pin).toBeVisible()
+        await expectHydrated(E2eMap.applyButton(page))
+        await pin.click({ force: true })
+        await expect(
+          page.getByRole('group', { name: 'Imóvel selecionado no mapa' }),
+        ).toBeVisible()
+        await expectNoBlockingViolations()
+      },
+    )
+
     test('quando o visitante abre o diálogo de denúncia, não há violação séria', async ({
       page,
       expectNoBlockingViolations,
@@ -162,6 +197,57 @@ test.describe('tela de 320 px e movimento reduzido', () => {
         .toBe(true)
     })
   }
+})
+
+test.describe('listagem paginada e mapa em 320 px', () => {
+  test.use({ reducedMotion: 'reduce', viewport: { width: 320, height: 640 } })
+
+  staffTest(
+    'quando a listagem está na página 2, não há rolagem horizontal e a navegação cabe',
+    async ({ page, crowdedCatalog }) => {
+      void crowdedCatalog
+      await page.goto('/listings?page=2')
+
+      const nav = page.getByRole('navigation', { name: 'Paginação' })
+
+      await expect(nav).toBeVisible()
+      await expect(nav.getByRole('button', { name: 'Próxima' })).toBeVisible()
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              document.documentElement.scrollWidth <=
+              document.documentElement.clientWidth,
+          ),
+        )
+        .toBe(true)
+    },
+  )
+
+  staffTest(
+    'quando o mapa abre e um pin é tocado, o resumo cabe na tela sem rolagem horizontal',
+    async ({ page, expectHydrated }) => {
+      await page.goto('/listings?view=map')
+
+      const pin = E2eMap.firstPin(page)
+
+      await expect(pin).toBeVisible()
+      await expectHydrated(E2eMap.applyButton(page))
+      await pin.click({ force: true })
+      await expect(
+        page.getByRole('group', { name: 'Imóvel selecionado no mapa' }),
+      ).toBeVisible()
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              document.documentElement.scrollWidth <=
+              document.documentElement.clientWidth,
+          ),
+        )
+        .toBe(true)
+    },
+  )
 })
 
 test.describe('telas do dono em 320 px', () => {

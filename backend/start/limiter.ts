@@ -174,3 +174,21 @@ export const reportCreateThrottle = limiter.define('reportCreate', function () {
 export const refreshThrottle = limiter.define('refresh', function () {
   return limiter.allowRequests(60).every('1 minute')
 })
+
+/**
+ * The public reads of `/storefront`, per IP: scraping and load, not a guessing attack. 120 a
+ * minute is two a second, far above a person browsing (the listing page makes a handful of calls
+ * and the map a few more while panning) and low enough to make a scraper walk instead of run.
+ * Several people behind the same NAT share the bucket, so the ceiling is generous on purpose.
+ *
+ * Without `blockFor`: going over costs only the rest of the minute. A visitor who hits it by
+ * mistake (a tab left refreshing) is back in under a minute, where a ten-minute block would look
+ * like the site is down. The answer is the house `429` with `Retry-After`. A bucket of its own,
+ * so reading never spends the login attempts or the report budget of the NAT.
+ */
+export const storefrontReadThrottle = limiter.define(
+  'storefrontRead',
+  function () {
+    return limiter.allowRequests(120).every('1 minute')
+  },
+)

@@ -154,6 +154,10 @@ repouso, hover, `focus-visible`, desabilitado, erro.
 | `EmptyState` | título, descrição e ação opcional | estado vazio com saída (limpar filtro), nunca só "nada aqui" |
 | `NotFoundPage` | uma | 404 da área pública, dentro da casca |
 
+Mapa por janela: o pin vem de `/storefront/listings/pins` a cada `moveend` (300 ms de espera). Pin cujo
+anúncio não está na página aberta mostra um mini-cartão com tipo, preço e link. Acima de 500 pins o mapa
+avisa "aproxime para ver todos"; área sem imóvel e limite de leitura (429, com a espera) têm aviso próprio.
+
 ## 8. Estados de tela
 
 | Estado | Como aparece |

@@ -29,6 +29,7 @@ server.use([
   () => import('#middleware/detect-user-locale.middleware'),
   () => import('#middleware/force-json-response.middleware'),
   () => import('#middleware/container-bindings.middleware'),
+  () => import('#middleware/referrer-policy.middleware'),
   () => import('@adonisjs/cors/cors_middleware'),
 ])
 
@@ -61,4 +62,5 @@ export const middleware = router.named({
   documentation: () => import('#middleware/documentation.middleware'),
   auth: () => import('#middleware/auth.middleware'),
   role: () => import('#middleware/role.middleware'),
+  publicCache: () => import('#middleware/public-cache.middleware'),
 })

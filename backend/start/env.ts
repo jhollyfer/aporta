@@ -120,4 +120,18 @@ export default await Env.create(new URL('../', import.meta.url), {
   */
   SEED_OWNER_EMAIL: Env.schema.string.optional(),
   SEED_OWNER_PASSWORD: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------------------------
+  | Staff creation
+  |----------------------------------------------------------------------------
+  |
+  | Read only by `node ace staff:create`, the way to create the first administrator in
+  | production (the seeder does not run there). All optional and without a default: the
+  | command asks for what is missing, and the application boots without them. The password has
+  | no flag on purpose, so it never lands in the shell history or in `ps`.
+  */
+  STAFF_EMAIL: Env.schema.string.optional(),
+  STAFF_NAME: Env.schema.string.optional(),
+  STAFF_PASSWORD: Env.schema.string.optional(),
 })

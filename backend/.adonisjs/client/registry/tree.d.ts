@@ -10,6 +10,7 @@ export interface ApiDefinition {
   storefront: {
     listings: {
       paginate: typeof routes['storefront.listings.paginate']
+      pins: typeof routes['storefront.listings.pins']
       show: typeof routes['storefront.listings.show']
     }
     neighborhoods: {
@@ -17,6 +18,9 @@ export interface ApiDefinition {
     }
     places: {
       paginate: typeof routes['storefront.places.paginate']
+    }
+    reports: {
+      create: typeof routes['storefront.reports.create']
     }
   }
   authentication: {
@@ -37,6 +41,21 @@ export interface ApiDefinition {
       update: typeof routes['owner.listings.update']
       archive: typeof routes['owner.listings.archive']
       photos: typeof routes['owner.listings.photos']
+    }
+  }
+  administrator: {
+    listings: {
+      paginate: typeof routes['administrator.listings.paginate']
+      show: typeof routes['administrator.listings.show']
+      review: typeof routes['administrator.listings.review']
+      archive: typeof routes['administrator.listings.archive']
+    }
+    owners: {
+      verify: typeof routes['administrator.owners.verify']
+    }
+    reports: {
+      paginate: typeof routes['administrator.reports.paginate']
+      resolve: typeof routes['administrator.reports.resolve']
     }
   }
   storages: {

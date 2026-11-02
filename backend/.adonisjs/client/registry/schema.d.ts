@@ -60,6 +60,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/listings/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'storefront.listings.pins': {
+    methods: ["GET","HEAD"]
+    pattern: '/storefront/listings/pins'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/storefront/listings.validator').StorefrontListingPinsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/listings/pins/pins.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/listings/pins/pins.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/listings/pins/pins.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'storefront.listings.show': {
     methods: ["GET","HEAD"]
     pattern: '/storefront/listings/:slug'
@@ -97,6 +110,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'storefront.reports.create': {
+    methods: ["POST"]
+    pattern: '/storefront/reports'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/storefront/reports.validator').StorefrontReportCreateValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/storefront/reports.validator').StorefrontReportCreateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/reports/create/create.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/reports/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/reports/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'authentication.sign_in': {
@@ -253,6 +279,97 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#features/owner/listing-photos/create/create.controller').default['handle']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/owner/listing-photos/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/owner/listing-photos/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.listings.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/administrator/listings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/administrator/listings.validator').AdministratorListingPaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/listings/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/listings/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.listings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/administrator/listings/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/listings/show/show.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/listings/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.listings.review': {
+    methods: ["PUT"]
+    pattern: '/administrator/listings/:id/review'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/listings.validator').AdministratorListingReviewValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/listings.validator').AdministratorListingReviewValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/listings/review/review.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/listings/review/review.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/review/review.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.listings.archive': {
+    methods: ["DELETE"]
+    pattern: '/administrator/listings/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/listings/archive/archive.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/listings/archive/archive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/archive/archive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.owners.verify': {
+    methods: ["PUT"]
+    pattern: '/administrator/owners/:id/verification'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/owners.validator').AdministratorOwnerVerifyValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/owners.validator').AdministratorOwnerVerifyValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/owners/verify/verify.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/owners/verify/verify.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/owners/verify/verify.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.reports.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/administrator/reports'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/administrator/reports.validator').AdministratorReportPaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/reports/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/reports/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/reports/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.reports.resolve': {
+    methods: ["PUT"]
+    pattern: '/administrator/reports/:id/resolution'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/reports.validator').AdministratorReportResolveValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/reports.validator').AdministratorReportResolveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/reports/resolve/resolve.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/reports/resolve/resolve.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/reports/resolve/resolve.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'storages.paginate': {

@@ -26,6 +26,7 @@
   "GET /storages/{id}/download": "ADMINISTRATOR, MODERATOR, OWNER",
   "GET /storages/{id}/parts": "ADMINISTRATOR, MODERATOR, OWNER",
   "GET /storefront/listings": "anonima",
+  "GET /storefront/listings/pins": "anonima",
   "GET /storefront/listings/{slug}": "anonima",
   "GET /storefront/neighborhoods": "anonima",
   "GET /storefront/places": "anonima",

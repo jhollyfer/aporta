@@ -19,6 +19,7 @@ import {
   signInAccountThrottle,
   signInThrottle,
   signUpThrottle,
+  storefrontReadThrottle,
   refreshThrottle,
   uploadThrottle,
 } from '#start/limiter'
@@ -71,6 +72,10 @@ router
  * `storefront.e2e.spec.ts` proves it: no route asks for a cookie, and the report is the only one
  * that is not a `GET`.
  *
+ * The reads carry two middleware and nothing else: a per-IP ceiling (`storefrontReadThrottle`,
+ * TM-016) and `Cache-Control: public` on a `200` (`publicCache`, whose TTL stays under the
+ * signed photo URL's). The report has neither the cache (a write) nor the read ceiling.
+ *
  * The listing is reached by `slug`, which is what the storefront URL carries. The neighborhoods
  * and the guide have no detail route: the screen only ever reads them as a list.
  */
@@ -79,10 +84,15 @@ router
     router
       .group(() => {
         router.get('/', [controllers.storefront.listings.paginate.Paginate])
+        // Before `:slug`, or `pins` would be read as the slug of an ad. The price of that order:
+        // an ad whose slug is exactly `pins` would be unreachable, and none can be: a generated
+        // slug always ends in an eight-character suffix (`Slug.of`).
+        router.get('pins', [controllers.storefront.listings.pins.Pins])
         router.get(':slug', [controllers.storefront.listings.show.Show])
       })
       .prefix('listings')
       .as('listings')
+      .use([storefrontReadThrottle, middleware.publicCache()])
 
     router
       .group(() => {
@@ -92,6 +102,7 @@ router
       })
       .prefix('neighborhoods')
       .as('neighborhoods')
+      .use([storefrontReadThrottle, middleware.publicCache()])
 
     router
       .group(() => {
@@ -99,6 +110,7 @@ router
       })
       .prefix('places')
       .as('places')
+      .use([storefrontReadThrottle, middleware.publicCache()])
 
     // The one write in the group, as the paragraph above anticipated: it carries its own
     // per-IP throttle on the route. A report needs no account, because whoever was almost

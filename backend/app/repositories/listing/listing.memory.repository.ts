@@ -14,7 +14,10 @@ import ListingRepository, {
   type ListingAccount,
   type ListingNeighborhood,
   type ListingOwnedCriteria,
+  type ListingPinsCriteria,
+  type ListingPinsResult,
   type ListingPublishedCriteria,
+  type ListingPublishedFilters,
   type ListingRecord,
   type ListingReviewCriteria,
   type ListingSortColumn,
@@ -186,6 +189,30 @@ export default class ListingMemoryRepository extends ListingRepository {
     )
   }
 
+  findPublishedPins(criteria: ListingPinsCriteria): Promise<ListingPinsResult> {
+    const found = this.visible()
+      .filter((each) => this.matches(each, criteria))
+      // The same order as the Lucid query: newest first, `id` as the tie-break.
+      .sort(
+        (a, b) =>
+          b.row.createdAt.getTime() - a.row.createdAt.getTime() ||
+          a.row.id.localeCompare(b.row.id),
+      )
+
+    return Promise.resolve({
+      total: found.length,
+      pins: found.slice(0, criteria.limit).map(({ row }) => ({
+        id: row.id,
+        slug: row.slug,
+        type: row.type,
+        lat: row.lat,
+        lng: row.lng,
+        priceMonthly: row.priceMonthly,
+        priceDaily: row.priceDaily,
+      })),
+    })
+  }
+
   /**
    * The rows that have a neighborhood, which is every row Postgres can hold: the foreign key makes
    * a listing without one impossible, so here it is simply not visible, instead of a read that
@@ -204,7 +231,7 @@ export default class ListingMemoryRepository extends ListingRepository {
 
   private matches(
     { row, neighborhood }: Stored,
-    criteria: ListingPublishedCriteria,
+    criteria: ListingPublishedFilters,
   ): boolean {
     const listing = this.entity(row)
     const price = listing.monthlyEquivalent()
@@ -218,7 +245,20 @@ export default class ListingMemoryRepository extends ListingRepository {
         row.periods.includes(criteria.period)) &&
       (criteria.minPrice === undefined || price >= criteria.minPrice) &&
       (criteria.maxPrice === undefined || price <= criteria.maxPrice) &&
+      this.within(row, criteria) &&
       MemoryRows.contains([row.title, row.description], criteria.search)
+    )
+  }
+
+  /** Inside the map window, edges included, as the SQL `between`. */
+  private within(row: Row, { bounds }: ListingPublishedFilters): boolean {
+    if (!bounds) return true
+
+    return (
+      row.lat >= bounds.minLat &&
+      row.lat <= bounds.maxLat &&
+      row.lng >= bounds.minLng &&
+      row.lng <= bounds.maxLng
     )
   }
 

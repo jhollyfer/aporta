@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 71 tarefas · 47 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
+**Resumo:** 72 tarefas · 48 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -123,7 +123,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 | 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
-## Fase 9 · Deploy e produção (3/11)
+## Fase 9 · Deploy e produção (4/12)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -139,6 +139,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 9.9 | Conferir a colisão de nome e de domínio dos cookies de sessão com os outros projetos de `maiyu.com.br` e decidir a correção | Alta | Bloqueada | decisão do dono: `DECISIONS.md` #9, `SECURITY.md` TM-014 |
 | 9.10 | Chaves de ambiente no catálogo da régua (`DECISIONS.md` #276 da régua): `.env.example` iguais ao modelo (`APP_CLIENT_URL`, `SEED_DEMO_PASSWORD`, `SITE_ENV`, `E2E_DEMO_PASSWORD`, `E2E_CHROMIUM_PATH`), seed ligado pela chave, deploy com os nomes do #272; rodapé com `<MaiyuCredit />` (`DECISIONS.md` #277 da régua) | Alta | Feita | `DECISIONS.md` #17; upstream jhollyfer/maiyu-pattern#16. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do backend (42 de storage sem MinIO); **o E2E de navegador não rodou** |
 | 9.11 | Lockfile com `packageManagerDependencies` e `.lix` do inlang fora do `format:check`, para o build das imagens e o job do frontend passarem no CI | Alta | Feita | o `devEngines` pede pnpm `^11` e o `get-pnpm` do Dockerfile instala o 12, que baixa o 11 e exige o bloco no `pnpm-lock.yaml` (`ERR_PNPM_FROZEN_LOCKFILE_WITH_OUTDATED_LOCKFILE`); regenerado com `pnpm install --lockfile-only`, só 189 linhas novas, nenhuma removida |
+| 9.12 | `COPY frontend/.output/` no Dockerfile do frontend, para a imagem ser construída pelo contexto da raiz | Alta | Feita | o `COPY .output/` procurava na raiz do contexto e o artifact baixa em `frontend/.output/`; erro `"/.output": not found` no job `docker-frontend` da `main` |
 
 ## Fase 10 · Ideias (fora do escopo atual)
 

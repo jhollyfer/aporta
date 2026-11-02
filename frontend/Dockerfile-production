@@ -5,8 +5,9 @@ WORKDIR /app
 # curl para healthcheck
 RUN apk add --no-cache curl
 
-# Copia .output pronto (vem do artifact)
-COPY .output/ ./.output/
+# Copia .output pronto (vem do artifact). O contexto é a raiz do repositório
+# (`main-docker-frontend.yml`), e o artifact é baixado em `frontend/.output/`.
+COPY frontend/.output/ ./.output/
 
 # Usuario nao-root
 RUN addgroup --system --gid 1001 nodejs && \

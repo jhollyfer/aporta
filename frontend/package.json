@@ -16,7 +16,8 @@
     "check-cycles": "node scripts/check-chunk-cycles.mjs",
     "lint": "eslint --max-warnings 0",
     "format": "prettier --write . && eslint --fix",
-    "check": "pnpm i18n:compile && pnpm i18n:check && pnpm lint && pnpm typecheck && prettier --check .",
+    "format:check": "prettier --check .",
+    "check": "pnpm i18n:compile && pnpm i18n:check && pnpm lint && pnpm typecheck && pnpm format:check",
     "test:unit": "pnpm i18n:compile && vitest run",
     "test:e2e": "playwright test --config e2e/playwright.config.ts"
   },

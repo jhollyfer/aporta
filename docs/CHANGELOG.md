@@ -26,10 +26,20 @@ Ainda não houve release nem tag: tudo abaixo está na branch de trabalho e acum
   endereço e botão de WhatsApp nos lugares que têm número.
 - Cadastro do imóvel pelo dono em seis etapas, com indicador de progresso, dicas por etapa e rascunho
   salvo no próprio aparelho. O envio ainda não grava o anúncio nem as fotos.
+- API pública de leitura de bairros, anúncios e guia (`GET /storefront/listings`,
+  `/storefront/listings/:slug`, `/storefront/neighborhoods` e `/storefront/places`), com paginação,
+  ordenação e filtros por tipo, bairro, período e faixa de preço. Ainda é interna: o site continua
+  mostrando os dados de exemplo e só passa a consultá-la na próxima etapa.
 - Site em português, espanhol (`/es`) e inglês (`/en`), com troca de idioma no cabeçalho.
 - Tema claro e escuro que acompanha a configuração do aparelho.
 - `sitemap.xml` e `robots.txt` para os buscadores.
 - Cenas desenhadas no lugar das fotos de cada ambiente, até chegarem fotos reais.
+
+### Corrigido
+
+- O último passo do cadastro não diz mais "Anúncio recebido", porque nada era enviado. O botão agora
+  é "Finalizar cadastro", a tela mostra "Anúncio pronto", avisa que o envio de anúncios ainda não
+  está no ar e mantém o rascunho salvo neste aparelho.
 
 ### Segurança
 

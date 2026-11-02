@@ -76,10 +76,10 @@ Depende da API: trocar `lib/data` por consulta ao servidor, com filtro em `loade
 
 **Entrada:** botão "Anunciar imóvel" do cabeçalho (a partir de telas médias), da home ou da faixa do dono.
 **Ação:** preenche seis etapas e envia.
-**Sucesso:** tela de confirmação com o título enviado e caminho para a home.
+**Sucesso:** tela "Anúncio pronto" com o título e o aviso de que o envio ainda não está no ar; o rascunho continua salvo e há "Voltar ao cadastro" e o caminho para a home.
 **Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro.
 
-Hoje o envio é um stub: confirma depois de 500 ms e não grava nada. Ainda não existe a entrada do dono (login) na tela nem a conta `OWNER` por cadastro; quando existirem, o fluxo ganha o passo de entrar antes da etapa 1.
+Hoje o cadastro não envia nada: o último passo só valida o formulário inteiro (`TASKS.md` 7.15). Ainda não existe a entrada do dono (login) na tela nem a conta `OWNER` por cadastro; quando existirem, o fluxo ganha o passo de entrar antes da etapa 1.
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|
@@ -90,7 +90,7 @@ Hoje o envio é um stub: confirma depois de 500 ms e não grava nada. Ainda não
 | 5 | etapa Fotos: vê a orientação por ambiente (fachada, quarto, banheiro, cozinha, sala) e escolhe arquivos | mostra dicas de foto; hoje os campos de arquivo não enviam nada | etapa 4 |
 | 6 | etapa Regras: título, descrição e regras da casa | valida tamanhos (título 8 a 80, descrição 20 a 600, regras até 600) | etapa 5 |
 | 7 | etapa Contato: nome e WhatsApp com DDD, só números | o campo aceita só dígitos; valida de 10 a 13 | etapa 6 |
-| 8 | toca em enviar | valida o formulário inteiro; no sucesso apaga o rascunho e mostra a confirmação | confirmação |
+| 8 | toca em "Finalizar cadastro" | valida o formulário inteiro; no sucesso mostra "Anúncio pronto", avisa que o envio não está no ar e mantém o rascunho | tela de anúncio pronto |
 
 O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `aporta:listing-draft:v1`.
 
@@ -99,11 +99,11 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 | Situação | Resposta |
 |---|---|
 | Campo inválido ao continuar | mensagem no campo e a etapa não avança |
-| Etapa anterior ficou inválida (o dono voltou e apagou um campo) | ao enviar, a tela volta para a primeira etapa com erro |
+| Etapa anterior ficou inválida (o dono voltou e apagou um campo) | ao finalizar, a tela volta para a primeira etapa com erro |
 | Dono sai no meio | o rascunho volta ao reabrir a página, no mesmo aparelho e navegador |
 | Armazenamento do navegador bloqueado (janela privada) | o formulário funciona sem rascunho |
 | Rascunho de formato antigo ou corrompido | cada campo inválido volta ao valor vazio; os demais são mantidos |
-| Falha de rede no envio | Não se aplica hoje (stub); com a API, manter o formulário e oferecer "Tentar de novo" |
+| Falha de rede no envio | Não se aplica hoje (não há envio); com a API, manter o formulário e oferecer "Tentar de novo" |
 | Dono sem sessão ou sem papel `OWNER` (403) | Não se aplica hoje; com a API, levar à entrada e depois de volta ao formulário |
 
 ---

@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 64 tarefas · 17 feitas · 0 em andamento · 9 bloqueadas · 38 a fazer, atualizado 2026-11-01
+**Resumo:** 67 tarefas · 29 feitas · 0 em andamento · 10 bloqueadas · 28 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -27,7 +27,7 @@ Base genérica do backend, do `shared/` e do pipeline, sem nenhum recurso do pro
 | 1.5 | Papéis `ADMINISTRATOR`, `MODERATOR` e `OWNER`; `/storages` só para a equipe | Alta | Feita | `DECISIONS.md` #2 |
 | 1.6 | Health-check, OpenAPI gerado e guardas (`pattern:check`, `authz:check`, `depcruise`, `validators:check`, `di:check`) | Média | Feita | |
 | 1.7 | Workflows de CI, build, imagens e deploy no Coolify escritos | Alta | Feita | nunca rodaram no GitHub, ver fase 9 |
-| 1.8 | Branch de trabalho no padrão `tipo/escopo-assunto` e autor único | Média | Feita | `DECISIONS.md` #10 |
+| 1.8 | Branch de trabalho no padrão `tipo/escopo-assunto` e autor único | Média | Feita | a regra é da casa (`_standards/tooling.md` §6); a lição do prefixo de agente está em `MEMORY.md` |
 
 ## Fase 2 · Frontend com dados de exemplo (9/9)
 
@@ -35,30 +35,32 @@ Telas públicas completas, lendo `frontend/src/lib/data` em vez da API.
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 2.1 | Casca pública, tema claro e escuro, três idiomas (163 mensagens por idioma) | Alta | Feita | |
+| 2.1 | Casca pública, tema claro e escuro, três idiomas (165 mensagens por idioma) | Alta | Feita | |
 | 2.2 | Home: busca em pílula, categorias por tipo, destaques, confiança, guia e faixa do dono | Alta | Feita | |
 | 2.3 | Listagem: filtros na URL, chips, mapa com preço no pin, alternância lista/mapa no celular | Alta | Feita | `DECISIONS.md` #5 |
 | 2.4 | Detalhe do imóvel: galeria por ambiente, valores, dono e WhatsApp fixo no celular | Alta | Feita | |
 | 2.5 | Guia com quatro abas na URL | Média | Feita | |
-| 2.6 | Cadastro do dono em seis etapas com progresso e rascunho local | Alta | Feita | o envio é stub (`submitListingMutation`) e não grava; o passo de fotos não envia arquivo |
+| 2.6 | Cadastro do dono em seis etapas com progresso e rascunho local | Alta | Feita | o último passo só valida e diz que o envio não está no ar (7.15); o passo de fotos não envia arquivo |
 | 2.7 | Cenas SVG por ambiente no lugar de fotos | Média | Feita | `DECISIONS.md` #6 |
 | 2.8 | `sitemap.xml`, `robots.txt`, `/health-check` e `head` por rota | Média | Feita | |
 | 2.9 | Dados de exemplo: 12 imóveis, 10 lugares e 6 bairros | Média | Feita | telefones fictícios (`5597999990`) e coordenadas aproximadas, ver 7.10 |
 
-## Fase 3 · Domínio de anúncios no backend (0/8)
+## Fase 3 · Domínio de anúncios no backend (6/8)
 
-O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `shared/src/records/`.
+A leitura pública entrou (commits `44f5ebe` e `4692ac0`): quatro rotas `GET` em `/storefront`, sem
+escrita. Falta o `POST` do dono e a ligação do frontend com a API. Parte dos tipos `Listing`,
+`Neighborhood` e `Place` de `shared/src/records/`.
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 3.1 | Entidade de anúncio, migration e repository (valores, inclusos, períodos, dono) | Alta | A fazer | |
-| 3.2 | Bairros como dado (tabela e consulta pública) | Alta | A fazer | conferir a lista e as coordenadas com quem conhece a cidade |
-| 3.3 | Vitrine pública: listar com filtro e paginação, mostrar por `slug` | Alta | A fazer | depende de 3.1 e 3.2 |
-| 3.4 | Lugares do guia (categoria, evento com data) | Média | A fazer | |
-| 3.5 | Validator VineJS par do `OwnerListingCreateValidator` e criação do anúncio pelo dono | Alta | A fazer | paridade por `validators:check` |
-| 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | A fazer | depende de 3.3 e 3.4; `VITE_API_URL` passa a ser lida |
-| 3.7 | Responses de listagem em `shared/src/responses/` e documento OpenAPI | Média | A fazer | |
-| 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | A fazer | |
+| 3.1 | Entidade de anúncio, migration e repository (valores, inclusos, períodos, dono) | Alta | Feita | só leitura: o contrato `ListingRepository` não tem `save`, e a escrita entra com 3.5; dono denormalizado em `listings` (`DECISIONS.md` #10) |
+| 3.2 | Bairros como dado (tabela e consulta pública) | Alta | Feita | `GET /storefront/neighborhoods`; a lista e as coordenadas ainda precisam de conferência com quem conhece a cidade (7.10) |
+| 3.3 | Vitrine pública: listar com filtro e paginação, mostrar por `slug` | Alta | Feita | `GET /storefront/listings` e `GET /storefront/listings/:slug`; `ARCHITECTURE.md` §4 |
+| 3.4 | Lugares do guia (categoria, evento com data) | Média | Feita | `GET /storefront/places`, filtro `category`; só o evento tem `date` |
+| 3.5 | Validator VineJS par do `OwnerListingCreateValidator` e criação do anúncio pelo dono | Alta | A fazer | paridade por `validators:check`; depende de 5.1 para saber quem é o dono |
+| 3.6 | Trocar `lib/data` por `queryOptions` nas rotas, com estados de carregando e erro | Alta | A fazer | PR B: o frontend ainda lê `frontend/src/lib/data`; `VITE_API_URL` passa a ser lida; a API não devolve URL de foto, então a cena SVG continua |
+| 3.7 | Responses de listagem em `shared/src/responses/` e documento OpenAPI | Média | Feita | `shared/src/responses/storefront/`; `openapi:check` com 16 de 16 operações; a response do `POST` do dono entra com 3.5 |
+| 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | Feita | as quatro rotas de `/storefront`, `TEST-PLAN.md` §3 e §3.1; o `POST` do dono leva as linhas dele |
 
 ## Fase 4 · Fotos dos anúncios (0/5)
 
@@ -90,7 +92,7 @@ O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `sha
 | 6.2 | Fila com Redis e worker, e segundo serviço no Coolify | Média | A fazer | `ARCHITECTURE.md` §9.1 |
 | 6.3 | Confirmação de e-mail e aviso ao dono | Média | A fazer | depende de 5.1, 6.1 e 6.2 |
 
-## Fase 7 · Correções e dívida conhecida (4/15)
+## Fase 7 · Correções e dívida conhecida (5/15)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -108,7 +110,7 @@ O próximo trabalho. Parte dos tipos `Listing`, `Neighborhood` e `Place` de `sha
 | 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | A fazer | o link mandado por WhatsApp sai sem prévia |
 | 7.13 | Fotos reais da cidade (acervos abertos com crédito, ou fotos do dono) no hero e no guia | Alta | Bloqueada | o inspetor de design reprova página só com ilustração; sem rede nesta sessão para buscar no Openverse e no Wikimedia |
 | 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
-| 7.15 | A tela do cadastro diz "Anúncio recebido", mas o envio é um stub e nada é gravado: trocar o texto por um estado honesto, ou tirar a rota do ar, até a API de anúncios existir | Alta | A fazer | `frontend/src/integrations/tanstack-query/mutations/listings.ts`; com o deploy no Coolify configurado, o visitante veria uma confirmação falsa |
+| 7.15 | A tela do cadastro dizia "Anúncio recebido" com um envio que não gravava nada: trocar o texto por um estado honesto | Alta | Feita | commit `01f86eb`: o stub saiu, o último passo "Finalizar cadastro" só valida o formulário inteiro e mostra "Anúncio pronto", avisa que o envio ainda não está no ar e mantém o rascunho |
 
 ## Fase 8 · E2E (1/3)
 

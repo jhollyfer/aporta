@@ -28,3 +28,16 @@ export const STORAGE_SORT_COLUMNS = [
   'size',
   'createdAt',
 ] as const
+
+/**
+ * Which columns the public listings list can be sorted by. `price` is not a column: it is the
+ * monthly equivalent of the price (`monthly`, or `daily` times 30 for a hotel that only quotes
+ * the day), the same rule the price filter uses.
+ */
+export const LISTING_SORT_COLUMNS = ['createdAt', 'updatedAt', 'price'] as const
+
+/** Which columns the public neighborhoods list can be sorted by. */
+export const NEIGHBORHOOD_SORT_COLUMNS = ['name'] as const
+
+/** Which columns the public city guide list can be sorted by. */
+export const PLACE_SORT_COLUMNS = ['name'] as const

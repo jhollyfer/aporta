@@ -185,6 +185,13 @@ const PT_BR_LABELS = {
   rules: 'as regras da casa',
   ownerName: 'o seu nome',
   whatsapp: 'o WhatsApp',
+
+  // Public storefront filters
+  slug: 'o endereço do anúncio',
+  period: 'o período de aluguel',
+  minPrice: 'o valor mínimo',
+  maxPrice: 'o valor máximo',
+  category: 'a categoria',
 } as const
 
 type FieldLabels = Record<keyof typeof PT_BR_LABELS, string>
@@ -228,6 +235,11 @@ export const FIELD_LABELS = {
     rules: 'las reglas de la casa',
     ownerName: 'su nombre',
     whatsapp: 'el WhatsApp',
+    slug: 'la dirección del anuncio',
+    period: 'el período de alquiler',
+    minPrice: 'el valor mínimo',
+    maxPrice: 'el valor máximo',
+    category: 'la categoría',
   },
   en: {
     name: 'the name',
@@ -266,6 +278,11 @@ export const FIELD_LABELS = {
     rules: 'the house rules',
     ownerName: 'your name',
     whatsapp: 'the WhatsApp number',
+    slug: 'the listing address',
+    period: 'the rental period',
+    minPrice: 'the minimum price',
+    maxPrice: 'the maximum price',
+    category: 'the category',
   },
 } as const satisfies Record<Locale, FieldLabels>
 

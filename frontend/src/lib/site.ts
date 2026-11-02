@@ -10,6 +10,14 @@ export const SITE_TITLE = 'Aporta'
  */
 export const SITE_URL = env.VITE_SITE_URL.replace(/\/+$/, '')
 
+/**
+ * Se este ambiente pode ser indexado: só `SITE_ENV=production`. Staging e preview usam a mesma
+ * imagem da produção, então o valor vem do ambiente em tempo de execução, e não do build. Vale
+ * só no servidor (no navegador `SITE_ENV` não existe e o resultado é `false`, por isso nenhum
+ * código do cliente decide nada com ele).
+ */
+export const INDEXABLE = env.SITE_ENV === 'production'
+
 /** O caminho vira endereço absoluto, para `canonical` e `og:url`. */
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path}`

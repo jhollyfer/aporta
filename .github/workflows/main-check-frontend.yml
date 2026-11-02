@@ -239,8 +239,10 @@ jobs:
           STORAGE_ENDPOINT: http://localhost:9006
           STORAGE_FORCE_PATH_STYLE: "true"
           # The account the seeder creates and with which the E2E signs in (`docs/ENV.md`).
-          SEED_OWNER_EMAIL: administrator@mail.com
+          SEED_OWNER_EMAIL: administrator@example.com
           SEED_OWNER_PASSWORD: ${{ steps.credential.outputs.password }}
+          # The demo: the moderator and the owner with sample ads, which the E2E signs in as.
+          SEED_DEMO_PASSWORD: ${{ steps.credential.outputs.password }}
         run: |
           pnpm --filter ./backend --fail-if-no-match exec node ace migration:run --force
           pnpm --filter ./backend --fail-if-no-match exec node ace db:seed
@@ -276,11 +278,11 @@ jobs:
           STORAGE_ENDPOINT: http://localhost:9006
           STORAGE_FORCE_PATH_STYLE: "true"
           # The account the seeder creates and with which the E2E signs in (`docs/ENV.md`).
-          SEED_OWNER_EMAIL: administrator@mail.com
+          SEED_OWNER_EMAIL: administrator@example.com
           E2E_BASE_URL: http://localhost:3000
           E2E_API_URL: http://localhost:3333
-          E2E_OWNER_EMAIL: administrator@mail.com
-          E2E_OWNER_PASSWORD: ${{ steps.credential.outputs.password }}
+          # The `SEED_DEMO_PASSWORD` of the backend under test (the demo moderator).
+          E2E_DEMO_PASSWORD: ${{ steps.credential.outputs.password }}
         run: pnpm --filter ./frontend --fail-if-no-match exec playwright test --config e2e/playwright.config.ts --project=${{ matrix.project }} --workers=1 --add-reporter=github
 
       - name: Relatório do Playwright

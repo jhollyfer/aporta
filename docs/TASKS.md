@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 69 tarefas · 45 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
+**Resumo:** 70 tarefas · 46 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -123,11 +123,11 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 8.3 | Rodar os 42 testes E2E de storage com MinIO | Alta | A fazer | `docker compose up -d` em `backend/` |
 | 8.4 | E2E do SSR com a API fora do ar | Média | A fazer | `page.route` só intercepta o navegador, então hoje isso foi conferido à mão com `curl` e `SERVER_API_URL` apontando para uma API morta (`/listings` e o detalhe respondem 500 com a tela "Algo deu errado", `/listings/nao-existe` responde 404); precisa subir o app com a API derrubada de propósito |
 
-## Fase 9 · Deploy e produção (1/9)
+## Fase 9 · Deploy e produção (2/10)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
-| 3.10 | Levar o frontend à régua nova: tipografia fluida, alvo de toque de 44 px no kit, projetos Playwright `mobile`/`tablet`/`desktop` com `responsive` e `touch-targets`, lista "cara de gerador", contador com número exato | Alta | Feita | `DESIGN.md` §3, §7, §9, §10, §11; `TEST-PLAN.md` §1. Pendente de decisão do dono: `STORAGE_PUBLIC_URL` (ver `MEMORY.md`) |
+| 3.10 | Levar o frontend à régua nova: tipografia fluida, alvo de toque de 44 px no kit, projetos Playwright `mobile`/`tablet`/`desktop` com `responsive` e `touch-targets`, lista "cara de gerador", contador com número exato | Alta | Feita | `DESIGN.md` §3, §7, §9, §10, §11; `TEST-PLAN.md` §1. `STORAGE_PUBLIC_URL` já é a chave da régua, lida em tempo de execução por `src/server.ts` (9.10) |
 | 9.1 | Cadastrar os seis secrets do deploy: `COOLIFY_URL` (base do painel, sem caminho), `COOLIFY_TOKEN`, `COOLIFY_API_UUID`, `COOLIFY_APP_UUID`, `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | Alta | Bloqueada | o workflow já lê esses nomes (`tooling.md` §8.3, `DECISIONS.md` #272 e #274 da régua); URL e UUIDs ainda não foram fornecidos pelo dono, `ENV.md` §6; os antigos `vars` `COOLIFY_UUID_*` podem ser apagados |
 | 9.2 | Subir Node 24 e pnpm 11 no ambiente de desenvolvimento | Média | A fazer | o ambiente desta sessão tinha Node 22 e pnpm 10 |
 | 9.3 | Primeiro run do CI no GitHub e correção do que falhar | Alta | A fazer | depende de 8.1 |
@@ -137,6 +137,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 9.7 | Provisionar o PostgreSQL e o bucket de produção | Alta | A fazer | |
 | 9.8 | Conferir os domínios e o smoke test do deploy | Média | A fazer | `aporta.maiyu.com.br` e `api-aporta.maiyu.com.br` |
 | 9.9 | Conferir a colisão de nome e de domínio dos cookies de sessão com os outros projetos de `maiyu.com.br` e decidir a correção | Alta | Bloqueada | decisão do dono: `DECISIONS.md` #9, `SECURITY.md` TM-014 |
+| 9.10 | Chaves de ambiente no catálogo da régua (`DECISIONS.md` #276 da régua): `.env.example` iguais ao modelo (`APP_CLIENT_URL`, `SEED_DEMO_PASSWORD`, `SITE_ENV`, `E2E_DEMO_PASSWORD`, `E2E_CHROMIUM_PATH`), seed ligado pela chave, deploy com os nomes do #272; rodapé com `<MaiyuCredit />` (`DECISIONS.md` #277 da régua) | Alta | Feita | `DECISIONS.md` #17; upstream jhollyfer/maiyu-pattern#16. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do backend (42 de storage sem MinIO); **o E2E de navegador não rodou** |
 
 ## Fase 10 · Ideias (fora do escopo atual)
 

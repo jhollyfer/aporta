@@ -33,6 +33,11 @@ function readServerEnv(name: string): string | undefined {
  * o teto por arquivo, em bytes. Opcional: ausente, o cliente não recusa por tamanho e o `422` do
  * servidor diz o limite. Entra no bundle em tempo de build, como toda `VITE_*`.
  *
+ * `SITE_ENV` é só do servidor e opcional: onde o site roda. Só `production` deixa o site ser
+ * indexado; qualquer outro valor (ou ausente) responde `noindex` e `Disallow: /`. Existe porque
+ * `import.meta.env.PROD` é igual em staging e em produção (a imagem é a mesma): quem decide é o
+ * ambiente em tempo de execução (`_standards/frontend.md` §9.7).
+ *
  * `STORAGE_PUBLIC_URL` também é só do servidor, e opcional: a origem do bucket (o
  * `STORAGE_ENDPOINT` da API), que o `Content-Security-Policy` libera em `img-src` e
  * `connect-src` para a foto abrir e o envio em partes chegar. Ausente, o CSP não menciona o
@@ -48,11 +53,13 @@ export const env = createEnv({
   },
   server: {
     SERVER_API_URL: z.url().optional(),
+    SITE_ENV: z.string().optional(),
     STORAGE_PUBLIC_URL: z.url().optional(),
   },
   runtimeEnv: {
     ...import.meta.env,
     SERVER_API_URL: readServerEnv('SERVER_API_URL'),
+    SITE_ENV: readServerEnv('SITE_ENV'),
     STORAGE_PUBLIC_URL: readServerEnv('STORAGE_PUBLIC_URL'),
   },
   emptyStringAsUndefined: true,

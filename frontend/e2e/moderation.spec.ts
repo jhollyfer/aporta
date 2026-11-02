@@ -8,9 +8,8 @@ import { expect, ownerTest, staffTest as test } from './support/test'
  * equipe aprova e verifica o dono, o visitante vê o anúncio na vitrine e o denuncia, e a
  * equipe resolve a denúncia.
  *
- * A equipe é a moderadora que o seeder de desenvolvimento cria
- * (`moderador.exemplo@aporta.example`), com a senha de `SEED_OWNER_PASSWORD` (aqui,
- * `E2E_OWNER_PASSWORD`). **Sem foto**, como em `owner-listings.spec.ts`: o ambiente do E2E
+ * A equipe é o moderador que o seeder de demonstração cria (`moderator@example.com`), com a
+ * senha de `SEED_DEMO_PASSWORD` (aqui, `E2E_DEMO_PASSWORD`). **Sem foto**, como em `owner-listings.spec.ts`: o ambiente do E2E
  * não tem o MinIO que o envio de arquivos exige.
  *
  * O limite da denúncia é de 5 por hora por IP: uma rodada gasta uma. Quem repete a rodada

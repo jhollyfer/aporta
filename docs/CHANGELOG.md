@@ -50,6 +50,15 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Alterado
 
+- O rodapé do site mostra só o crédito "Desenvolvido por Maiyu" (com a logo e o link para maiyu.com.br), nos três idiomas, no lugar da frase "Feito em Benjamin Constant".
+- Variáveis de ambiente padronizadas no catálogo da casa. Quem opera passa a poder definir
+  `APP_CLIENT_URL` (o endereço do app, que decide o `sameSite` do cookie), `SEED_DEMO_PASSWORD` (liga a
+  demonstração) e `SITE_ENV` (só `production` deixa os buscadores indexarem; staging e preview
+  respondem `noindex` e `Disallow: /`). `CHROMIUM_PATH` do gerador de ícones passou a `E2E_CHROMIUM_PATH`.
+- As contas de exemplo mudaram: `moderator@example.com` e `owner@example.com`, com a senha de
+  `SEED_DEMO_PASSWORD`, e só existem onde essa chave foi definida (antes dependiam do ambiente de
+  desenvolvimento e reaproveitavam a senha do administrador). O administrador agora nasce onde
+  `SEED_OWNER_PASSWORD` for definida, junto de `SEED_OWNER_EMAIL`.
 - O site agora lê imóveis, bairros e guia da API, e não mais de dados de exemplo embutidos: a home, a
   listagem, o detalhe, o guia e o `sitemap.xml` mostram o que está no banco. A faixa de preço passou
   a ser calculada no servidor, com a diária do hotel valendo 30 vezes. A listagem e o mapa mostram até

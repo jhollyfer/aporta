@@ -1207,9 +1207,10 @@ nome, validador e comentário em todo projeto. **Nome de bloco e comentário do 
 
 **O modelo é a fonte.** `_templates/backend/.env.example` e `_templates/frontend/.env.example` são o
 mesmo arquivo em todo projeto: mesmas chaves, mesma ordem, mesmos blocos e comentários. Só o valor de
-exemplo é do projeto (porta, banco, bucket). Recurso extra (e-mail, Redis, JWT) vem num bloco
-`# --- optional: <nome> ---` que o projeto inclui inteiro ou não inclui (`client-url`, `compose-minio`,
-`mail`, `queue`, `jwt`, `compose-ports`). O
+exemplo é do projeto (porta, banco, bucket). Só recurso que o projeto pode não ter (e-mail, Redis,
+JWT) vem num bloco `# --- optional: <nome> ---` que o projeto inclui inteiro ou não inclui (`mail`,
+`queue`, `jwt`); o resto é obrigatório em todo projeto, e a chave que ele ainda não usa fica
+comentada no lugar (`DECISIONS.md` #276). O
 `sync-to-project.mjs --check` compara a lista de chaves e reprova chave a mais, a menos ou fora de ordem
 (`env-diverge:`), também no perfil `--perfil=codigo`. Chave que o modelo não tem não existe: entra
 primeiro no catálogo abaixo e no modelo, depois no projeto (`DECISIONS.md` #271).
@@ -1225,8 +1226,9 @@ Regras:
 - **Chave opcional por instalação** (integração que só um cliente usa) é obrigatória onde a
   funcionalidade existe e opcional onde não existe.
 - **Segredo e credencial não têm default.** A aplicação para em vez de subir com um valor que
-  ninguém escolheu: `SEED_OWNER_PASSWORD`, `MAIL_FROM`, `SMTP_HOST`, chave de gateway de
-  pagamento, chave de assinatura de webhook.
+  ninguém escolheu: `MAIL_FROM`, `SMTP_HOST`, chave de gateway de pagamento, chave de assinatura
+  de webhook. A senha de seed também não tem default, mas a ausência dela desliga o seed em vez de
+  parar (§6.2, "Seed ligado pela chave").
 - **Default inseguro é declarado no comentário**, com o motivo. `DATABASE_SSL` ausente significa
   TLS desligado, e isso está escrito.
 - **Chaves de borda da casa**: `CORS_ORIGINS` (lista explícita, nunca `*`), `COOKIE_DOMAIN`
@@ -1329,12 +1331,22 @@ a página do Fastify consultada só documenta IP/CIDR, então o uso das palavras
 
 | Nome | App | Obrigatória | Segredo | Significado |
 |---|---|---|---|---|
-| `SEED_OWNER_EMAIL` | api | não | não | e-mail do primeiro administrador criado pelo seeder |
-| `SEED_OWNER_PASSWORD` | api | só para semear | sim | senha dele; sem ela o seeder para |
+| `SEED_OWNER_EMAIL` | api | junto com a senha | não | e-mail do primeiro administrador criado pelo seeder; senha sem e-mail para o seeder |
+| `SEED_OWNER_PASSWORD` | api | não | sim | **liga** o seed do dono; vazia, o seed do dono é pulado com uma linha de log |
+| `SEED_DEMO_PASSWORD` | api | não | sim | **liga** a demonstração: senha comum das contas de demonstração (uma por papel, `<papel>@example.com`) e o conteúdo de exemplo; vazia, a demonstração é pulada e o resto do seed segue |
+
+**Seed ligado pela chave.** Cada seed liga pela presença do valor da sua chave, em qualquer ambiente,
+nunca por flag à parte (`SEED_ENABLED`, `SEED_DEMO=true`) nem pelo `NODE_ENV`: o `static environment`
+do seeder não restringe o seed do dono nem o da demonstração. Dado de referência que o app precisa
+para funcionar (bairros, categorias) não tem chave e roda sempre. Conteúdo de exemplo (anúncio, notícia,
+partida de mentira) é parte da demonstração e liga com `SEED_DEMO_PASSWORD`; conta extra de exemplo
+não reusa `SEED_OWNER_PASSWORD`. O mesmo vale para todo recurso do catálogo: valor presente liga,
+ausente desliga (`DECISIONS.md` #276).
 
 `OWNER` aqui é "dono da instalação", o primeiro administrador, e o nome não muda com o papel que o
-projeto der a ele. Semente de outro perfil (`SEED_DEMO_PASSWORD`) não tem chave: não há chave de
-projeto, e o que o catálogo não cobre entra primeiro aqui.
+projeto der a ele. As contas de demonstração (um usuário por papel, para testar e mostrar cada perfil)
+dividem uma senha só, `SEED_DEMO_PASSWORD`; o e-mail de cada uma sai do próprio seeder, determinístico,
+e não ganha chave. Outra semente de perfil entra primeiro aqui (`DECISIONS.md` #275).
 
 **`# Mail`**, **`# Queue`** e **`# JWT`** (opcionais, por recurso: só onde o recurso existe)
 
@@ -1352,6 +1364,8 @@ projeto, e o que o catálogo não cobre entra primeiro aqui.
 | `VITE_API_URL` | web | sim no build | não | raiz pública da API no bundle; ausente só vale em dev |
 | `SERVER_API_URL` | web | não | não | endereço da API visto pelo SSR (rede interna), lido por requisição, sem `VITE_`; ausente usa `VITE_API_URL` |
 | `VITE_SITE_URL` | web | sim no build, se o site tem `sitemap.xml` | não | origem pública do site, para as URLs absolutas do `sitemap.xml` e do `robots.txt` |
+| `SITE_ENV` | web | não | não | onde o site roda, lido por requisição, sem `VITE_`; só `production` indexa, o resto responde `noindex` e `Disallow: /` (`frontend.md` §9.7); ausente não é produção |
+| `STORAGE_PUBLIC_URL` | web | com upload ou leitura assinada pelo navegador | não | origem pública do bucket (o `STORAGE_ENDPOINT` visto do navegador), lida por requisição, sem `VITE_`, para abrir `img-src` e `connect-src` do CSP (`frontend.md` §3.3); ausente, o CSP só libera a API |
 | `VITE_UPLOAD_MAX_SIZE` | web | não | não | espelho de `UPLOAD_MAX_SIZE`; ausente, o cliente não recusa por tamanho e o `422` do servidor diz o limite |
 
 **E2E** (`e2e/support/env.ts`, Playwright; sem default: falta uma e a execução para dizendo qual)
@@ -1362,12 +1376,24 @@ projeto, e o que o catálogo não cobre entra primeiro aqui.
 | `E2E_API_URL` | e2e | ao rodar o E2E | não | raiz da API, para as fixtures |
 | `E2E_OWNER_EMAIL` | e2e | ao rodar o E2E | não | conta do `auth.setup.ts`; a do seeder |
 | `E2E_OWNER_PASSWORD` | e2e | ao rodar o E2E | sim | senha dela; no CI, gerada a cada execução |
+| `E2E_DEMO_PASSWORD` | e2e | ao rodar spec de papel que não é o dono | sim | a `SEED_DEMO_PASSWORD` do backend sob teste; o e-mail de cada papel vem do seeder de demonstração, lido em `e2e/support/env.ts` |
 | `E2E_SHOTS_DIR` | e2e | não | não | pasta fora do repositório para capturas de tela; ausente, não grava |
+| `E2E_CHROMIUM_PATH` | e2e | não | não | binário do Chromium para o Playwright onde o baixado não roda (container da nuvem); ausente, o Playwright usa o dele. Script do projeto que precise de navegador (gerar ícone) lê a mesma chave |
+
+O E2E não tem chave por papel (`E2E_ADMIN_*`, `E2E_ADVISOR_*`): o dono é `E2E_OWNER_*` e os outros
+papéis entram com `E2E_DEMO_PASSWORD` e o e-mail do seeder de demonstração. Nem porta solta
+(`E2E_PORT`): a origem inteira é `E2E_BASE_URL`. Ajuste de execução (workers, matriz) fica no
+`playwright.config.ts` e no CI (`tooling.md` §7), não em chave.
+
+**Mesmo número de chaves, mesmos nomes.** Todo projeto da casa tem o mesmo `.env.example` chave por
+chave e na mesma ordem (backend e frontend); o que muda entre eles é só o valor de exemplo. Os únicos
+blocos `optional` do modelo são de recurso que o projeto pode não ter (`mail`, `queue`, `jwt`), e saem
+inteiros. Chave que o projeto não usa ainda fica comentada no lugar dela, nunca apagada. O `.env.test`, o `.env.e2e.example` e o `.env.production` usam só chaves do catálogo, e o
+`sync-to-project.mjs --check` cobra (`DECISIONS.md` #276).
 
 **Só do `docker-compose.yml`** (não passam pelo leitor de ENV): `DB_PORT`, `STORAGE_PORT`,
 `STORAGE_CONSOLE_PORT`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`. O CORS do MinIO local sai de
-`CORS_ORIGINS`. No modelo são os blocos opcionais `compose-minio` (`MINIO_ROOT_*`) e `compose-ports`
-(`*_PORT`). **Não existe chave de domínio do projeto**: o que o catálogo não cobre entra primeiro
+`CORS_ORIGINS`. Estão no modelo de todo projeto, como as demais. **Não existe chave de domínio do projeto**: o que o catálogo não cobre entra primeiro
 aqui e no modelo (§6, `DECISIONS.md` #271).
 
 ### 6.3 Migração dos nomes antigos
@@ -1383,6 +1409,14 @@ Cada linha vira item em `_findings/<projeto>.md` (seção "Chaves de ambiente") 
 | `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` | `STORAGE_BUCKET`, `STORAGE_KEY`, `STORAGE_SECRET` | sem fornecedor no nome | exemplo antigo de `tooling.md` §8 (corrigido) |
 | `APP_URL` | `APP_SERVER_URL` | a API é o servidor; o web é `APP_CLIENT_URL` | modelo antigo de `_templates/docs/ENV.md` (corrigido) |
 | `SEED_OWNER_*` renomeado pelo papel do projeto | `SEED_OWNER_*` | `OWNER` é a conta da instalação, não um papel | interclasse (I5 deixa de valer) |
+| `SEED_ADMINISTRATOR_EMAIL`, `SEED_ADMINISTRATOR_PASSWORD` | `SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD` | mesmo motivo da linha acima | interclasse |
+| `E2E_ADMIN_*`, `E2E_<PAPEL>_*` | `E2E_OWNER_*` + `E2E_DEMO_PASSWORD` | o dono reusa a conta do seeder; os papéis, a demonstração (#275) | interclasse |
+| `E2E_PORT` | `E2E_BASE_URL` | a origem inteira, não só a porta | interclasse |
+| `VITE_STORAGE_URL` (build) | `STORAGE_PUBLIC_URL` (runtime) | lida por requisição, a mesma imagem serve qualquer ambiente | interclasse, curupira |
+| `CHROMIUM_PATH` | `E2E_CHROMIUM_PATH` | um nome para o mesmo binário | aporta, curupira |
+| `VITE_DATA_SOURCE` (`mock`/`api`) | (sai) | o frontend fala só com a API; dado de exemplo é o seeder de demonstração | curupira |
+| `E2E_WORKERS`, `E2E_FULL_MATRIX` | (sai) | execução é do `playwright.config.ts` e do CI | curupira |
+| `API_URL`, `APP_URL`, `URL_API`, `UUID_API` no workflow de deploy | `COOLIFY_URL`, `COOLIFY_API_UUID`, `COOLIFY_APP_UUID` | secrets do deploy com nome fixo (`tooling.md` §8.3, #272) | adacaibs, aporta, interclasse, curupira |
 
 ---
 

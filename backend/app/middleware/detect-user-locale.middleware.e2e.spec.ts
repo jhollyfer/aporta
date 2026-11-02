@@ -162,7 +162,7 @@ test.group('language > nonexistent route and per-field error', (group) => {
       const session = await authenticateAsAdministrator(client)
       const file = await storageRecord()
       await UserModel.query()
-        .where('email', 'administrator@mail.com')
+        .where('email', 'administrator@example.com')
         .update({ avatarId: file.id })
 
       const field = await client

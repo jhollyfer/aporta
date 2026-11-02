@@ -311,7 +311,8 @@ redireciona ao login em 401, com `?redirect=` da tela atual *(opinião da casa)*
   conferida)*: o Nitro não manda nenhum por padrão. `routeRules` com `headers` em `'/**'`
   (`_doc-lib/nitro.md#config`) ou middleware em `src/server.ts` enviam `Content-Security-Policy` com
   `frame-ancestors 'none'` e `connect-src`/`img-src` só para a API e, com upload pré-assinado
-  (`backend.md` §5.4), a origem pública do storage, nada além, `X-Content-Type-Options: nosniff`,
+  (`backend.md` §5.4), a origem pública do storage (`STORAGE_PUBLIC_URL`, lida por requisição em
+  `src/server.ts`, nunca fixada no build pelo `vite.config.ts`), nada além, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy: strict-origin-when-cross-origin` e HSTS sem `preload`. Sem `frame-ancestors`, a
   tela de login pode ser embutida em `iframe` por outro site (clickjacking).
 - **Endereço da API sem default de rede.** `src/env.ts` lê `VITE_API_URL` uma vez e o build falha
@@ -319,8 +320,8 @@ redireciona ao login em 401, com `?redirect=` da tela atual *(opinião da casa)*
   quem visita. O passo de build do CI recebe a variável (`tooling.md` §8).
 - **Dado pessoal não fica em `localStorage`**: sem validade, fica para o próximo usuário do
   computador. Guarde o id e busque o resto na API, ou expire.
-- **Nome das chaves**: `VITE_API_URL`, `VITE_SITE_URL`, `VITE_UPLOAD_MAX_SIZE`, `SERVER_API_URL` e as
-  `E2E_*`, com regra de nome e significado, estão no catálogo de `backend.md` §6.2; chave nova ou
+- **Nome das chaves**: `VITE_API_URL`, `VITE_SITE_URL`, `VITE_UPLOAD_MAX_SIZE`, `SERVER_API_URL`,
+  `SITE_ENV`, `STORAGE_PUBLIC_URL` e as `E2E_*`, com regra de nome e significado, estão no catálogo de `backend.md` §6.2; chave nova ou
   sinônimo (`VITE_API_BASE_URL`) não nasce aqui.
 - `src/env.ts` lê só `VITE_*`, uma vez, de forma síncrona, checado à mão (o módulo roda antes do
   router montar). `SERVER_API_URL` é lida por requisição só no ramo `.server()`.
@@ -737,6 +738,7 @@ não reescreve (`architecture.md` §1, princípio 9); peça nova nasce compound 
 | `components/common/option-combobox/` | combobox de opções (+ `toOptions`) | combobox local e paginado |
 | `components/common/input-password/` | senha com mostrar/ocultar | formulário de sessão |
 | `components/common/picture/` | imagem com dimensão, `alt` e carregamento por posição | §9.6 |
+| `components/common/maiyu-credit/` | crédito do rodapé: logo da Maiyu (`src/assets/maiyu.png`) + "Desenvolvido por Maiyu", com `Maiyu` em link para `https://maiyu.com.br` | abaixo |
 | `components/common/image-field/`, `multi-file-upload/` | campo que sobe o arquivo na escolha | registra no `uploading-context` |
 | `components/common/rich-editor/` | editor de texto rico, carregado sob demanda (§9.4); grava o JSON do Tiptap | _doc-lib/tiptap.md |
 | `components/common/rich-text/` | leitura de conteúdo rico (JSON do editor ou Markdown de fora via `MarkdownManager.parse`) por `renderToReactElement` do `@tiptap/static-renderer`, sem editor e sem `innerHTML` | _doc-lib/tiptap.md#api/utilities/static-renderer |
@@ -750,6 +752,13 @@ não reescreve (`architecture.md` §1, princípio 9); peça nova nasce compound 
 | `lib/local-store.ts` | `localStorage` versionado e validado | §2 |
 | `lib/bulk.ts` | ação em massa sem endpoint dedicado | abaixo |
 | `lib/chunking.ts`, `upload-transport.ts`, `upload-resume.ts` | upload em partes, retomável | arquivo grande sem refazer do zero |
+
+**Crédito no rodapé** *(opinião da casa, `DECISIONS.md` #277)*: todo rodapé (o do site público e, onde
+existir, o do painel e o da tela de sessão) mostra só `<MaiyuCredit />`, igual em todo projeto: a logo
+decorativa (`alt=""`, 20 px, por `Picture`) e a frase "Desenvolvido por Maiyu" (mensagem
+`common_maiyu_credit`, `{#link}Maiyu{/link}` no catálogo de cada idioma), link com `target="_blank"` e
+`rel="noopener noreferrer"`. Sem slogan, ano, "todos os direitos" ou outra frase de autoria; a cor vem
+de quem usa (`className`). Montar o crédito à mão na tela é desvio.
 
 **Link em conteúdo rico**: `href` só `https:`, `http:` e `mailto:`, conferido no validator do backend ao
 gravar o JSON. O React 19 bloqueia `javascript:`, mas não `data:` (skill `security-audit`, CLIENT-SIDE.md).
@@ -945,7 +954,8 @@ _doc-lib/tanstack-start.md#guide/seo). O formato é da casa (`DECISIONS.md` #47)
   em detalhe, e o tipo do domínio (`Product`, `Course`, `Event`, `NewsArticle`) a partir do
   `loaderData` (formato de `scripts`: página oficial não conferida);
 - `robots: noindex, nofollow` em `_private/`, `_authentication/` e no 404; ambiente que não é
-  produção responde `noindex` global.
+  produção responde `noindex` global, decidido por `SITE_ENV` lida no servidor (só `production`
+  indexa), nunca por `import.meta.env.PROD`, que é igual em staging e produção.
 
 Mais:
 

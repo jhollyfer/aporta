@@ -16,12 +16,20 @@ function seedOwnerPassword(): string {
   return password
 }
 
+/** The e-mail the seeder saved: `SEED_OWNER_EMAIL` from `.env.test`. */
+function seedOwnerEmail(): string {
+  const email = env.get('SEED_OWNER_EMAIL')
+  if (!email) throw new Error('SEED_OWNER_EMAIL missing from .env.test')
+
+  return email
+}
+
 /**
  * The seeder administrator. It is the only account that no endpoint creates without a
  * session, so every test that needs a session starts with it.
  */
 export const ADMINISTRATOR = {
-  email: env.get('SEED_OWNER_EMAIL') ?? 'administrator@mail.com',
+  email: seedOwnerEmail(),
   password: seedOwnerPassword(),
 } as const satisfies { readonly email: string; readonly password: string }
 

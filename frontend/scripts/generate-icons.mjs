@@ -13,8 +13,7 @@
  * (`_standards/frontend.md` §9.6), e o build não depende de o Chromium existir.
  * `generate-og.mjs` reaproveita as peças exportadas daqui.
  *
- * O Chromium vem de `CHROMIUM_PATH` (ou `E2E_CHROMIUM_PATH`, o do E2E) quando não está no cache
- * do Playwright.
+ * O Chromium vem de `E2E_CHROMIUM_PATH` (o mesmo do E2E) quando não está no cache do Playwright.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
@@ -75,8 +74,7 @@ export function brandMark(tokens, { size, bleed = false, inset = 1 }) {
 }
 
 export async function launchBrowser() {
-  const executablePath =
-    process.env.CHROMIUM_PATH ?? process.env.E2E_CHROMIUM_PATH ?? undefined
+  const executablePath = process.env.E2E_CHROMIUM_PATH ?? undefined
 
   return chromium.launch({ executablePath })
 }

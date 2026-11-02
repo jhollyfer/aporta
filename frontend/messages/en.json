@@ -11,7 +11,6 @@
   "locale_switcher_label": "Language",
   "footer_tagline": "Where to live and what to do in Benjamin Constant, straight from the people who own the place.",
   "footer_nav_label": "Footer",
-  "footer_credit": "Made in Benjamin Constant, in the Alto Solimões.",
   "not_found_title": "This page does not exist",
   "not_found_description": "The address changed or was mistyped. Go back home and search from there.",
   "not_found_home": "Back to home",
@@ -595,5 +594,6 @@
   "map_pins_rate_limited_wait": "Too many map requests. Try again in {seconds} s.",
   "map_pin_open": "View listing: {type}",
   "meta_og_image_alt": "Aporta, housing and city guide for Benjamin Constant",
-  "map_selected_label": "Place selected on the map"
+  "map_selected_label": "Place selected on the map",
+  "common_maiyu_credit": "Built by {#link}Maiyu{/link}"
 }

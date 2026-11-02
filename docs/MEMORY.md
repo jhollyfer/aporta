@@ -24,6 +24,21 @@
 
 ## Parou em
 
+Branch `chore/env-catalogo-padrao`: todas as chaves de ambiente no catálogo da régua
+(`_standards/backend.md` §6 a §6.3, `DECISIONS.md` #276 da régua; upstream jhollyfer/maiyu-pattern#16).
+Backend: `APP_CLIENT_URL` (decide o `sameSite`; ausente cai em `lax`) e `SEED_DEMO_PASSWORD`; seed ligado
+pela chave, sem `static environment`: `SEED_OWNER_PASSWORD` liga o administrador (com o e-mail),
+`SEED_DEMO_PASSWORD` liga a demonstração (`moderator@example.com`, `owner@example.com`, 12 anúncios,
+10 lugares), vazia pula com uma linha de log (`DECISIONS.md` #17). Frontend: `SITE_ENV` (só `production`
+indexa; o resto responde `noindex` e `Disallow: /`), `E2E_DEMO_PASSWORD`, `E2E_CHROMIUM_PATH`
+(`CHROMIUM_PATH` saiu); `STORAGE_PUBLIC_URL` já era de tempo de execução e só mudou de lugar no
+`.env.example`: a pendência abaixo, sobre ela, está fechada. O smoke test do deploy lê `APP_SERVER_URL` e
+`APP_CLIENT_URL`. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do
+backend com Postgres local (42 de storage falham sem MinIO), seed nos três cenários; O rodapé do site ganhou `<MaiyuCredit />` (`common_maiyu_credit` com `.parts()` do paraglide; `footer_credit` saiu; `Picture` e `maiyu.png` vieram do interclasse). **Não rodei o E2E de
+navegador nem o CI do GitHub**: ficam para o CI do PR.
+
+Antes, na branch `chore/sync-maiyu-pattern`:
+
 Branch `chore/sync-maiyu-pattern`: alinhamento de ambiente, CI e deploy à régua nova (`_standards/backend.md`
 §6, `tooling.md` §7 e §8, `DECISIONS.md` #271 a #274 da régua). `.env.example` do backend e do frontend
 iguais ao modelo; `STAFF_*` saíram (o `staff:create` pede a senha só por prompt, `DECISIONS.md` #16);
@@ -51,15 +66,13 @@ num terminal de produção; os idiomas en e es só por chave.
 
 Frontend na régua nova (mesma branch): títulos fluidos (`text-display`, `text-headline`, `text-title`),
 44 px no celular vindo do kit, três projetos de viewport no Playwright, sem animação de entrada, pílula
-só uma por tela, contadores com `=0`/um/plural nas três línguas. Em aberto: `STORAGE_PUBLIC_URL` é chave
-fora do catálogo (`backend.md` §6.2); a CSP precisa da origem do bucket em `connect-src` (PUT assinado do
-navegador) e em `img-src`, e nenhuma saída segura existe sem o backend informar essa origem (por exemplo,
-na resposta de criação do upload, antes de a CSP da página ser emitida). Decidir com o dono. A rota
+só uma por tela, contadores com `=0`/um/plural nas três línguas. `STORAGE_PUBLIC_URL` entrou no catálogo da régua e é a
+saída: a CSP lê a origem do bucket por requisição (`ENV.md`). A rota
 coringa responde 200 para endereço inexistente (soft 404); não foi mexido.
 
 ## Próximos passos
 
-1. Mesclar os PRs na ordem (#19, #20 e este) e seguir a lista de entrega (`ENV.md` §9): sem
+1. Mesclar o PR de `chore/env-catalogo-padrao` e os anteriores (#19, #20 e este) e seguir a lista de entrega (`ENV.md` §9): sem
    `CORS_ORIGINS=https://aporta.maiyu.com.br` a vitrine não carrega no cliente.
 2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono e a política de
    anúncio parado: elas destravam a moderação (5.4 a 5.6).
@@ -69,7 +82,9 @@ coringa responde 200 para endereço inexistente (soft 404); não foi mexido.
 5. Contrair as colunas do dono denormalizado de `listings` (`DECISIONS.md` #10), agora que todo anúncio
    tem conta, e paginar sitemap, bairros e guia acima de 100.
 6. Rodar os 42 testes de storage com MinIO (8.3) e cadastrar os secrets do Coolify (9.1).
-7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
+7. Decidir se os bairros viram dado de referência que roda sempre (`backend.md` §6.2): hoje o
+   `neighborhood.seed.ts` segue só em `development` porque a lista e as coordenadas ainda não foram
+   conferidas e os E2E esperam a tabela vazia. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).
 
 ## Contexto importante
@@ -84,7 +99,7 @@ coringa responde 200 para endereço inexistente (soft 404); não foi mexido.
 - A API pública devolve o WhatsApp do dono nas duas rotas de anúncio, e `photos[].url` sempre nulo
   (`listing_photos` não aponta para `storages`). Para ver dados nela, rode `node ace db:seed` em
   desenvolvimento: entram 6 bairros, 12 anúncios, 53 fotos (sem arquivo) e 10 lugares.
-- O seeder de usuário continua exigindo `SEED_OWNER_PASSWORD`; os de catálogo não rodam em `test`.
+- O seeder do administrador liga por `SEED_OWNER_PASSWORD`; a demonstração (contas de exemplo, anúncios e lugares) liga por `SEED_DEMO_PASSWORD`; só os bairros ficam presos a `development`, e o `.env.test` não define a segunda.
 - Não há nenhuma foto real: cada ambiente é uma cena SVG desenhada.
 - "Owner" em `SEED_OWNER_*` é o dono da plataforma e nada tem a ver com o papel `OWNER`, que é o
   dono do imóvel.

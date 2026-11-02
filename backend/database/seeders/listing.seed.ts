@@ -10,9 +10,11 @@ import ListingPhotoModel from '#models/listing-photo'
 import Neighborhood from '#models/neighborhood'
 
 /**
- * The twelve sample listings, all `PUBLISHED`. Development only (`static environment`): the
- * phones are fictional and the owners are generic names, and a production database must never be
- * born with ads that send a visitor to a number that is not real (`docs/TASKS.md` 7.10).
+ * The twelve sample listings, all `PUBLISHED`. Part of the demo, switched on by
+ * `SEED_DEMO_PASSWORD` having a value (`_standards/backend.md` §6.2, "Seed ligado pela chave"):
+ * the phones are fictional and the owners are generic names, and a database must never be born
+ * with ads that send a visitor to a number that is not real unless its operator asked for the
+ * demo (`docs/TASKS.md` 7.10). With the key empty the seeder logs one line and skips.
  *
  * Idempotent by `slug` (`updateOrCreate`, _doc-lib/lucid.md#seeders), and the photos by
  * `(listing, position)`, so the second run changes nothing and adds nothing. It runs the
@@ -30,11 +32,13 @@ import Neighborhood from '#models/neighborhood'
  * says how stale an ad is. `owner.verified` becomes a verification instant, that same day.
  */
 export default class ListingSeeder extends BaseSeeder {
-  static override environment = ['development']
-
   override async run() {
-    await NeighborhoodSeeder.ensure()
     const ownerId = await SampleOwnerSeeder.ensure()
+
+    // The owner seeder already said why: the demo is off.
+    if (!ownerId) return
+
+    await NeighborhoodSeeder.ensure()
 
     const neighborhoods = await Neighborhood.query().whereIn(
       'slug',

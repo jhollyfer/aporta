@@ -11,7 +11,6 @@
   "locale_switcher_label": "Idioma",
   "footer_tagline": "Dónde vivir y qué hacer en Benjamin Constant, directo con quien tiene el inmueble.",
   "footer_nav_label": "Pie de página",
-  "footer_credit": "Hecho en Benjamin Constant, en el Alto Solimões.",
   "not_found_title": "Esta página no existe",
   "not_found_description": "La dirección cambió o se escribió mal. Vuelva al inicio y busque desde allí.",
   "not_found_home": "Volver al inicio",
@@ -595,5 +594,6 @@
   "map_pins_rate_limited_wait": "Demasiadas solicitudes al mapa. Inténtalo de nuevo en {seconds} s.",
   "map_pin_open": "Ver anuncio: {type}",
   "meta_og_image_alt": "Aporta, vivienda y guía de Benjamin Constant",
-  "map_selected_label": "Inmueble seleccionado en el mapa"
+  "map_selected_label": "Inmueble seleccionado en el mapa",
+  "common_maiyu_credit": "Desarrollado por {#link}Maiyu{/link}"
 }

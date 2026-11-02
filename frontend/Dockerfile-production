@@ -5,8 +5,8 @@ WORKDIR /app
 # curl para healthcheck
 RUN apk add --no-cache curl
 
-# Copia .output pronto (vem do artifact)
-COPY .output/ ./.output/
+# Copia .output pronto (vem do artifact, baixado em frontend/.output/; o contexto do build é a raiz)
+COPY frontend/.output/ ./.output/
 
 # Usuario nao-root
 RUN addgroup --system --gid 1001 nodejs && \

@@ -8,11 +8,14 @@
 */
 
 import router from '@adonisjs/core/services/router'
+import { USER_ROLE } from '@aporta/shared'
 
 import { controllers } from '#generated/controllers'
 import { middleware } from '#start/kernel'
 import {
   currentPasswordThrottle,
+  listingWriteThrottle,
+  reportCreateThrottle,
   signInAccountThrottle,
   signInThrottle,
   signUpThrottle,
@@ -63,9 +66,10 @@ router
  * trash), and the storefront presenter cuts the columns (no `status`, no `deletedAt`, no keys).
  * The owner's WhatsApp does leave, by design: it is the contact the ad exists to publish.
  *
- * **Reads only.** Nothing in this group creates, changes or removes, so it needs no per-IP write
- * limit (`start/limiter.ts`); the day a write enters it, it carries its own throttle on the route.
- * `storefront.e2e.spec.ts` proves both: no route asks for a cookie, and every one is a `GET`.
+ * **Reads, and one write.** Everything in this group is a `GET` but `POST /storefront/reports`
+ * (the scam report), which carries its own per-IP throttle on the route (`start/limiter.ts`).
+ * `storefront.e2e.spec.ts` proves it: no route asks for a cookie, and the report is the only one
+ * that is not a `GET`.
  *
  * The listing is reached by `slug`, which is what the storefront URL carries. The neighborhoods
  * and the guide have no detail route: the screen only ever reads them as a list.
@@ -95,6 +99,18 @@ router
       })
       .prefix('places')
       .as('places')
+
+    // The one write in the group, as the paragraph above anticipated: it carries its own
+    // per-IP throttle on the route. A report needs no account, because whoever was almost
+    // scammed will not sign up to warn the others.
+    router
+      .group(() => {
+        router
+          .post('/', [controllers.storefront.reports.create.Create])
+          .use(reportCreateThrottle)
+      })
+      .prefix('reports')
+      .as('reports')
   })
   .prefix('storefront')
   .as('storefront')
@@ -150,13 +166,104 @@ router
   .use(middleware.auth())
 
 /**
- * Attachments, at the authenticated root like `/account`, **staff only for now**: the
- * library has no per-owner rule (`show`, `paginate`, `complete`, `delete` take any id), so
- * opening it to the `OWNER` role would let a property owner list, finish or delete another
- * owner's files. The feature that lets owners upload (listing photos) must first give these
- * actions an ownership policy, and only then drop the `role()` below. The record is born with
- * its owner (the `actor` of the `create`), who authorizes nothing: whoever attaches keeps the
- * reference.
+ * The owner's own ads. The group asks for a session and for the `OWNER` role: the staff reviews
+ * other people's ads through its own routes (`docs/TASKS.md`, phase 5), and an administrator
+ * writing an ad here would write it under his own account.
+ *
+ * No identifier selects the account: the scope is the session. The list is cut to it inside the
+ * query, and the four routes that take an `:id` go through `ListingPolicy` in the controller, so
+ * an ad of another account answers the same `404` as one that does not exist. The writes carry
+ * a ceiling per user (`listingWriteThrottle`).
+ *
+ * The photos are files already uploaded through `/storages` (open to the `OWNER` below), tied to
+ * the ad by their key: the binary never passes through here.
+ */
+router
+  .group(() => {
+    router
+      .group(() => {
+        router.get('/', [controllers.owner.listings.paginate.Paginate])
+        router
+          .post('/', [controllers.owner.listings.create.Create])
+          .use(listingWriteThrottle)
+        router.get(':id', [controllers.owner.listings.show.Show])
+        router
+          .put(':id', [controllers.owner.listings.update.Update])
+          .use(listingWriteThrottle)
+        router
+          .delete(':id', [controllers.owner.listings.archive.Archive])
+          .use(listingWriteThrottle)
+        router
+          .post(':id/photos', [controllers.owner.listingPhotos.create.Create])
+          .as('photos')
+          .use(listingWriteThrottle)
+      })
+      .prefix('listings')
+      .as('listings')
+  })
+  .prefix('owner')
+  .as('owner')
+  .use(middleware.auth())
+  .use(middleware.role([USER_ROLE.OWNER]))
+
+/**
+ * The staff's side of the moderation: the queue of ads, the owner's seal and the scam reports.
+ * Open to `ADMINISTRATOR` and `MODERATOR` alike (`docs/PRD.md` §8 leaves open who composes the
+ * team; the role lists below are the place to narrow it). The `OWNER` never enters: an owner
+ * reviewing ads would be reviewing his own.
+ *
+ * There is no permanent delete of an ad: `archive` is the removal, and the reports and decisions
+ * stay tied to it as record. The routes that take an `:id` need no policy because no per-record
+ * rule exists beyond the role: staff acts on any ad, report or owner account, and a missing one is
+ * an honest `404` (the staff may know the id exists).
+ */
+router
+  .group(() => {
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.listings.paginate.Paginate])
+        router.get(':id', [controllers.administrator.listings.show.Show])
+        router.put(':id/review', [
+          controllers.administrator.listings.review.Review,
+        ])
+        router.delete(':id', [
+          controllers.administrator.listings.archive.Archive,
+        ])
+      })
+      .prefix('listings')
+      .as('listings')
+
+    router
+      .group(() => {
+        router.put(':id/verification', [
+          controllers.administrator.owners.verify.Verify,
+        ])
+      })
+      .prefix('owners')
+      .as('owners')
+
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.reports.paginate.Paginate])
+        router.put(':id/resolution', [
+          controllers.administrator.reports.resolve.Resolve,
+        ])
+      })
+      .prefix('reports')
+      .as('reports')
+  })
+  .prefix('administrator')
+  .as('administrator')
+  .use(middleware.auth())
+  .use(middleware.role([USER_ROLE.ADMINISTRATOR, USER_ROLE.MODERATOR]))
+
+/**
+ * Attachments, at the authenticated root like `/account`. Open to the staff, who see the whole
+ * collection, and to the `OWNER`, who uploads the pictures of his ads and sees only his own
+ * files: `StoragePolicy` decides per file in the controller (`show`, `complete`, `parts`,
+ * `delete` and `download` take an id), and the list is cut to the account inside the query. A
+ * file of another account answers the same `404` as one that does not exist. The record is born
+ * with its owner (the `actor` of the `create`), which is what the policy compares.
  *
  * The upload has three steps, and not one, because the binary does not pass through here
  *: the `POST` opens and returns signed URLs, the browser uploads the parts
@@ -165,9 +272,9 @@ router
  * next batch of URLs for a file with too many parts.
  *
  * `DELETE` is the pair of `POST` and serves both states: it cancels the upload in
- * progress and deletes the finished file. It only reaches an orphan file - since the
- * record is neutral and shared, ownership does not serve as authorization, and what
- * decides is the live reference.
+ * progress and deletes the finished file. It only reaches an orphan file: ownership
+ * (`StoragePolicy`) decides who may ask, and the live reference decides whether the file can go,
+ * so a photo on an ad keeps its file.
  *
  * The two reads - `GET /` and `GET :id` - are the panel file library.
  * There is no `PUT`: a file is not edited, it is replaced.
@@ -200,4 +307,10 @@ router
   .prefix('storages')
   .as('storages')
   .use(middleware.auth())
-  .use(middleware.role(['ADMINISTRATOR', 'MODERATOR']))
+  .use(
+    middleware.role([
+      USER_ROLE.ADMINISTRATOR,
+      USER_ROLE.MODERATOR,
+      USER_ROLE.OWNER,
+    ]),
+  )

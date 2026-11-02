@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 5 · Dono (conta e entrada feitas; falta a escrita do anúncio e as fotos) | 46% (32 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-02 | 5 · Dono e moderação feitos; falta o fechamento (paginação, limites, CI, deploy) | 59% (41 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -24,23 +24,21 @@
 
 ## Parou em
 
-Branch `feat/conta-cadastro-entrada-dono`, sobre a `main` com a vitrine lendo a API (PR #17). Entrou a
-conta do dono: `POST /authentication/sign-up` (papel `OWNER` do caso de uso, 5 por minuto por IP, sem
-abrir sessão), cookies com prefixo `aporta-`, CORS expondo `Retry-After`, e no frontend as rotas
-`_authentication/{sign-in,sign-up}`, o portão `_private` (`ssr: false`) com `/account`, cabeçalho com
-"Entrar" ou "Minha conta", `credentials: 'include'` só nas rotas de conta e renovação única em `401`.
-O destino pós-login viaja em `?redirect=` e só aceita caminho interno; recusa devolve
-`{ redirect: undefined }` explícito, porque o TanStack Router mescla o retorno do `validateSearch` sobre
-a busca crua.
+Branch `feat/moderacao-fila-verificacao`, empilhada sobre `feat/anuncios-dono-cria-edita` (PR #19, ainda
+aberto). Entrou a moderação: `administrator/listings` (fila, detalhe, aprovar, recusar com motivo,
+arquivar), `administrator/owners/verify`, `administrator/reports`, a denúncia pública
+`POST /storefront/reports` (5 por hora por IP, só o HMAC do IP é guardado) e as migrações
+`users.verified_at`, `listings.published_at/review_*` e `reports`. O selo vem da conta. No frontend, o
+painel `_private/administrator` (fila, revisão, denúncias), o motivo de recusa no painel do dono com o
+estado "Precisa de ajuste", e o diálogo "Denunciar este anúncio" com campo isca. O seeder cria uma
+moderadora de exemplo.
 
-Verificado nesta data: `shared/` e `frontend/` com tipos, lint, Prettier e unitários; backend com `pnpm
-check` (232 unitários, guardas de padrão, `validators:check`, `openapi:check`); E2E de navegador
-47 de 47 contra o backend semeado (na primeira rodada da sessão a11y do tema claro na home falhou uma
-vez e passou isolada e na rodada seguinte: servidor frio, não reproduzido); E2E do backend 242 passam e
-42 falham, todos de storage, sem MinIO.
+Verificado nesta data: `shared` com 136 testes; backend com `pnpm check` (355 unitários) e E2E com 371
+passando e 42 falhando, todos de storage sem MinIO; frontend com `pnpm check`, 93 testes, build,
+`check-chunk-cycles` e E2E de navegador 90 de 90, nos dois temas.
 
-Não verificado: o CI do GitHub nunca rodou; os 42 testes de storage; a imagem Docker; a renovação de
-sessão em produção com `COOKIE_DOMAIN` real.
+Não verificado: o CI do GitHub; o envio de arquivo ao bucket e a grade de fotos assinadas na revisão
+(sem MinIO); os 42 testes de storage; os idiomas en e es só por chave; a imagem Docker.
 
 ## Próximos passos
 
@@ -51,8 +49,8 @@ sessão em produção com `COOKIE_DOMAIN` real.
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
-5. Fase 4: policy de posse por dono antes de abrir `/storages` ao `OWNER`, depois o upload de fotos e a
-   chave de `listing_photos` para `storages`.
+5. Fechamento (PR F): paginação, limites, imagem de compartilhamento, primeiro CI e lista de deploy.
+   Depois contrair as colunas do dono denormalizado de `listings`.
 6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
 7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).

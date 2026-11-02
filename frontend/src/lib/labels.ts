@@ -2,9 +2,12 @@ import { m } from '#/paraglide/messages'
 
 import type {
   ListingPeriod,
+  ListingStatus,
   ListingType,
   PhotoEnvironment,
   PlaceCategory,
+  ReportReason,
+  ReportStatus,
   UserRole,
 } from '@aporta/shared'
 
@@ -51,4 +54,36 @@ export const USER_ROLE_LABELS: Record<UserRole, () => string> = {
   OWNER: () => m.label_role_owner(),
   MODERATOR: () => m.label_role_moderator(),
   ADMINISTRATOR: () => m.label_role_administrator(),
+}
+
+export const LISTING_STATUS_LABELS: Record<ListingStatus, () => string> = {
+  DRAFT: () => m.label_status_draft(),
+  PENDING: () => m.label_status_pending(),
+  PUBLISHED: () => m.label_status_published(),
+  ARCHIVED: () => m.label_status_archived(),
+}
+
+/**
+ * Os estados como nome de **fila** da equipe: o `DRAFT` que ela vê é o que voltou ao dono
+ * com um motivo, e "rascunho" não diz isso a quem modera.
+ */
+export const STAFF_LISTING_FILTER_LABELS: Record<ListingStatus, () => string> =
+  {
+    PENDING: () => m.staff_filter_pending(),
+    DRAFT: () => m.staff_filter_draft(),
+    PUBLISHED: () => m.staff_filter_published(),
+    ARCHIVED: () => m.staff_filter_archived(),
+  }
+
+export const REPORT_REASON_LABELS: Record<ReportReason, () => string> = {
+  SCAM: () => m.label_reason_scam(),
+  NOT_AVAILABLE: () => m.label_reason_not_available(),
+  FAKE_PHOTOS: () => m.label_reason_fake_photos(),
+  WRONG_INFO: () => m.label_reason_wrong_info(),
+  OTHER: () => m.label_reason_other(),
+}
+
+export const REPORT_STATUS_LABELS: Record<ReportStatus, () => string> = {
+  OPEN: () => m.label_report_open(),
+  RESOLVED: () => m.label_report_resolved(),
 }

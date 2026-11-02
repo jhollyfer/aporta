@@ -17,6 +17,7 @@ import type Storage from '#domain/storage/storage.entity'
  */
 export const STORAGE_REFERENCE = {
   USER_AVATAR: 'USER_AVATAR',
+  LISTING_PHOTO: 'LISTING_PHOTO',
 } as const
 
 export type StorageReference =
@@ -30,12 +31,17 @@ export type StorageRecord = {
 
 export type StorageSortColumn = (typeof STORAGE_SORT_COLUMNS)[number]
 
-/** The panel library: status, type and search in name, key and type. */
+/**
+ * The file library: status, type and search in name, key and type. `ownerId` cuts the list to
+ * one account's files: the staff reads the whole collection (no `ownerId`), an owner of
+ * properties reads only what he uploaded.
+ */
 export type StorageListCriteria = Merge<
   PageCriteria<StorageSortColumn>,
   {
     readonly status?: UploadStatus
     readonly mimetype?: StorageMimetype
+    readonly ownerId?: string
   }
 >
 
@@ -70,6 +76,18 @@ export default abstract class StorageRepository {
    * An empty list is true: there is nothing to be missing.
    */
   abstract allUploaded(ids: ReadonlyArray<string>): Promise<boolean>
+
+  /**
+   * `allUploaded` and, besides, every file was uploaded by `ownerId` and is one of `mimetypes`.
+   * A file of another account, or of another kind, counts as nonexistent, like a `PENDING` one:
+   * whoever attaches a picture to his ad may only use an image he sent, and answering "not yours"
+   * would confirm that the uuid exists.
+   */
+  abstract allUploadedBy(
+    ids: ReadonlyArray<string>,
+    ownerId: string,
+    mimetypes: ReadonlyArray<StorageMimetype>,
+  ): Promise<boolean>
 
   /**
    * The `PENDING` uploads created before `before`, from oldest to

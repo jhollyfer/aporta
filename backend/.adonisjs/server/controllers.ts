@@ -14,6 +14,35 @@ export const controllers = {
       },
     },
   },
+  administrator: {
+    listings: {
+      archive: {
+        Archive: () => import('#features/administrator/listings/archive/archive.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/administrator/listings/paginate/paginate.controller'),
+      },
+      review: {
+        Review: () => import('#features/administrator/listings/review/review.controller'),
+      },
+      show: {
+        Show: () => import('#features/administrator/listings/show/show.controller'),
+      },
+    },
+    owners: {
+      verify: {
+        Verify: () => import('#features/administrator/owners/verify/verify.controller'),
+      },
+    },
+    reports: {
+      paginate: {
+        Paginate: () => import('#features/administrator/reports/paginate/paginate.controller'),
+      },
+      resolve: {
+        Resolve: () => import('#features/administrator/reports/resolve/resolve.controller'),
+      },
+    },
+  },
   authentication: {
     session: {
       refresh: {
@@ -43,6 +72,30 @@ export const controllers = {
     },
   },
   HealthCheck: () => import('#features/health-check.controller'),
+  owner: {
+    listingPhotos: {
+      create: {
+        Create: () => import('#features/owner/listing-photos/create/create.controller'),
+      },
+    },
+    listings: {
+      archive: {
+        Archive: () => import('#features/owner/listings/archive/archive.controller'),
+      },
+      create: {
+        Create: () => import('#features/owner/listings/create/create.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/owner/listings/paginate/paginate.controller'),
+      },
+      show: {
+        Show: () => import('#features/owner/listings/show/show.controller'),
+      },
+      update: {
+        Update: () => import('#features/owner/listings/update/update.controller'),
+      },
+    },
+  },
   storage: {
     files: {
       complete: {
@@ -85,6 +138,11 @@ export const controllers = {
     places: {
       paginate: {
         Paginate: () => import('#features/storefront/places/paginate/paginate.controller'),
+      },
+    },
+    reports: {
+      create: {
+        Create: () => import('#features/storefront/reports/create/create.controller'),
       },
     },
   },

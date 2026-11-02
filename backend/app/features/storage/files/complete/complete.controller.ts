@@ -5,6 +5,8 @@ import StorageFileCompleteUseCase from './complete.use-case.ts'
 
 import { defineDocs } from '#core/openapi/types'
 import { IdentifierValidator } from '#core/validator'
+import StoragePolicy from '#policies/storage.policy'
+import StorageRepository from '#repositories/storage/storage.repository'
 import { StorageFileCompleteValidator } from '#validators/storage/files.validator'
 
 @inject()
@@ -27,7 +29,10 @@ export default class StorageFileCompleteController {
       'Chamar duas vezes é seguro: a segunda devolve o mesmo registro.',
   })
 
-  constructor(private readonly useCase: StorageFileCompleteUseCase) {}
+  constructor(
+    private readonly files: StorageRepository,
+    private readonly useCase: StorageFileCompleteUseCase,
+  ) {}
 
   async handle(context: HttpContext) {
     const { id } = await context.request.validateUsing(IdentifierValidator, {
@@ -36,6 +41,11 @@ export default class StorageFileCompleteController {
     const payload = await context.request.validateUsing(
       StorageFileCompleteValidator,
     )
+
+    const storage = await this.files.findById(id)
+
+    await context.bouncer.with(StoragePolicy).authorize('complete', storage)
+
     const result = await this.useCase.execute({ ...payload, id })
     if (result.isLeft()) throw result.value
     return context.response.ok(result.value)

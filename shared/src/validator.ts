@@ -185,6 +185,13 @@ const PT_BR_LABELS = {
   rules: 'as regras da casa',
   ownerName: 'o seu nome',
   whatsapp: 'o WhatsApp',
+  bedrooms: 'o número de quartos',
+  bathrooms: 'o número de banheiros',
+
+  // Listing (owner's photos)
+  photos: 'as fotos',
+  storageId: 'o arquivo da foto',
+  environment: 'o ambiente da foto',
 
   // Public storefront filters
   slug: 'o endereço do anúncio',
@@ -192,6 +199,13 @@ const PT_BR_LABELS = {
   minPrice: 'o valor mínimo',
   maxPrice: 'o valor máximo',
   category: 'a categoria',
+  // Moderation and reports
+  decision: 'a decisão',
+  note: 'o motivo',
+  verified: 'a verificação',
+  reason: 'o motivo da denúncia',
+  details: 'os detalhes',
+  website: 'o site',
 } as const
 
 type FieldLabels = Record<keyof typeof PT_BR_LABELS, string>
@@ -235,11 +249,22 @@ export const FIELD_LABELS = {
     rules: 'las reglas de la casa',
     ownerName: 'su nombre',
     whatsapp: 'el WhatsApp',
+    bedrooms: 'el número de dormitorios',
+    bathrooms: 'el número de baños',
+    photos: 'las fotos',
+    storageId: 'el archivo de la foto',
+    environment: 'el ambiente de la foto',
     slug: 'la dirección del anuncio',
     period: 'el período de alquiler',
     minPrice: 'el valor mínimo',
     maxPrice: 'el valor máximo',
     category: 'la categoría',
+    decision: 'la decisión',
+    note: 'el motivo',
+    verified: 'la verificación',
+    reason: 'el motivo de la denuncia',
+    details: 'los detalles',
+    website: 'el sitio',
   },
   en: {
     name: 'the name',
@@ -278,11 +303,22 @@ export const FIELD_LABELS = {
     rules: 'the house rules',
     ownerName: 'your name',
     whatsapp: 'the WhatsApp number',
+    bedrooms: 'the number of bedrooms',
+    bathrooms: 'the number of bathrooms',
+    photos: 'the photos',
+    storageId: 'the photo file',
+    environment: 'the photo environment',
     slug: 'the listing address',
     period: 'the rental period',
     minPrice: 'the minimum price',
     maxPrice: 'the maximum price',
     category: 'the category',
+    decision: 'the decision',
+    note: 'the reason',
+    verified: 'the verification',
+    reason: 'the report reason',
+    details: 'the details',
+    website: 'the website',
   },
 } as const satisfies Record<Locale, FieldLabels>
 

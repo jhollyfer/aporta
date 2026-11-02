@@ -33,7 +33,7 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class ListingPhotoSchema extends BaseModel {
-  static $columns = ['environment', 'id', 'listingId', 'position'] as const
+  static $columns = ['environment', 'id', 'listingId', 'position', 'storageId'] as const
   $columns = ListingPhotoSchema.$columns
   @column()
   declare environment: string
@@ -43,10 +43,12 @@ export class ListingPhotoSchema extends BaseModel {
   declare listingId: string
   @column()
   declare position: number
+  @column()
+  declare storageId: string | null
 }
 
 export class ListingSchema extends BaseModel {
-  static $columns = ['address', 'availableFrom', 'bathrooms', 'bedrooms', 'costElectricity', 'costInternet', 'costWater', 'createdAt', 'deletedAt', 'description', 'furnished', 'id', 'lat', 'lng', 'minimumStayMonths', 'neighborhoodId', 'ownerName', 'ownerVerifiedAt', 'ownerWhatsapp', 'periods', 'priceDaily', 'priceMonthly', 'rules', 'slug', 'status', 'title', 'type', 'updatedAt'] as const
+  static $columns = ['address', 'availableFrom', 'bathrooms', 'bedrooms', 'costElectricity', 'costInternet', 'costWater', 'createdAt', 'deletedAt', 'description', 'furnished', 'id', 'lat', 'lng', 'minimumStayMonths', 'neighborhoodId', 'ownerId', 'ownerName', 'ownerVerifiedAt', 'ownerWhatsapp', 'periods', 'priceDaily', 'priceMonthly', 'publishedAt', 'reviewNote', 'reviewedAt', 'reviewedBy', 'rules', 'slug', 'status', 'title', 'type', 'updatedAt'] as const
   $columns = ListingSchema.$columns
   @column()
   declare address: string
@@ -81,6 +83,8 @@ export class ListingSchema extends BaseModel {
   @column()
   declare neighborhoodId: string
   @column()
+  declare ownerId: string | null
+  @column()
   declare ownerName: string
   @column.dateTime()
   declare ownerVerifiedAt: DateTime | null
@@ -92,6 +96,14 @@ export class ListingSchema extends BaseModel {
   declare priceDaily: number | null
   @column()
   declare priceMonthly: number | null
+  @column.dateTime()
+  declare publishedAt: DateTime | null
+  @column()
+  declare reviewNote: string | null
+  @column.dateTime()
+  declare reviewedAt: DateTime | null
+  @column()
+  declare reviewedBy: string | null
   @column()
   declare rules: any
   @column()
@@ -167,6 +179,33 @@ export class RateLimitSchema extends BaseModel {
   declare points: number
 }
 
+export class ReportSchema extends BaseModel {
+  static $columns = ['createdAt', 'details', 'id', 'listingId', 'reason', 'reporterHash', 'resolutionNote', 'resolvedAt', 'resolvedBy', 'status', 'updatedAt'] as const
+  $columns = ReportSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare details: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare listingId: string
+  @column()
+  declare reason: string
+  @column()
+  declare reporterHash: string | null
+  @column()
+  declare resolutionNote: string | null
+  @column.dateTime()
+  declare resolvedAt: DateTime | null
+  @column()
+  declare resolvedBy: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class StorageSchema extends BaseModel {
   static $columns = ['createdAt', 'deletedAt', 'filename', 'id', 'mimetype', 'originalName', 'ownerId', 'partSize', 'path', 'size', 'status', 'updatedAt', 'uploadId'] as const
   $columns = StorageSchema.$columns
@@ -199,7 +238,7 @@ export class StorageSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarId', 'createdAt', 'deletedAt', 'email', 'id', 'name', 'password', 'role', 'status', 'updatedAt'] as const
+  static $columns = ['avatarId', 'createdAt', 'deletedAt', 'email', 'id', 'name', 'password', 'role', 'status', 'updatedAt', 'verifiedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarId: string | null
@@ -221,4 +260,6 @@ export class UserSchema extends BaseModel {
   declare status: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+  @column.dateTime()
+  declare verifiedAt: DateTime | null
 }

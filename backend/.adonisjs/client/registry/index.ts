@@ -86,6 +86,42 @@ const routes = {
     tokens: [[0,"account"]],
     types: placeholder as Registry['profile.update']['types'],
   },
+  'owner.listings.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/owner/listings',
+    tokens: [[0,"owner"],[0,"listings"]],
+    types: placeholder as Registry['owner.listings.paginate']['types'],
+  },
+  'owner.listings.create': {
+    methods: ["POST"],
+    pattern: '/owner/listings',
+    tokens: [[0,"owner"],[0,"listings"]],
+    types: placeholder as Registry['owner.listings.create']['types'],
+  },
+  'owner.listings.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/owner/listings/:id',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"]],
+    types: placeholder as Registry['owner.listings.show']['types'],
+  },
+  'owner.listings.update': {
+    methods: ["PUT"],
+    pattern: '/owner/listings/:id',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"]],
+    types: placeholder as Registry['owner.listings.update']['types'],
+  },
+  'owner.listings.archive': {
+    methods: ["DELETE"],
+    pattern: '/owner/listings/:id',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"]],
+    types: placeholder as Registry['owner.listings.archive']['types'],
+  },
+  'owner.listings.photos': {
+    methods: ["POST"],
+    pattern: '/owner/listings/:id/photos',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"],[0,"photos"]],
+    types: placeholder as Registry['owner.listings.photos']['types'],
+  },
   'storages.paginate': {
     methods: ["GET","HEAD"],
     pattern: '/storages',

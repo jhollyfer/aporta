@@ -5,11 +5,17 @@ import {
   LISTING_STATUS,
   LISTING_TYPE,
   type ListingStatus,
+  type OwnerListingCreate,
 } from '@aporta/shared'
 
 import Listing, {
   type ListingCreateInput,
 } from '#domain/listing/listing.entity'
+import type Neighborhood from '#domain/neighborhood/neighborhood.entity'
+import type ListingMemoryRepository from '#repositories/listing/listing.memory.repository'
+import ListingRepository from '#repositories/listing/listing.repository'
+import type NeighborhoodMemoryRepository from '#repositories/neighborhood/neighborhood.memory.repository'
+import { neighborhoodDraft } from '#tests/neighborhood-fixtures'
 import { recorded } from '#tests/repository-fixtures'
 
 /**
@@ -22,6 +28,7 @@ export const LISTING_NEIGHBORHOOD_ID = '00000000-0000-4000-8000-0000000000c1'
 
 /** A furnished kitnet at nine hundred a month, without id or slug: each spec chooses its own. */
 export const LISTING_INPUT = {
+  ownerId: null,
   type: LISTING_TYPE.KITNET,
   title: 'Kitnet mobiliada perto do porto',
   description: 'Kitnet com cama, geladeira e fogão.',
@@ -66,4 +73,90 @@ export function listingIn(
     status,
     deletedAt,
   })
+}
+
+/**
+ * A listing repository whose every call fails like a dropped connection: the use-case unit specs
+ * use it to prove the `catch` answers the module's 500 code instead of letting the error out.
+ */
+export class FailingListingRepository extends ListingRepository {
+  findById(): never {
+    throw new Error('database down')
+  }
+
+  findRecordById(): never {
+    throw new Error('database down')
+  }
+
+  findAnyById(): never {
+    throw new Error('database down')
+  }
+
+  findAnyRecordById(): never {
+    throw new Error('database down')
+  }
+
+  paginateForReview(): never {
+    throw new Error('database down')
+  }
+
+  paginateOwned(): never {
+    throw new Error('database down')
+  }
+
+  save(): never {
+    throw new Error('database down')
+  }
+
+  findPublishedRecordBySlug(): never {
+    throw new Error('database down')
+  }
+
+  paginatePublished(): never {
+    throw new Error('database down')
+  }
+}
+
+/**
+ * What the owner's form sends to create an ad, already through the validator: the payload the
+ * create use-case receives. Two lines of rules, to prove the text becomes a list.
+ */
+export const OWNER_LISTING_PAYLOAD = {
+  type: LISTING_TYPE.KITNET,
+  furnished: true,
+  neighborhood: 'centro',
+  address: 'Rua do Porto, 120',
+  monthly: 900,
+  water: true,
+  electricity: true,
+  internet: false,
+  periods: [LISTING_PERIOD.SEMESTER],
+  minimumStayMonths: 4,
+  title: 'Kitnet perto do porto',
+  description: 'Kitnet mobiliada, com cama, geladeira e fogão.',
+  rules: 'Sem festa\n  Uma pessoa ou casal  \n\n',
+  ownerName: 'Seu Raimundo',
+  whatsapp: '5597999990001',
+} as const satisfies OwnerListingCreate
+
+/**
+ * Puts one neighborhood (`centro`) in the two memory repositories the owner's use-cases need: the
+ * neighborhood repository answers the `slug` lookup and the listing repository answers the join
+ * the record carries. The specs build the repositories themselves (a collaborator never comes
+ * from `new` outside a spec) and hand them here.
+ */
+export function centroIn(
+  listings: ListingMemoryRepository,
+  neighborhoods: NeighborhoodMemoryRepository,
+): Neighborhood {
+  const centro = neighborhoodDraft({
+    slug: 'centro',
+    name: 'Centro',
+    lat: -4.37,
+    lng: -70.03,
+  })
+  neighborhoods.put(centro)
+  listings.putNeighborhood(centro.id, { slug: 'centro', name: 'Centro' })
+
+  return centro
 }

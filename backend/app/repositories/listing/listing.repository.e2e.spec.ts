@@ -7,29 +7,44 @@ import {
   LISTING_TYPE,
   PHOTO_ENVIRONMENT,
   SORT_DIRECTION,
+  UPLOAD_STATUS,
+  type Either,
+  type ListingStatus,
+  type StorageFileShowResponse,
 } from '@aporta/shared'
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 
+import { UserFactory } from '#database/factories/user.factory'
 import type Listing from '#domain/listing/listing.entity'
 import ListingLucidRepository from '#repositories/listing/listing.lucid.repository'
 import ListingMemoryRepository, {
   type ListingStamps,
 } from '#repositories/listing/listing.memory.repository'
 import type ListingRepository from '#repositories/listing/listing.repository'
-import { resetDatabase } from '#tests/database-fixtures'
-import type { listingDraft } from '#tests/listing-fixtures'
-import { listingIn } from '#tests/listing-fixtures'
-import { ARCHIVED_AT } from '#tests/repository-fixtures'
+import LucidMapping from '#repositories/shared/lucid-mapping'
+import { resetDatabase, storageRecord } from '#tests/database-fixtures'
+import { listingDraft, listingIn } from '#tests/listing-fixtures'
+import { ARCHIVED_AT, recorded, storageFile } from '#tests/repository-fixtures'
 import { neighborhood, seedListing } from '#tests/storefront-fixtures'
 
 /**
  * The `ListingRepository` contract test (`_standards/domain.md` §5.4): the same cases on Lucid,
- * against Postgres, and in memory. Each implementation says how to create a neighborhood and seed a
- * listing, because the contract has no write: in Lucid, rows; in memory, `put`.
+ * against Postgres, and in memory. Each implementation says how to create what a listing points
+ * to (a neighborhood, an account, a file) and how to seed a listing the way the storefront finds
+ * it: in Lucid, rows; in memory, `put`.
  */
 type Subject = {
   repository: ListingRepository
   neighborhood(slug: string, name: string): Promise<string>
+  /** An account that exists for the implementation: `owner_id` is a foreign key to `users`. */
+  account(): Promise<string>
+  /** An account the staff already verified: its seal is what the ads that point to it show. */
+  verifiedAccount(): Promise<string>
+  /** A live `UPLOADED` file the account sent, which a photo can show. */
+  file(ownerId: string): Promise<StorageFileShowResponse>
+  /** A file a photo may point to but a visitor must not be given: it never finished uploading. */
+  unfinishedFile(ownerId: string): Promise<StorageFileShowResponse>
   seed(listing: Listing, stamps?: ListingStamps): Promise<void>
 }
 
@@ -39,6 +54,20 @@ const IMPLEMENTATIONS = {
     neighborhood: async (slug: string, name: string) => {
       const row = await neighborhood({ slug, name })
       return row.id
+    },
+    account: async () => (await UserFactory.create()).id,
+    verifiedAccount: async () =>
+      (await UserFactory.merge({ verifiedAt: DateTime.now() }).create()).id,
+    file: async (ownerId: string) => {
+      const row = await storageRecord({ ownerId })
+      return fileOf(LucidMapping.file(row))
+    },
+    unfinishedFile: async (ownerId: string) => {
+      const row = await storageRecord({
+        ownerId,
+        status: UPLOAD_STATUS.PENDING,
+      })
+      return fileOf(LucidMapping.file(row))
     },
     seed: async (listing: Listing, stamps?: ListingStamps) => {
       await seedListing(listing, stamps)
@@ -54,6 +83,18 @@ const IMPLEMENTATIONS = {
         repository.putNeighborhood(id, { slug, name })
         return Promise.resolve(id)
       },
+      account: () => Promise.resolve(accountIn(repository, null)),
+      verifiedAccount: () =>
+        Promise.resolve(
+          accountIn(repository, new Date('2026-10-01T12:00:00Z')),
+        ),
+      file: () => {
+        const file = storageFile()
+        repository.putFile(file)
+        return Promise.resolve(file)
+      },
+      // The memory repository serves only the files that were put.
+      unfinishedFile: () => Promise.resolve(storageFile()),
       seed: (listing: Listing, stamps?: ListingStamps) => {
         repository.put(listing, stamps)
         return Promise.resolve()
@@ -61,6 +102,29 @@ const IMPLEMENTATIONS = {
     }
   },
 } satisfies Record<string, () => Promise<Subject>>
+
+/** An account the memory repository knows, as Postgres knows the `users` row an ad points to. */
+function accountIn(
+  repository: ListingMemoryRepository,
+  verifiedAt: Date | null,
+): string {
+  const id = randomUUID()
+  repository.putAccount({
+    id,
+    name: 'Dona Maria',
+    email: `${id}@mail.com`,
+    verifiedAt,
+  })
+
+  return id
+}
+
+/** The mapped file, or the failure on the spot: a row the spec just created is never missing. */
+function fileOf(file: StorageFileShowResponse | null): StorageFileShowResponse {
+  if (!file) throw new Error('storage row missing')
+
+  return file
+}
 
 const PAGE = {
   page: 1,
@@ -92,9 +156,21 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
           verifiedAt,
         },
         photos: [
-          { id: randomUUID(), environment: PHOTO_ENVIRONMENT.KITCHEN },
-          { id: randomUUID(), environment: PHOTO_ENVIRONMENT.FACADE },
-          { id: randomUUID(), environment: PHOTO_ENVIRONMENT.BEDROOM },
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.KITCHEN,
+            storageId: null,
+          },
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.FACADE,
+            storageId: null,
+          },
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.BEDROOM,
+            storageId: null,
+          },
         ],
       })
       await seed(entity)
@@ -373,7 +449,483 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
         lastPage: 2,
       })
     })
+
+    test('when reading for the owner, it returns any status outside the trash, and the storefront read still hides it', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      const pending = listingIn(LISTING_STATUS.PENDING, {
+        slug: 'em-analise',
+        neighborhoodId: centro,
+        ownerId,
+      })
+      const trashed = listingIn(
+        LISTING_STATUS.ARCHIVED,
+        { slug: 'arquivado', neighborhoodId: centro, ownerId },
+        ARCHIVED_AT,
+      )
+      await seed(pending)
+      await seed(trashed)
+
+      const entity = await repository.findById(pending.id)
+      const record = await repository.findRecordById(pending.id)
+
+      assert.equal(entity?.snapshot().ownerId, ownerId)
+      assert.isTrue(entity?.isOwnedBy(ownerId))
+      assert.deepEqual(record?.neighborhood, { slug: 'centro', name: 'Centro' })
+      assert.isNull(await repository.findById(trashed.id))
+      assert.isNull(await repository.findRecordById(trashed.id))
+      assert.isNull(await repository.findById(randomUUID()))
+      assert.isNull(await repository.findPublishedRecordBySlug('em-analise'))
+    })
+
+    test('when paginating for an owner, only his live ads come back, by status and search, and never another account', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const mine = await account()
+      const other = await account()
+      const draft = (
+        slug: string,
+        status: Parameters<typeof listingIn>[0],
+        ownerId: string | null,
+        extra: Parameters<typeof listingIn>[1] = {},
+      ) =>
+        seed(
+          listingIn(status, {
+            slug,
+            neighborhoodId: centro,
+            ownerId,
+            ...extra,
+          }),
+        )
+      await draft('minha-publicada', LISTING_STATUS.PUBLISHED, mine)
+      await draft('minha-pendente', LISTING_STATUS.PENDING, mine, {
+        title: 'Casa com quintal',
+      })
+      await draft('dela', LISTING_STATUS.PUBLISHED, other)
+      await draft('sem-dono', LISTING_STATUS.PUBLISHED, null)
+      await seed(
+        listingIn(
+          LISTING_STATUS.ARCHIVED,
+          { slug: 'minha-arquivada', neighborhoodId: centro, ownerId: mine },
+          ARCHIVED_AT,
+        ),
+      )
+
+      const slugs = async (criteria: object) =>
+        (
+          await repository.paginateOwned({
+            ...PAGE,
+            ownerId: mine,
+            ...criteria,
+          })
+        ).data
+          .map((record) => record.listing.snapshot().slug)
+          .sort()
+
+      assert.deepEqual(await slugs({}), ['minha-pendente', 'minha-publicada'])
+      assert.deepEqual(await slugs({ status: LISTING_STATUS.PENDING }), [
+        'minha-pendente',
+      ])
+      assert.deepEqual(await slugs({ search: 'quintal' }), ['minha-pendente'])
+      assert.deepEqual(await slugs({ sort: 'price', direction: 'asc' }), [
+        'minha-pendente',
+        'minha-publicada',
+      ])
+      assert.deepEqual(
+        (await repository.paginateOwned({ ...PAGE, ownerId: randomUUID() }))
+          .data,
+        [],
+      )
+    })
+
+    test('when saving a new ad, it comes back as written: owner, photos in order, files of the live uploads only', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        file,
+        unfinishedFile,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      const live = await file(ownerId)
+      const unfinished = await unfinishedFile(ownerId)
+      const entity = listingDraft({
+        slug: 'nova-kitnet',
+        neighborhoodId: centro,
+        ownerId,
+        photos: [
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.KITCHEN,
+            storageId: live.id,
+          },
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.FACADE,
+            storageId: unfinished.id,
+          },
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.BEDROOM,
+            storageId: null,
+          },
+        ],
+      }).submit()
+
+      const saved = await repository.save(entity)
+
+      if (saved.isLeft()) throw new Error(JSON.stringify(saved.value))
+      const snapshot = saved.value.listing.snapshot()
+      assert.equal(snapshot.status, LISTING_STATUS.PENDING)
+      assert.equal(snapshot.ownerId, ownerId)
+      assert.deepEqual(
+        snapshot.photos.map((photo) => photo.environment),
+        [
+          PHOTO_ENVIRONMENT.KITCHEN,
+          PHOTO_ENVIRONMENT.FACADE,
+          PHOTO_ENVIRONMENT.BEDROOM,
+        ],
+      )
+      assert.deepEqual(
+        snapshot.photos.map((photo) => photo.storageId),
+        [live.id, unfinished.id, null],
+      )
+      assert.deepEqual(
+        saved.value.files.map((each) => each.id),
+        [live.id],
+      )
+      assert.deepEqual(saved.value.neighborhood, {
+        slug: 'centro',
+        name: 'Centro',
+      })
+      assert.instanceOf(saved.value.createdAt, Date)
+      assert.equal((await repository.findById(entity.id))?.id, entity.id)
+    })
+
+    test('when saving an existing ad, the change and the whole gallery replace what was there', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        file,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      const first = await file(ownerId)
+      const second = await file(ownerId)
+      const entity = listingDraft({
+        slug: 'editavel',
+        neighborhoodId: centro,
+        ownerId,
+        photos: [
+          {
+            id: randomUUID(),
+            environment: PHOTO_ENVIRONMENT.FACADE,
+            storageId: first.id,
+          },
+        ],
+      })
+      recordedSave(await repository.save(entity))
+
+      entity.update({ title: 'Kitnet reformada', priceMonthly: 750 })
+      entity.attachPhotos([
+        {
+          id: randomUUID(),
+          environment: PHOTO_ENVIRONMENT.LIVING,
+          storageId: second.id,
+        },
+      ])
+      const saved = recordedSave(await repository.save(entity))
+
+      const snapshot = saved.listing.snapshot()
+      assert.equal(snapshot.title, 'Kitnet reformada')
+      assert.equal(snapshot.priceMonthly, 750)
+      assert.deepEqual(
+        snapshot.photos.map((photo) => photo.storageId),
+        [first.id, second.id],
+      )
+      assert.deepEqual(
+        saved.files.map((each) => each.id),
+        [first.id, second.id],
+      )
+    })
+
+    test('when archiving and saving, the ad leaves every read', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const entity = listingIn(LISTING_STATUS.PUBLISHED, {
+        slug: 'saindo',
+        neighborhoodId: centro,
+        ownerId: await account(),
+      })
+      recordedSave(await repository.save(entity))
+
+      entity.archive(ARCHIVED_AT)
+      const saved = recordedSave(await repository.save(entity))
+
+      // `save` answers with the row as written, trash included; every read after it hides the ad.
+      assert.equal(saved.listing.snapshot().status, LISTING_STATUS.ARCHIVED)
+      assert.instanceOf(saved.listing.snapshot().deletedAt, Date)
+      assert.isNull(await repository.findById(entity.id))
+      assert.isNull(await repository.findPublishedRecordBySlug('saindo'))
+    })
+
+    test('when reading the seal, the account decides for an ad that has one, and the ad own column only for one that has none', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        verifiedAccount,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const seal = new Date('2026-10-01T12:00:00.000Z')
+      const own = { name: 'Seu Raimundo', whatsapp: '5597999990002' }
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'conta-verificada',
+          neighborhoodId: centro,
+          ownerId: await verifiedAccount(),
+          owner: { ...own, verifiedAt: null },
+        }),
+      )
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'conta-comum',
+          neighborhoodId: centro,
+          ownerId: await account(),
+          // A leftover seal on the ad's own column: the account says no, and the account wins.
+          owner: { ...own, verifiedAt: seal },
+        }),
+      )
+      await seed(
+        listingIn(LISTING_STATUS.PUBLISHED, {
+          slug: 'sem-conta',
+          neighborhoodId: centro,
+          ownerId: null,
+          owner: { ...own, verifiedAt: seal },
+        }),
+      )
+
+      const verified =
+        await repository.findPublishedRecordBySlug('conta-verificada')
+      const plain = await repository.findPublishedRecordBySlug('conta-comum')
+      const orphan = await repository.findPublishedRecordBySlug('sem-conta')
+
+      assert.instanceOf(verified?.ownerVerifiedAt, Date)
+      assert.isNull(plain?.ownerVerifiedAt)
+      assert.instanceOf(orphan?.ownerVerifiedAt, Date)
+      assert.isNull(orphan?.account)
+      assert.instanceOf(verified?.account?.verifiedAt, Date)
+    })
+
+    test('when the staff reads, the trash is included and the status and the search narrow it', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      const ad = (slug: string, status: ListingStatus, title: string) =>
+        listingIn(
+          status,
+          { slug, title, neighborhoodId: centro, ownerId },
+          trashedAt(status),
+        )
+      await seed(ad('no-ar', LISTING_STATUS.PUBLISHED, 'Casa ampla no centro'))
+      await seed(ad('na-fila', LISTING_STATUS.PENDING, 'Kitnet perto do porto'))
+      await seed(ad('arquivada', LISTING_STATUS.ARCHIVED, 'Quarto na orla'))
+
+      const all = await repository.paginateForReview(PAGE)
+      const pending = await repository.paginateForReview({
+        ...PAGE,
+        status: LISTING_STATUS.PENDING,
+      })
+      const archived = await repository.paginateForReview({
+        ...PAGE,
+        status: LISTING_STATUS.ARCHIVED,
+      })
+      const searched = await repository.paginateForReview({
+        ...PAGE,
+        search: 'porto',
+      })
+
+      assert.sameMembers(
+        all.data.map((each) => each.listing.snapshot().slug),
+        ['no-ar', 'na-fila', 'arquivada'],
+      )
+      assert.equal(all.meta.total, 3)
+      assert.deepEqual(
+        pending.data.map((each) => each.listing.snapshot().slug),
+        ['na-fila'],
+      )
+      assert.deepEqual(
+        archived.data.map((each) => each.listing.snapshot().slug),
+        ['arquivada'],
+      )
+      assert.deepEqual(
+        searched.data.map((each) => each.listing.snapshot().slug),
+        ['na-fila'],
+      )
+      assert.equal(all.data[0]?.account?.id, ownerId)
+    })
+
+    test('when the staff reads one ad, the trashed one is found, and the owner read still does not find it', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const entity = listingIn(
+        LISTING_STATUS.ARCHIVED,
+        { slug: 'lixeira', neighborhoodId: centro, ownerId: await account() },
+        ARCHIVED_AT,
+      )
+      await seed(entity)
+
+      assert.equal((await repository.findAnyById(entity.id))?.id, entity.id)
+      assert.equal(
+        (await repository.findAnyRecordById(entity.id))?.listing.id,
+        entity.id,
+      )
+      assert.isNull(await repository.findById(entity.id))
+      assert.isNull(await repository.findAnyById(randomUUID()))
+    })
+
+    test('when a decision is saved, the instant, the reason and the author come back', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const reviewer = await account()
+      const refused = listingIn(LISTING_STATUS.PENDING, {
+        slug: 'recusada',
+        neighborhoodId: centro,
+        ownerId: await account(),
+      })
+      const approved = listingIn(LISTING_STATUS.PENDING, {
+        slug: 'aprovada',
+        neighborhoodId: centro,
+        ownerId: await account(),
+      })
+      const at = new Date('2026-11-01T12:00:00.000Z')
+      recorded(refused.refuse('Faltam fotos.', reviewer, at))
+      recorded(approved.approve(reviewer, at))
+
+      const savedRefusal = recordedSave(await repository.save(refused))
+      const savedApproval = recordedSave(await repository.save(approved))
+
+      assert.deepEqual(savedRefusal.listing.snapshot().review, {
+        note: 'Faltam fotos.',
+        at,
+        by: reviewer,
+      })
+      assert.equal(savedRefusal.listing.snapshot().status, LISTING_STATUS.DRAFT)
+      assert.deepEqual(savedApproval.listing.snapshot().publishedAt, at)
+      assert.isNull(savedApproval.listing.snapshot().review?.note)
+
+      refused.submit()
+      const resubmitted = recordedSave(await repository.save(refused))
+
+      assert.isNull(resubmitted.listing.snapshot().review)
+      assert.equal(
+        resubmitted.listing.snapshot().status,
+        LISTING_STATUS.PENDING,
+      )
+    })
+
+    test('when the slug is taken by another ad, even a trashed one, save answers UNIQUE_CONFLICT and writes nothing', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        account,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const ownerId = await account()
+      await seed(
+        listingIn(
+          LISTING_STATUS.ARCHIVED,
+          { slug: 'ocupado', neighborhoodId: centro, ownerId },
+          ARCHIVED_AT,
+        ),
+      )
+      const entity = listingDraft({
+        slug: 'ocupado',
+        neighborhoodId: centro,
+        ownerId,
+      })
+
+      const saved = await repository.save(entity)
+
+      assert.deepEqual(saved.value, { code: 'UNIQUE_CONFLICT' })
+      assert.isNull(await repository.findById(entity.id))
+    })
+
+    test('when the neighborhood does not exist, save answers a repository failure instead of throwing', async ({
+      assert,
+    }) => {
+      const { repository, account } = await make()
+      const entity = listingDraft({
+        slug: 'sem-bairro',
+        neighborhoodId: randomUUID(),
+        ownerId: await account(),
+      })
+
+      const saved = await repository.save(entity)
+
+      assert.containsSubset(saved.value, { code: 'REPOSITORY_FAILURE' })
+    })
   })
+}
+
+/** Only an archived ad is in the trash. */
+function trashedAt(status: ListingStatus): Date | null {
+  if (status === LISTING_STATUS.ARCHIVED) return ARCHIVED_AT
+
+  return null
 }
 
 /** A published listing built without a database. */
@@ -386,4 +938,12 @@ function stamps(createdAt: string, updatedAt: string): ListingStamps {
     createdAt: new Date(`${createdAt}T12:00:00.000Z`),
     updatedAt: new Date(`${updatedAt}T12:00:00.000Z`),
   }
+}
+
+/** The saved record, or the failure on the spot: a write the spec expects to succeed. */
+function recordedSave<Fact, Stored>(result: Either<Fact, Stored>): Stored {
+  if (result.isLeft())
+    throw new Error(`save refused: ${JSON.stringify(result.value)}`)
+
+  return result.value
 }

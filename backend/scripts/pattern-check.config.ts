@@ -103,6 +103,46 @@ export const configuration: PatternCheckConfiguration = {
       reason:
         'only the owner or the administrator downloads the private file: the StoragePolicy decides',
     },
+    {
+      file: 'app/features/storage/files/show/show.controller.ts',
+      reason:
+        'an owner of properties reads only the files he sent: the StoragePolicy decides',
+    },
+    {
+      file: 'app/features/storage/files/complete/complete.controller.ts',
+      reason:
+        'an owner of properties confirms only the uploads he opened: the StoragePolicy decides',
+    },
+    {
+      file: 'app/features/storage/files/parts/parts.controller.ts',
+      reason:
+        'an owner of properties resumes only the uploads he opened: the StoragePolicy decides',
+    },
+    {
+      file: 'app/features/storage/files/delete/delete.controller.ts',
+      reason:
+        'an owner of properties deletes only the files he sent: the StoragePolicy decides',
+    },
+    {
+      file: 'app/features/owner/listings/show/show.controller.ts',
+      reason:
+        'an ad of another account answers 404 like a missing one: the ListingPolicy decides',
+    },
+    {
+      file: 'app/features/owner/listings/update/update.controller.ts',
+      reason:
+        'only the account that wrote the ad edits it: the ListingPolicy decides',
+    },
+    {
+      file: 'app/features/owner/listings/archive/archive.controller.ts',
+      reason:
+        'only the account that wrote the ad archives it: the ListingPolicy decides',
+    },
+    {
+      file: 'app/features/owner/listing-photos/create/create.controller.ts',
+      reason:
+        'only the account that wrote the ad puts pictures on it: the ListingPolicy decides',
+    },
   ],
   temporaryExceptions: [],
 }

@@ -81,8 +81,8 @@ const BEHIND_A_REF = ['type']
 describe('labels', () => {
   test('when sweeping, it reaches every exported validator', () => {
     // A filter that matches nothing does not fail: the tests below would pass by
-    // vacuity. Three global ones, plus those of each resource.
-    expect(validators.length).toBe(14)
+    // vacuity. Three global ones, plus those of each resource (23 with the moderation and the reports).
+    expect(validators.length).toBe(23)
   })
 
   test('when checking fields, every validator field has a label', () => {

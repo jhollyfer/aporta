@@ -73,10 +73,59 @@ const tags: TagRule[] = [
     description:
       'Upload em três passos, porque o binário **não** atravessa esta aplicação: o ' +
       '`POST` abre e devolve URLs assinadas, o navegador sobe as partes direto no bucket, e o ' +
-      '`complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload), que não autoriza nada - ' +
-      'quem anexa guarda a referência.',
+      '`complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload): ' +
+      'a equipe alcança todos os arquivos e o dono de imóvel só os que ele mesmo enviou, e o ' +
+      'arquivo de outra conta responde `404` igual ao que não existe. Quem anexa guarda a referência.',
     singular: 'anexo',
     plural: 'anexos',
+  },
+  {
+    prefix: '/owner/listings',
+    name: 'Dono · Anúncios',
+    description:
+      'Os anúncios do dono de imóvel autenticado: cadastrar, editar, listar os próprios, ' +
+      'arquivar e anexar fotos. O anúncio nasce `PENDING` e só a revisão da equipe o publica. ' +
+      'O escopo é a conta da sessão, nunca um campo do corpo, e anúncio de outra conta ' +
+      'responde `404` igual ao que não existe.',
+    singular: 'anúncio',
+    plural: 'anúncios',
+  },
+  {
+    prefix: '/administrator/listings',
+    name: 'Equipe · Anúncios',
+    description:
+      'A fila de revisão e a gestão de anúncios pela equipe (`ADMINISTRATOR` e `MODERATOR`). Lista ' +
+      'qualquer anúncio, inclusive o arquivado, com a conta do dono; aprova (publica) ou recusa com ' +
+      'motivo obrigatório, e arquiva qualquer um. Não há exclusão definitiva.',
+    singular: 'anúncio',
+    plural: 'anúncios',
+  },
+  {
+    prefix: '/administrator/owners',
+    name: 'Equipe · Donos',
+    description:
+      'O selo de "dono verificado", que é da conta de quem anuncia e aparece em todos os anúncios ' +
+      'dela. Marcar e desmarcar são a mesma chamada, com `verified` verdadeiro ou falso.',
+    singular: 'dono',
+    plural: 'donos',
+  },
+  {
+    prefix: '/administrator/reports',
+    name: 'Equipe · Denúncias',
+    description:
+      'A fila de denúncias de golpe feitas na vitrine. A equipe lista por `OPEN` ou `RESOLVED` e ' +
+      'fecha cada uma com uma nota; fechar não tira o anúncio do ar, isso é arquivá-lo.',
+    singular: 'denúncia',
+    plural: 'denúncias',
+  },
+  {
+    prefix: '/storefront/reports',
+    name: 'Vitrine · Denúncias',
+    description:
+      'A denúncia de golpe, **sem autenticação** e com limite por endereço. O endereço de quem ' +
+      'denuncia não é guardado, só um hash com chave.',
+    singular: 'denúncia',
+    plural: 'denúncias',
   },
   {
     prefix: '/storefront/listings',

@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 
+import { STAFF_USER_ROLES, USER_ROLE } from '@aporta/shared'
+
 import { LocaleSwitcher } from '#/components/common/locale-switcher'
 import { useSession } from '#/hooks/use-session'
 import { cn } from '#/lib/cn'
@@ -44,6 +46,49 @@ function AccountLink(): React.JSX.Element {
 }
 
 /**
+ * "Meus anúncios", só para o dono logado. Aparece depois da hidratação, como o resto da
+ * conta (`useSession`): o HTML do servidor é igual para todo visitante, e o link entra
+ * quando a sessão responde. Administrador e moderador não o veem, porque a área do dono
+ * não é deles.
+ */
+function MyListingsLink(): React.JSX.Element | null {
+  const { account } = useSession()
+
+  if (account?.role !== USER_ROLE.OWNER) return null
+
+  return (
+    <Link
+      to="/owner/listings"
+      className={cn(LINK, 'inline-flex min-h-11 items-center')}
+    >
+      {m.nav_my_listings()}
+    </Link>
+  )
+}
+
+/**
+ * "Painel", só para a equipe logada (administrador e moderador). Mesma regra do "Meus
+ * anúncios": aparece depois da hidratação, e o HTML do servidor é igual para todo visitante.
+ * "Minha conta" continua ao lado: o painel é um atalho, não substitui a conta.
+ */
+function PanelLink(): React.JSX.Element | null {
+  const { account } = useSession()
+
+  if (account === undefined || !STAFF_USER_ROLES.includes(account.role)) {
+    return null
+  }
+
+  return (
+    <Link
+      to="/administrator/listings"
+      className={cn(LINK, 'inline-flex min-h-11 items-center')}
+    >
+      {m.nav_panel()}
+    </Link>
+  )
+}
+
+/**
  * O cabeçalho: nome, links, conta, idioma e uma ação. Sem barra flutuante nem
  * vidro: no celular de 360px cada pixel de altura é conteúdo a menos.
  */
@@ -67,6 +112,8 @@ export function SiteHeader(): React.JSX.Element {
           <Link to="/guide" className={LINK}>
             {m.nav_guide()}
           </Link>
+          <MyListingsLink />
+          <PanelLink />
           <AccountLink />
           <Link
             to="/list-your-place"

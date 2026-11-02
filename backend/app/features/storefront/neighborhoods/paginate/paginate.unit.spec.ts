@@ -40,6 +40,10 @@ test.group('storefront > neighborhoods > paginate (unit)', () => {
     assert,
   }) => {
     class FailingNeighborhoodRepository extends NeighborhoodRepository {
+      findBySlug(): never {
+        throw new Error('database down')
+      }
+
       paginate(): never {
         throw new Error('database down')
       }

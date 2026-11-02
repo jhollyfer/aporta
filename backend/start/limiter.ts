@@ -130,6 +130,38 @@ export const uploadThrottle = limiter.define('upload', function (context) {
 })
 
 /**
+ * The owner's listing writes (create, edit, archive, attach photos). The ceiling is against the
+ * loop, not against the person: an owner who writes an ad, corrects it a few times and attaches
+ * a dozen pictures is well under sixty an hour, and a script that creates ads to fill the review
+ * queue is not. The key is the session user, and not the IP, for the same reason as the upload
+ * one: whoever is behind the same NAT does not share the bucket. Without a user (the route
+ * requires `auth()` first, so it does not happen) it falls back to the IP.
+ */
+export const listingWriteThrottle = limiter.define(
+  'listingWrite',
+  function (context) {
+    const user = context.auth.user
+    const throttle = limiter.allowRequests(60).every('1 hour')
+
+    if (!user) return throttle
+
+    return throttle.usingKey(`listing_${user.id}`)
+  },
+)
+
+/**
+ * The public scam report, per IP. It is the only write that needs no account, so the address is
+ * the only thing to count (`request.ip()`, which reads `X-Forwarded-For` only from
+ * `TRUSTED_PROXIES`). Five an hour is generous for someone who found a scam and tight for a script
+ * that would bury the staff's queue; `blockFor` is what makes going over cost something, for the
+ * same reason as `signInThrottle`. A bucket of its own, so reporting never spends the login
+ * attempts of the NAT.
+ */
+export const reportCreateThrottle = limiter.define('reportCreate', function () {
+  return limiter.allowRequests(5).every('1 hour').blockFor('1 hour')
+})
+
+/**
  * Session renewal, per IP. It has no session (the expired access token is
  * precisely what brings the client here) and touches the database on every call -
  * it checks the refresh and deletes it. The token is opaque and high-entropy, so

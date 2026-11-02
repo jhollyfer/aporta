@@ -85,10 +85,10 @@ A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta pagina
 
 **Entrada:** botão "Anunciar imóvel" do cabeçalho (a partir de telas médias), da home ou da faixa do dono.
 **Ação:** preenche seis etapas e envia.
-**Sucesso:** tela "Anúncio pronto" com o título e o aviso de que o envio ainda não está no ar; o rascunho continua salvo e há "Voltar ao cadastro" e o caminho para a home.
-**Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro.
+**Sucesso:** o anúncio é criado em análise (nunca no ar sozinho), as fotos sobem e a tela diz que a equipe vai revisar; o rascunho é apagado e há o caminho para "Meus anúncios".
+**Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro. Sem sessão no último passo, o rascunho é guardado e a pessoa vai para o login, voltando ao cadastro depois. Se as fotos falharem, o anúncio já existe e a tela repete só o envio das fotos.
 
-Hoje o cadastro não envia nada: o último passo só valida o formulário inteiro (`TASKS.md` 7.15). Ainda não existe a entrada do dono (login) na tela nem a conta `OWNER` por cadastro; quando existirem, o fluxo ganha o passo de entrar antes da etapa 1.
+As fotos escolhidas não ficam no rascunho (o arquivo não cabe no `localStorage`): quem é mandado ao login no último passo escolhe as fotos de novo. Em "Meus anúncios" o dono edita os dados, adiciona fotos e arquiva; remover ou reordenar foto ainda não existe na API.
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|
@@ -134,25 +134,31 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 
 ---
 
-## Moderação futura
+## Moderação e denúncia
 
-Ainda não existe tela nem API. O fluxo abaixo é a intenção, e muda conforme a resposta às perguntas do `PRD.md` §8 (quem verifica o dono, moderação antes ou depois de publicar).
-
-**Entrada:** a equipe (papéis `ADMINISTRATOR` e `MODERATOR`) entra no painel.
+**Entrada:** a equipe (`ADMINISTRATOR` e `MODERATOR`) entra e abre "Painel". O visitante denuncia pela página do anúncio.
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|
-| 1 | abre a fila de anúncios novos e alterados | lista por data, com o dono e o selo de verificação | a definir |
-| 2 | confere fotos, valores e sinais de golpe | mostra o anúncio como o visitante verá | a definir |
-| 3 | aprova, pede ajuste ou arquiva | muda o estado do anúncio e registra quem decidiu | a definir |
-| 4 | marca o dono como verificado | o selo passa a aparecer no cartão do dono | a definir |
+| 1 | abre a fila de anúncios | lista o que está em análise, do mais antigo, com filtro de estado e busca na URL | `/administrator/listings` |
+| 2 | abre um anúncio | mostra fotos, valores, dono e selo como o visitante vai ver | `/administrator/listings/:id` |
+| 3 | aprova | o anúncio vai ao ar e registra quem decidiu | detalhe |
+| 4 | recusa com motivo (3 a 500 caracteres) | o anúncio volta ao dono como "Precisa de ajuste", com o motivo em destaque | detalhe |
+| 5 | marca ou desmarca o dono como verificado | o selo muda em todos os anúncios da conta | detalhe |
+| 6 | arquiva | o anúncio sai do ar e o segundo arquivamento é recusado (409) | detalhe |
+| 7 | abre as denúncias, lê e resolve com nota | a denúncia passa a resolvida; o anúncio não muda, quem tira do ar é o arquivar | `/administrator/reports` |
+| 8 | o visitante toca em "Denunciar este anúncio" e escolhe o motivo | grava a denúncia, sem login, e agradece; mais de 5 por hora do mesmo IP recebe 429 com o tempo de espera | página do anúncio |
 
 **Caminhos alternativos**
 
 | Situação | Resposta |
 |---|---|
-| Moderador tenta apagar de vez | recusado: só o `ADMINISTRATOR` apaga definitivamente (`RULES.md` §3) |
+| Moderador tenta apagar de vez | não existe a ação: só se arquiva (`DECISIONS.md` #14) |
 | Dono tenta ver anúncio de outro dono | 404, igual ao anúncio que não existe |
+| Dono abre o painel | volta para a conta |
+| Dono edita o anúncio recusado | salva e o anúncio volta para análise; editar um anúncio no ar não passa por nova revisão |
+| Dono troca nome ou WhatsApp de um anúncio | a conta perde o selo até a equipe verificar de novo |
+| Denúncia de anúncio que não está no ar | 404, igual ao inexistente |
 
 ---
 

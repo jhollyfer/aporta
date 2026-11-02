@@ -1,5 +1,8 @@
 import {
+  LISTING_PHOTOS_MAX,
   LISTING_STATUS,
+  REVIEW_NOTE_MAX,
+  REVIEW_NOTE_MIN,
   left,
   right,
   type Either,
@@ -10,22 +13,42 @@ import {
   type PhotoEnvironment,
 } from '@aporta/shared'
 
-import type { ListingError } from './listing.errors.ts'
+import type {
+  ListingAlreadyArchived,
+  ListingError,
+  ListingReviewError,
+} from './listing.errors.ts'
 
-/** A picture slot, in the owner's order. It has no file yet (`listing_photos` has no `storages` key). */
+/**
+ * A picture slot, in the owner's order. `storageId` is the `storages` file it shows; null is a slot
+ * with no picture yet (the seeded ones, or a file that was deleted), and the frontend draws the
+ * environment instead.
+ */
 export type ListingPhotoProps = {
   readonly id: string
   readonly environment: PhotoEnvironment
+  readonly storageId: string | null
 }
 
 /**
- * The owner as the ad carries him, denormalized on purpose: he has no account yet, and the ad is
- * what the visitor contacts. `verifiedAt` null is "not verified".
+ * The owner as the ad carries him, denormalized on purpose: the ad is what the visitor contacts,
+ * and the contact is the one the owner typed on it, not the account's. `verifiedAt` null is "not
+ * verified".
  */
 export type ListingOwnerProps = {
   readonly name: string
   readonly whatsapp: string
   readonly verifiedAt: Date | null
+}
+
+/**
+ * The staff's last decision on the ad. `note` is the reason of a refusal and null on an approval;
+ * `by` is the account that decided, null if that account was deleted since.
+ */
+export type ListingReviewProps = {
+  readonly note: string | null
+  readonly at: Date
+  readonly by: string | null
 }
 
 /**
@@ -36,6 +59,8 @@ export type ListingOwnerProps = {
 export type ListingProps = {
   readonly id: string
   readonly slug: string
+  /** The account that wrote the ad; null is an ad seeded before owners had accounts. */
+  readonly ownerId: string | null
   status: ListingStatus
   readonly type: ListingType
   readonly title: string
@@ -60,18 +85,55 @@ export type ListingProps = {
   readonly lat: number
   readonly lng: number
   readonly photos: ReadonlyArray<ListingPhotoProps>
+  /** When the review put the ad on the air; null until it was approved. */
+  publishedAt: Date | null
+  /** The last decision of the staff; null when no one reviewed it, or when an edit sent it back to the queue. */
+  review: ListingReviewProps | null
   deletedAt: Date | null
+}
+
+/**
+ * What an owner may change in an ad. The slug, the account and the verification are not here:
+ * the address does not move under a link already shared, the account is the session's, and
+ * only the platform verifies. Contact changes clear the verification (`Listing.update`).
+ */
+export type ListingChanges = Partial<
+  Pick<
+    ListingProps,
+    | 'type'
+    | 'title'
+    | 'description'
+    | 'neighborhoodId'
+    | 'address'
+    | 'priceMonthly'
+    | 'priceDaily'
+    | 'costs'
+    | 'periods'
+    | 'minimumStayMonths'
+    | 'bedrooms'
+    | 'bathrooms'
+    | 'furnished'
+    | 'rules'
+    | 'lat'
+    | 'lng'
+  >
+> & {
+  readonly owner?: Pick<ListingOwnerProps, 'name' | 'whatsapp'>
 }
 
 /** What creating an ad needs: everything but the state it is born with. */
 export type ListingCreateInput = Merge<
-  Omit<ListingProps, 'status' | 'deletedAt' | 'photos'>,
+  Omit<
+    ListingProps,
+    'status' | 'deletedAt' | 'photos' | 'publishedAt' | 'review'
+  >,
   { readonly photos?: ReadonlyArray<ListingPhotoProps> }
 >
 
 /**
  * The property ad. Born `DRAFT`, and it has to say what it costs: a monthly price, a daily one
- * (a hotel quotes only the day) or both, always in whole reais above zero.
+ * (a hotel quotes only the day) or both, always in whole reais above zero. Whose ad it is
+ * (`isOwnedBy`) is a domain fact, and the policy only asks it.
  */
 export default class Listing {
   /**
@@ -81,28 +143,19 @@ export default class Listing {
    */
   static readonly DAYS_PER_MONTH = 30
 
-  private constructor(private readonly props: ListingProps) {}
+  private constructor(private props: ListingProps) {}
 
   static create(input: ListingCreateInput): Either<ListingError, Listing> {
-    if (input.title.trim().length === 0)
-      return left({ code: 'LISTING_TITLE_EMPTY' })
-
-    if (input.priceMonthly === null && input.priceDaily === null)
-      return left({ code: 'LISTING_PRICE_REQUIRED' })
-
-    for (const price of [input.priceMonthly, input.priceDaily]) {
-      if (price !== null && (!Number.isInteger(price) || price < 1))
-        return left({ code: 'LISTING_PRICE_INVALID' })
-    }
-
-    if (input.periods.length === 0)
-      return left({ code: 'LISTING_PERIODS_EMPTY' })
+    const refusal = Listing.refusal(input)
+    if (refusal) return left(refusal)
 
     return right(
       new Listing({
         ...input,
         status: LISTING_STATUS.DRAFT,
         photos: input.photos ?? [],
+        publishedAt: null,
+        review: null,
         deletedAt: null,
       }),
     )
@@ -111,6 +164,168 @@ export default class Listing {
   /** Rehydration by the repository: the data already passed the invariants when it was saved. */
   static restore(props: ListingProps): Listing {
     return new Listing({ ...props })
+  }
+
+  /**
+   * The invariants of what an ad says, one place for the birth and for the edit: an edit that
+   * could leave the ad without a price would be a way around the rule `create` enforces.
+   */
+  private static refusal(
+    fields: Pick<
+      ListingProps,
+      'title' | 'priceMonthly' | 'priceDaily' | 'periods'
+    >,
+  ): ListingError | null {
+    if (fields.title.trim().length === 0) return { code: 'LISTING_TITLE_EMPTY' }
+
+    if (fields.priceMonthly === null && fields.priceDaily === null)
+      return { code: 'LISTING_PRICE_REQUIRED' }
+
+    for (const price of [fields.priceMonthly, fields.priceDaily]) {
+      if (price !== null && (!Number.isInteger(price) || price < 1))
+        return { code: 'LISTING_PRICE_INVALID' }
+    }
+
+    if (fields.periods.length === 0) return { code: 'LISTING_PERIODS_EMPTY' }
+
+    return null
+  }
+
+  /**
+   * Hands the ad to the review: `DRAFT` becomes `PENDING`. Nothing here publishes; only the
+   * team's review does, so an owner can never put his own ad on the air. The previous decision
+   * is cleared: a refusal's reason is for the owner to fix the ad, and left on a `PENDING` ad it
+   * would read as if the new version had been refused too.
+   */
+  submit(): Listing {
+    if (this.props.status === LISTING_STATUS.DRAFT) {
+      this.props.status = LISTING_STATUS.PENDING
+      this.props.review = null
+    }
+
+    return this
+  }
+
+  /**
+   * The staff puts the ad on the air: only an ad waiting in the queue (`PENDING`) can be
+   * approved. An approval after another decision would rewrite who decided and when.
+   */
+  approve(by: string, at: Date): Either<ListingReviewError, Listing> {
+    if (this.props.status !== LISTING_STATUS.PENDING)
+      return left({ code: 'LISTING_NOT_PENDING' })
+
+    this.props = {
+      ...this.props,
+      status: LISTING_STATUS.PUBLISHED,
+      publishedAt: at,
+      review: { note: null, at, by },
+    }
+
+    return right(this)
+  }
+
+  /**
+   * The staff sends the ad back with the reason. It returns to `DRAFT`, which is "the owner still
+   * has something to write": an edit hands it to the queue again (`submit`). The reason is part of
+   * the decision and not optional, since a refusal with no reason is just a closed door.
+   */
+  refuse(
+    note: string,
+    by: string,
+    at: Date,
+  ): Either<ListingReviewError, Listing> {
+    if (this.props.status !== LISTING_STATUS.PENDING)
+      return left({ code: 'LISTING_NOT_PENDING' })
+
+    const reason = note.trim()
+    if (reason.length < REVIEW_NOTE_MIN || reason.length > REVIEW_NOTE_MAX)
+      return left({ code: 'LISTING_REVIEW_NOTE_INVALID' })
+
+    this.props = {
+      ...this.props,
+      status: LISTING_STATUS.DRAFT,
+      review: { note: reason, at, by },
+    }
+
+    return right(this)
+  }
+
+  /** Whether the account is the one that wrote the ad. An ad with no account belongs to no one. */
+  isOwnedBy(accountId: string): boolean {
+    return this.props.ownerId !== null && this.props.ownerId === accountId
+  }
+
+  /**
+   * Applies what the owner changed, absent fields untouched, and checks the invariants again on
+   * the result. The status stays where it is. Changing the contact clears the verification: the
+   * team confirmed the person behind a number, and a new number is a new person until confirmed.
+   */
+  update(changes: ListingChanges): Either<ListingError, Listing> {
+    const { owner, ...fields } = changes
+    const next: ListingProps = {
+      ...this.props,
+      ...fields,
+      owner: this.ownerAfter(owner),
+    }
+
+    const refusal = Listing.refusal(next)
+    if (refusal) return left(refusal)
+
+    this.props = next
+
+    return right(this)
+  }
+
+  private ownerAfter(
+    contact: Pick<ListingOwnerProps, 'name' | 'whatsapp'> | undefined,
+  ): ListingOwnerProps {
+    if (!contact) return this.props.owner
+
+    const same =
+      contact.name === this.props.owner.name &&
+      contact.whatsapp === this.props.owner.whatsapp
+    if (same) return this.props.owner
+
+    return { name: contact.name, whatsapp: contact.whatsapp, verifiedAt: null }
+  }
+
+  /**
+   * Puts pictures at the end of the gallery, in the order given. The ceiling is the whole ad's,
+   * not the call's: two calls of ten would otherwise slip past a ceiling of twelve. A file already
+   * in the gallery, or twice in the call, is refused: it would fill two slots with one picture.
+   */
+  attachPhotos(
+    photos: ReadonlyArray<ListingPhotoProps>,
+  ): Either<ListingError, Listing> {
+    if (this.props.photos.length + photos.length > LISTING_PHOTOS_MAX)
+      return left({ code: 'LISTING_PHOTOS_LIMIT' })
+
+    const keys = [...this.props.photos, ...photos]
+      .map((photo) => photo.storageId)
+      .filter((storageId) => storageId !== null)
+    if (new Set(keys).size !== keys.length)
+      return left({ code: 'LISTING_PHOTO_DUPLICATED' })
+
+    this.props = { ...this.props, photos: [...this.props.photos, ...photos] }
+
+    return right(this)
+  }
+
+  /**
+   * Takes the ad off the air: `ARCHIVED` and into the trash, in one transition, because the
+   * storefront cut reads both and an ad half archived is one the visitor still finds.
+   */
+  archive(at: Date): Either<ListingAlreadyArchived, Listing> {
+    if (this.props.deletedAt !== null)
+      return left({ code: 'LISTING_ALREADY_ARCHIVED' })
+
+    this.props = {
+      ...this.props,
+      status: LISTING_STATUS.ARCHIVED,
+      deletedAt: at,
+    }
+
+    return right(this)
   }
 
   /** The price on a monthly scale, for ordering and for the price range. */

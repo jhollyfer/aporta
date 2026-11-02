@@ -10,9 +10,11 @@ import {
 import { PAGINATION } from '#core/response'
 import Translation from '#core/translation'
 import HTTPException from '#exceptions/http.exception'
+import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
 import { recentFirst } from '#features/_shared.sort'
 import ListingPresenter from '#features/storefront/listings/listings.presenter'
 import ListingRepository from '#repositories/listing/listing.repository'
+import StorageContract from '#services/storage/storage.contract'
 import type { StorefrontListingPaginatePayload } from '#validators/storefront/listings.validator'
 
 type Payload = StorefrontListingPaginatePayload
@@ -24,7 +26,10 @@ type Response = Either<HTTPException, StorefrontListingPaginateResponse>
  */
 @inject()
 export default class StorefrontListingPaginateUseCase {
-  constructor(private readonly listings: ListingRepository) {}
+  constructor(
+    private readonly listings: ListingRepository,
+    private readonly storage: StorageContract,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -45,9 +50,11 @@ export default class StorefrontListingPaginateUseCase {
         direction,
       })
 
+      const urls = await ListingPhotoUrls.sign(page.data, this.storage)
+
       return right({
         meta: page.meta,
-        data: page.data.map((record) => ListingPresenter.show(record)),
+        data: page.data.map((record) => ListingPresenter.show(record, urls)),
       })
     } catch (error) {
       logger.error({ err: error }, '[storefront/listings > paginate][error]')

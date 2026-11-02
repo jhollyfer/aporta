@@ -53,7 +53,7 @@ test.describe('cadastro do imóvel', () => {
     await expect(page.getByLabel('Tipo de imóvel')).toHaveValue('')
   })
 
-  test('quando se completa o fluxo, a tela diz que está pronto e o rascunho continua salvo', async ({
+  test('quando um visitante sem sessão finaliza o cadastro, vai para a entrada e o rascunho continua salvo', async ({
     page,
     expectHydrated,
   }) => {
@@ -85,14 +85,55 @@ test.describe('cadastro do imóvel', () => {
     await page.getByLabel('WhatsApp').fill('5597999990002')
     await page.getByRole('button', { name: 'Finalizar cadastro' }).click()
 
-    await expect(
-      page.getByRole('heading', { name: 'Anúncio pronto' }),
-    ).toBeVisible()
-    // Ainda não há API: o texto diz isso e o rascunho segue guardado, em vez de fingir um envio.
+    // Sem sessão não há anúncio a criar: a entrada leva de volta ao cadastro depois do login.
+    await expect(page).toHaveURL(/\/sign-in\?redirect=%2Flist-your-place$/)
     expect(
       await page.evaluate(() =>
         window.localStorage.getItem('aporta:listing-draft:v1'),
       ),
     ).toContain('Kitnet perto do porto')
+  })
+
+  test('quando o passo de fotos recebe um arquivo que não é imagem, avisa e não o lista', async ({
+    page,
+    expectHydrated,
+  }) => {
+    await page.goto('/list-your-place')
+    await expectHydrated(page.getByRole('button', { name: 'Continuar' }))
+
+    await page.getByLabel('Tipo de imóvel').selectOption('KITNET')
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByLabel('Bairro').selectOption('centro')
+    await page.getByLabel('Rua e número').fill('Rua do Porto, 120')
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByLabel('Aluguel por mês, em reais').fill('900')
+    await page.getByLabel('Semestre').check()
+    await page.getByLabel('Período mínimo, em meses').fill('4')
+    await page.getByRole('button', { name: 'Continuar' }).click()
+
+    await expect(page.getByText('Etapa 4 de 6')).toBeVisible()
+    await page.getByLabel('Escolher fotos').setInputFiles({
+      name: 'nota.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('não sou uma foto'),
+    })
+
+    await expect(page.getByRole('alert')).toContainText('Só imagens')
+    await expect(page.getByText('0 de 12 fotos escolhidas')).toBeVisible()
+
+    // Uma imagem de verdade entra com prévia e o ambiente sugerido (a fachada vem primeiro).
+    await page.getByLabel('Escolher fotos').setInputFiles({
+      name: 'fachada.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    })
+
+    await expect(page.getByText('1 de 12 fotos escolhidas')).toBeVisible()
+    await expect(page.getByLabel('O que a foto mostra')).toHaveValue('FACADE')
+    await page.getByRole('button', { name: 'Remover fachada.png' }).click()
+    await expect(page.getByText('0 de 12 fotos escolhidas')).toBeVisible()
   })
 })

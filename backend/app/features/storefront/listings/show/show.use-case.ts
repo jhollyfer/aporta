@@ -9,8 +9,10 @@ import {
 
 import Translation from '#core/translation'
 import HTTPException from '#exceptions/http.exception'
+import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
 import ListingPresenter from '#features/storefront/listings/listings.presenter'
 import ListingRepository from '#repositories/listing/listing.repository'
+import StorageContract from '#services/storage/storage.contract'
 import type { StorefrontListingShowPayload } from '#validators/storefront/listings.validator'
 
 type Payload = StorefrontListingShowPayload
@@ -23,7 +25,10 @@ type Response = Either<HTTPException, StorefrontListingShowResponse>
  */
 @inject()
 export default class StorefrontListingShowUseCase {
-  constructor(private readonly listings: ListingRepository) {}
+  constructor(
+    private readonly listings: ListingRepository,
+    private readonly storage: StorageContract,
+  ) {}
 
   async execute({ slug }: Payload): Promise<Response> {
     try {
@@ -37,7 +42,9 @@ export default class StorefrontListingShowUseCase {
           ),
         )
 
-      return right(ListingPresenter.show(record))
+      const urls = await ListingPhotoUrls.sign([record], this.storage)
+
+      return right(ListingPresenter.show(record, urls))
     } catch (error) {
       logger.error({ err: error }, '[storefront/listings > show][error]')
 

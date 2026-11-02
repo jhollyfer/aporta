@@ -1,59 +1,29 @@
 import type { StorefrontListingShowResponse } from '@aporta/shared'
 
-import { WireDate } from '#core/response'
+import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
+import ListingSharedPresenter from '#features/_shared.listing.presenter'
 import type { ListingRecord } from '#repositories/listing/listing.repository'
 
 /**
- * The listing as the visitor reads it (`_standards/architecture.md` §10), field by field, by
- * allowlist. Left out is what belongs to the panel or to the database: `status` (only the
- * published one gets here), `deletedAt`, `neighborhoodId`, and the owner's `verifiedAt` instant
- * (the visitor gets the fact, `verified`, not when it was confirmed).
+ * The listing as the visitor reads it (`_standards/architecture.md` §10), by allowlist. The fields
+ * are the shared ones (`ListingSharedPresenter`); what this presenter adds is the photos, and
+ * what it leaves out is the panel's: `status` (only the published one gets here), `ownerId` and
+ * the photos' `storageId`, because the visitor gets the signed address and never the `storages`
+ * row.
  */
 export default class ListingPresenter {
-  static show(record: ListingRecord): StorefrontListingShowResponse {
-    const listing = record.listing.snapshot()
-
+  static show(
+    record: ListingRecord,
+    urls: ReadonlyMap<string, string>,
+  ): StorefrontListingShowResponse {
     return {
-      id: listing.id,
-      slug: listing.slug,
-      type: listing.type,
-      title: listing.title,
-      description: listing.description,
-      neighborhood: {
-        slug: record.neighborhood.slug,
-        name: record.neighborhood.name,
-      },
-      address: listing.address,
-      price: { monthly: listing.priceMonthly, daily: listing.priceDaily },
-      costs: {
-        water: listing.costs.water,
-        electricity: listing.costs.electricity,
-        internet: listing.costs.internet,
-      },
-      periods: [...listing.periods],
-      minimumStayMonths: listing.minimumStayMonths,
-      availableFrom: listing.availableFrom,
-      bedrooms: listing.bedrooms,
-      bathrooms: listing.bathrooms,
-      furnished: listing.furnished,
-      rules: [...listing.rules],
-      // No file yet: `url: null` is the contract for "no photo", and the frontend draws the room.
-      photos: listing.photos.map((photo) => ({
+      ...ListingSharedPresenter.fields(record),
+      // `url: null` is the contract for "no photo yet", and the frontend draws the room.
+      photos: record.listing.snapshot().photos.map((photo) => ({
         id: photo.id,
         environment: photo.environment,
-        url: null,
+        url: ListingPhotoUrls.of(urls, photo.storageId),
       })),
-      owner: {
-        name: listing.owner.name,
-        verified: listing.owner.verifiedAt !== null,
-        whatsapp: listing.owner.whatsapp,
-        // The last time the ad was touched: a stale one is an already-rented property or a scam.
-        updatedAt: WireDate.day(record.updatedAt),
-      },
-      lat: listing.lat,
-      lng: listing.lng,
-      createdAt: WireDate.iso(record.createdAt),
-      updatedAt: WireDate.iso(record.updatedAt),
     }
   }
 }

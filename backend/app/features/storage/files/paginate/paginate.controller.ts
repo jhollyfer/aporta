@@ -11,7 +11,10 @@ import { StorageFilePaginateValidator } from '#validators/storage/files.validato
 export default class StorageFilePaginateController {
   static docs = defineDocs({
     description:
-      'A biblioteca de arquivos do painel. `?search` filtra por nome original, nome gerado e ' +
+      'A biblioteca de arquivos. A equipe lê a coleção toda; o dono de imóvel lê só os arquivos ' +
+      'que ele mesmo enviou, e o recorte é feito dentro da consulta, pela sessão, sem parâmetro ' +
+      'de dono para forjar.\n\n' +
+      '`?search` filtra por nome original, nome gerado e ' +
       'tipo, `?status` separa o que já subiu do upload em aberto, e `?mimetype` recorta um ' +
       'tipo só.\n\n' +
       // Both lists come from the tuples themselves: written by hand, the documentation
@@ -28,7 +31,10 @@ export default class StorageFilePaginateController {
     const payload = await context.request.validateUsing(
       StorageFilePaginateValidator,
     )
-    const result = await this.useCase.execute(payload)
+    const result = await this.useCase.execute({
+      ...payload,
+      actor: context.actor,
+    })
     if (result.isLeft()) throw result.value
     return context.response.ok(result.value)
   }

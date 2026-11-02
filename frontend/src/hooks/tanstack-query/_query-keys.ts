@@ -1,4 +1,7 @@
 import type {
+  AdministratorListingPaginatePayload,
+  AdministratorReportPaginatePayload,
+  OwnerListingPaginatePayload,
   StorefrontListingPaginatePayload,
   StorefrontNeighborhoodPaginatePayload,
   StorefrontPlacePaginatePayload,
@@ -36,6 +39,29 @@ export const queryKeys = {
     profile: {
       all: ['account', 'profile'] as const,
     },
+  },
+  /**
+   * O lado da equipe na moderação (`/administrator/*`): a fila de anúncios e as denúncias.
+   * Família à parte da do dono, porque a equipe lê **todos** os anúncios, em qualquer
+   * estado, e um cache não serve ao outro. O `detail` do anúncio é pelo **id**.
+   */
+  administrator: {
+    listings: resource<AdministratorListingPaginatePayload>()(
+      'administrator',
+      'listings',
+    ),
+    reports: resource<AdministratorReportPaginatePayload>()(
+      'administrator',
+      'reports',
+    ),
+  },
+  /**
+   * Os anúncios do dono logado (`/owner/listings`). Família à parte da vitrine: o dono vê
+   * o que ainda não está no ar (em análise) e a vitrine nunca, então um cache não serve ao
+   * outro. O `detail` é pelo **id**, que é o que as rotas do dono carregam.
+   */
+  owner: {
+    listings: resource<OwnerListingPaginatePayload>()('owner', 'listings'),
   },
   /**
    * A vitrine pública. O `detail` do anúncio é pelo **slug**, que é o que o endereço

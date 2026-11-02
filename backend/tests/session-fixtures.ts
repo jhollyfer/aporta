@@ -96,3 +96,36 @@ export function authenticateAsModerator(client: ApiClient): Promise<Session> {
 export function authenticateAsOwner(client: ApiClient): Promise<Session> {
   return authenticateAs(client, 'owner')
 }
+
+/** A moderator's session together with the account, for the specs that assert who decided. */
+export async function authenticateAsModeratorAccount(
+  client: ApiClient,
+): Promise<OwnerAccount> {
+  const user = await UserFactory.apply('moderator').create()
+
+  return {
+    session: await authenticate(client, user.email, FACTORY_PASSWORD),
+    userId: user.id,
+  }
+}
+
+/** An owner's session together with the account it belongs to, for the specs that assert ownership. */
+export type OwnerAccount = {
+  readonly session: Session
+  readonly userId: string
+}
+
+/**
+ * A new owner account, signed in. `authenticateAsOwner` hides the account because most specs only
+ * need the cookie; the ones about "whose ad is this" need the id to compare with the column.
+ */
+export async function authenticateAsOwnerAccount(
+  client: ApiClient,
+): Promise<OwnerAccount> {
+  const user = await UserFactory.create()
+
+  return {
+    session: await authenticate(client, user.email, FACTORY_PASSWORD),
+    userId: user.id,
+  }
+}

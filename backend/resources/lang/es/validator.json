@@ -41,7 +41,18 @@
       "period": "el período de alquiler",
       "minPrice": "el valor mínimo",
       "maxPrice": "el valor máximo",
-      "category": "la categoría"
+      "category": "la categoría",
+      "decision": "la decisión",
+      "note": "el motivo",
+      "verified": "la verificación",
+      "reason": "el motivo de la denuncia",
+      "details": "los detalles",
+      "website": "el sitio",
+      "bedrooms": "el número de dormitorios",
+      "bathrooms": "el número de baños",
+      "photos": "las fotos",
+      "storageId": "el archivo de la foto",
+      "environment": "el ambiente de la foto"
     },
     "messages": {
       "required": "Ingrese { field }",

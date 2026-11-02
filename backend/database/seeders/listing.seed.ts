@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 
 import { LISTINGS } from '#database/data/listings'
 import NeighborhoodSeeder from '#database/seeders/neighborhood.seed'
+import SampleOwnerSeeder from '#database/seeders/sample-owner.seed'
 import ListingModel from '#models/listing'
 import ListingPhotoModel from '#models/listing-photo'
 import Neighborhood from '#models/neighborhood'
@@ -17,6 +18,12 @@ import Neighborhood from '#models/neighborhood'
  * `(listing, position)`, so the second run changes nothing and adds nothing. It runs the
  * neighborhood seeder first for the same reason that one explains.
  *
+ * Every sample ad is linked to the sample owner's account (`SampleOwnerSeeder`), so the owner's
+ * routes have ads to list and edit. The denormalized `owner_name`, `owner_whatsapp` and
+ * `owner_verified_at` stay as they were: the storefront still reads the contact from them, and
+ * dropping them is a later contract step. The link is rewritten on every run, so an ad someone
+ * pointed elsewhere by hand comes back.
+ *
  * `owner.updatedAt` of the sample becomes the listing's `updated_at` (and `created_at`), written
  * with a query after the save: `updated_at` is `autoUpdate`, and a model `save()` would put it
  * back to now, which would make every seeded ad look updated today and defeat the badge that
@@ -27,6 +34,7 @@ export default class ListingSeeder extends BaseSeeder {
 
   override async run() {
     await NeighborhoodSeeder.ensure()
+    const ownerId = await SampleOwnerSeeder.ensure()
 
     const neighborhoods = await Neighborhood.query().whereIn(
       'slug',
@@ -43,11 +51,15 @@ export default class ListingSeeder extends BaseSeeder {
           `listing "${listing.slug}" points to the neighborhood "${listing.neighborhood}", which does not exist`,
         )
 
-      await this.seed(listing, neighborhood.id)
+      await this.seed(listing, neighborhood.id, ownerId)
     }
   }
 
-  private async seed(listing: Listing, neighborhoodId: string) {
+  private async seed(
+    listing: Listing,
+    neighborhoodId: string,
+    ownerId: string,
+  ) {
     const day = DateTime.fromISO(`${listing.owner.updatedAt}T12:00:00`, {
       zone: 'utc',
     })
@@ -57,7 +69,11 @@ export default class ListingSeeder extends BaseSeeder {
     const row = await ListingModel.updateOrCreate(
       { slug: listing.slug },
       {
+        ownerId,
         status: LISTING_STATUS.PUBLISHED,
+        // On the air since the day it was last touched: the sample catalog never went through the
+        // review, and "since when" must not be empty for an ad that is published.
+        publishedAt: day,
         type: listing.type,
         title: listing.title,
         description: listing.description,

@@ -24,6 +24,15 @@ export default class NeighborhoodMemoryRepository extends NeighborhoodRepository
     this.#rows.set(snapshot.id, structuredClone(snapshot))
   }
 
+  findBySlug(slug: string): Promise<Neighborhood | null> {
+    const row = [...this.#rows.values()].find(
+      (each) => each.slug === slug && each.deletedAt === null,
+    )
+    if (!row) return Promise.resolve(null)
+
+    return Promise.resolve(this.entity(row))
+  }
+
   paginate(
     criteria: NeighborhoodListCriteria,
   ): Promise<Paginated<Neighborhood>> {

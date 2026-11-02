@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import app from '@adonisjs/core/services/app'
 import {
+  IMAGE_MIMETYPES,
   SORT_DIRECTION,
   STORAGE_MIMETYPE,
   TRASHED_MODE,
@@ -10,6 +11,7 @@ import {
 } from '@aporta/shared'
 import { test } from '@japa/runner'
 
+import { ListingPhotoFactory } from '#database/factories/listing-photo.factory'
 import { UserFactory } from '#database/factories/user.factory'
 import Storage, {
   type StorageCreateInput,
@@ -27,6 +29,7 @@ import {
   STORAGE_OWNER_ID,
   storageDraft,
 } from '#tests/repository-fixtures'
+import { listing } from '#tests/storefront-fixtures'
 
 /**
  * The `StorageRepository` contract test (`_standards/domain.md` §5.4): the
@@ -41,6 +44,7 @@ type Subject = {
   /** Another account, to hand files over to. */
   otherOwnerId(): Promise<string>
   useAsAvatar(storageId: string): Promise<void>
+  useAsListingPhoto(storageId: string): Promise<void>
 }
 
 const IMPLEMENTATIONS = {
@@ -57,6 +61,14 @@ const IMPLEMENTATIONS = {
           .where('id', owner.id)
           .update({ avatarId: storageId })
       },
+      useAsListingPhoto: async (storageId: string) => {
+        const ad = await listing()
+        await ListingPhotoFactory.merge({
+          listingId: ad.id,
+          position: 0,
+          storageId,
+        }).create()
+      },
     }
   },
   memory: async () => {
@@ -69,9 +81,16 @@ const IMPLEMENTATIONS = {
         Promise.resolve(
           repository.reference(storageId, STORAGE_REFERENCE.USER_AVATAR),
         ),
+      useAsListingPhoto: (storageId: string) =>
+        Promise.resolve(
+          repository.reference(storageId, STORAGE_REFERENCE.LISTING_PHOTO),
+        ),
     }
   },
 } satisfies Record<string, () => Promise<Subject>>
+
+/** The kinds a listing photo may be. */
+const IMAGES = IMAGE_MIMETYPES
 
 const PAGE = {
   page: 1,
@@ -142,17 +161,26 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
     test('when another resource uses the file, references says where; an orphan is empty', async ({
       assert,
     }) => {
-      const { ownerId, repository, useAsAvatar } = await make()
+      const { ownerId, repository, useAsAvatar, useAsListingPhoto } =
+        await make()
       const draft = draftFor(ownerId)
       const used = draft({ size: 1 })
       used.confirm(1)
+      const photo = draft({ size: 1 })
+      photo.confirm(1)
       const orphan = draft()
       await repository.save(used)
+      await repository.save(photo)
       await repository.save(orphan)
       await useAsAvatar(used.id)
+      await useAsListingPhoto(photo.id)
 
       assert.deepEqual(await repository.references(used.id), [
         STORAGE_REFERENCE.USER_AVATAR,
+      ])
+      // A listing photo counts as use: deleting the file would take the picture off the ad.
+      assert.deepEqual(await repository.references(photo.id), [
+        STORAGE_REFERENCE.LISTING_PHOTO,
       ])
       assert.deepEqual(await repository.references(orphan.id), [])
     })
@@ -222,6 +250,76 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.isFalse(await repository.allUploaded([live.id, pending.id]))
       assert.isFalse(await repository.allUploaded([trashed.id]))
       assert.isFalse(await repository.allUploaded([randomUUID()]))
+    })
+
+    test('when asking for the files of one account, allUploadedBy only accepts live UPLOADED files that account sent', async ({
+      assert,
+    }) => {
+      const { ownerId, otherOwnerId, repository } = await make()
+      const other = await otherOwnerId()
+      const mine = draftFor(ownerId)({ size: 5 })
+      mine.confirm(5)
+      const theirs = draftFor(other)({ size: 5 })
+      theirs.confirm(5)
+      const pending = draftFor(ownerId)()
+      for (const storage of [mine, theirs, pending])
+        await repository.save(storage)
+
+      assert.isTrue(await repository.allUploadedBy([], ownerId, IMAGES))
+      assert.isTrue(
+        await repository.allUploadedBy([mine.id, mine.id], ownerId, IMAGES),
+      )
+      // Someone else's file is indistinguishable from one that does not exist.
+      assert.isFalse(
+        await repository.allUploadedBy([theirs.id], ownerId, IMAGES),
+      )
+      assert.isFalse(
+        await repository.allUploadedBy([mine.id, theirs.id], ownerId, IMAGES),
+      )
+      assert.isFalse(
+        await repository.allUploadedBy([pending.id], ownerId, IMAGES),
+      )
+      assert.isFalse(
+        await repository.allUploadedBy([randomUUID()], ownerId, IMAGES),
+      )
+    })
+
+    test("when asking for images only, allUploadedBy refuses the account's own file of another kind", async ({
+      assert,
+    }) => {
+      const { ownerId, repository } = await make()
+      const manual = draftFor(ownerId)({
+        mimetype: STORAGE_MIMETYPE.PDF,
+        size: 5,
+      })
+      manual.confirm(5)
+      await repository.save(manual)
+
+      assert.isFalse(
+        await repository.allUploadedBy([manual.id], ownerId, IMAGES),
+      )
+      assert.isTrue(
+        await repository.allUploadedBy([manual.id], ownerId, [
+          STORAGE_MIMETYPE.PDF,
+        ]),
+      )
+    })
+
+    test('when paginating for one account, only its files come back', async ({
+      assert,
+    }) => {
+      const { ownerId, otherOwnerId, repository } = await make()
+      const other = await otherOwnerId()
+      await repository.save(draftFor(ownerId)({ originalName: 'minha.png' }))
+      await repository.save(draftFor(other)({ originalName: 'alheia.png' }))
+
+      const names = async (criteria: object) => {
+        const page = await repository.paginate({ ...PAGE, ...criteria })
+        return page.data.map((item) => item.storage.snapshot().originalName)
+      }
+
+      assert.deepEqual(await names({ ownerId }), ['minha.png'])
+      assert.deepEqual(await names({}), ['alheia.png', 'minha.png'])
     })
 
     test('when listing abandoned uploads, returns only the PENDING ones created before the cutoff', async ({

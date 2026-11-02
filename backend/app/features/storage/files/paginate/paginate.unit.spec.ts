@@ -1,4 +1,4 @@
-import { STORAGE_MIMETYPE, UPLOAD_STATUS } from '@aporta/shared'
+import { STORAGE_MIMETYPE, UPLOAD_STATUS, USER_ROLE } from '@aporta/shared'
 import { test } from '@japa/runner'
 
 import StorageFilePaginateUseCase from './paginate.use-case.ts'
@@ -6,6 +6,10 @@ import StorageFilePaginateUseCase from './paginate.use-case.ts'
 import StorageMemoryRepository from '#repositories/storage/storage.memory.repository'
 import StorageFake from '#services/storage/storage.fake'
 import { storageDraft } from '#tests/repository-fixtures'
+import { actorDraft } from '#tests/user-fixtures'
+
+/** The staff reads the whole collection, so the existing cases run as a moderator. */
+const STAFF = actorDraft({ role: USER_ROLE.MODERATOR })
 
 test.group('storage > files > paginate (unit)', () => {
   test('when listing, it brings the live ones with signed url and respects status and type', async ({
@@ -23,9 +27,15 @@ test.group('storage > files > paginate (unit)', () => {
     )
     const useCase = new StorageFilePaginateUseCase(files, new StorageFake())
 
-    const all = await useCase.execute({})
-    const uploaded = await useCase.execute({ status: UPLOAD_STATUS.UPLOADED })
-    const pdf = await useCase.execute({ mimetype: STORAGE_MIMETYPE.PDF })
+    const all = await useCase.execute({ actor: STAFF })
+    const uploaded = await useCase.execute({
+      actor: STAFF,
+      status: UPLOAD_STATUS.UPLOADED,
+    })
+    const pdf = await useCase.execute({
+      actor: STAFF,
+      mimetype: STORAGE_MIMETYPE.PDF,
+    })
 
     assert.containsSubset(all.value, { meta: { total: 2, perPage: 20 } })
     assert.containsSubset(uploaded.value, {
@@ -37,5 +47,26 @@ test.group('storage > files > paginate (unit)', () => {
       meta: { total: 1 },
       data: [{ originalName: 'manual.pdf' }],
     })
+  })
+
+  test('when the actor is an OWNER, it brings only the files he sent; the staff still brings all of them', async ({
+    assert,
+  }) => {
+    const owner = actorDraft({ role: USER_ROLE.OWNER })
+    const files = new StorageMemoryRepository()
+    await files.save(
+      storageDraft({ ownerId: owner.id, originalName: 'minha.png' }),
+    )
+    await files.save(storageDraft({ originalName: 'alheia.png' }))
+    const useCase = new StorageFilePaginateUseCase(files, new StorageFake())
+
+    const mine = await useCase.execute({ actor: owner })
+    const everything = await useCase.execute({ actor: STAFF })
+
+    assert.containsSubset(mine.value, {
+      meta: { total: 1 },
+      data: [{ originalName: 'minha.png' }],
+    })
+    assert.containsSubset(everything.value, { meta: { total: 2 } })
   })
 })

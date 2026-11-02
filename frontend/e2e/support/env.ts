@@ -14,6 +14,18 @@ export class E2eEnv {
   static readonly apiUrl = E2eEnv.read('E2E_API_URL')
   static readonly chromiumPath = process.env['E2E_CHROMIUM_PATH']
 
+  /** A moderadora que o seeder de desenvolvimento cria (`ModeratorSeeder`, domínio `.example`). */
+  static readonly moderatorEmail = 'moderador.exemplo@aporta.example'
+
+  /**
+   * A senha do seeder (`SEED_OWNER_PASSWORD`), que é também a da moderadora de exemplo. Método
+   * e não campo: só o spec de moderação a lê, e um campo estático faria todo spec reprovar no
+   * `import` quando ela não estiver definida.
+   */
+  static ownerPassword(): string {
+    return E2eEnv.read('E2E_OWNER_PASSWORD')
+  }
+
   private static read(name: string): string {
     const value = process.env[name]
 

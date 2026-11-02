@@ -77,6 +77,26 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.equal(ascending.meta.total, 3)
     })
 
+    test('when reading by slug, it returns the live neighborhood with its center, and null for a trashed or unknown one', async ({
+      assert,
+    }) => {
+      const { repository, seed } = await make()
+      const centro = neighborhoodDraft({ name: 'Centro', slug: 'centro' })
+      await seed(centro)
+      const trashed = Neighborhood.restore({
+        ...neighborhoodDraft({ name: 'Antigo', slug: 'antigo' }).snapshot(),
+        deletedAt: ARCHIVED_AT,
+      })
+      await seed(trashed)
+
+      const found = await repository.findBySlug('centro')
+
+      assert.equal(found?.id, centro.id)
+      assert.equal(found?.snapshot().lat, centro.snapshot().lat)
+      assert.isNull(await repository.findBySlug('antigo'))
+      assert.isNull(await repository.findBySlug('nenhum'))
+    })
+
     test('when one is in the trash, it does not come back', async ({
       assert,
     }) => {

@@ -30,10 +30,11 @@ type Response = Either<HTTPException, null>
  * object listing, and keep being billed. `UPLOADED` is the finished
  * file, and there the reference rule below applies.
  *
- * **It only deletes what nobody uses.** `storages` is a neutral, shared record
- * - the file does not belong to the form that sent it -, so ownership does not
- * serve as authorization: whoever knew a uuid would pierce the cover of someone else's
- * news item. Referenced is `409`, and the message says where.
+ * **It only deletes what nobody uses.** `storages` is a neutral record - the file does not
+ * belong to the form that sent it -, so ownership of the file (`StoragePolicy`, in the controller)
+ * decides who may ask, but never whether it can go: a photo on someone's ad is a reference, and
+ * the owner of the file who uploaded it must not pierce the cover of his own published ad either.
+ * Referenced is `409`, and the message says where.
  */
 @inject()
 export default class StorageFileDeleteUseCase {
@@ -109,6 +110,7 @@ export default class StorageFileDeleteUseCase {
   #label(reference: StorageReference): string {
     return {
       USER_AVATAR: Translation.t('references.USER_AVATAR'),
+      LISTING_PHOTO: Translation.t('references.LISTING_PHOTO'),
     }[reference]
   }
 

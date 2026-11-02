@@ -13,6 +13,16 @@ import LucidMapping from '#repositories/shared/lucid-mapping'
  * (`_standards/domain.md` §5.2). "Live" is the model's `notDeleted` scope.
  */
 export default class NeighborhoodLucidRepository extends NeighborhoodRepository {
+  async findBySlug(slug: string): Promise<Neighborhood | null> {
+    const row = await NeighborhoodModel.query()
+      .where('slug', slug)
+      .withScopes((scopes) => scopes.notDeleted())
+      .first()
+
+    if (!row) return null
+    return this.toEntity(row)
+  }
+
   async paginate(
     criteria: NeighborhoodListCriteria,
   ): Promise<Paginated<Neighborhood>> {

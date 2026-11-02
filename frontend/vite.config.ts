@@ -9,7 +9,13 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
-const config = defineConfig({
+import {
+  IMMUTABLE_CACHE,
+  STABLE_PUBLIC_CACHE,
+  staticHeaders,
+} from './src/lib/security-headers'
+
+const config = defineConfig(({ mode }) => ({
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools(),
@@ -33,7 +39,25 @@ const config = defineConfig({
     // Cravar o preset: sem ele o Nitro detecta a plataforma pelas variáveis de
     // ambiente do CI e só cai em `node-server` quando nenhuma responde. É o que
     // o `Dockerfile-production` espera.
-    nitro({ preset: 'node-server' }),
+    nitro({
+      preset: 'node-server',
+      /*
+       * Cabeçalhos fixos e cache dos ativos (_doc-lib/nitro.md#config; Nitro, "Route rules":
+       * https://nitro.build/raw/docs/configuration.md). `routeRules` e não o servidor de SSR
+       * porque também cobre `public/` e `/assets/`, que o SSR nunca vê. O que muda por resposta
+       * (CSP com `nonce`, `no-cache` do HTML) mora em `src/server.ts`.
+       */
+      routeRules: {
+        '/**': { headers: staticHeaders(mode === 'production') },
+        '/assets/**': { headers: { 'Cache-Control': IMMUTABLE_CACHE } },
+        ...Object.fromEntries(
+          ['/*.ico', '/*.svg', '/*.png', '/site.webmanifest'].map((path) => [
+            path,
+            { headers: { 'Cache-Control': STABLE_PUBLIC_CACHE } },
+          ]),
+        ),
+      },
+    }),
     tailwindcss(),
     tanstackStart({
       router: {
@@ -43,6 +67,6 @@ const config = defineConfig({
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),
   ],
-})
+}))
 
 export default config

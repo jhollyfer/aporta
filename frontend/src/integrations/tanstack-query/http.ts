@@ -7,6 +7,8 @@
  * encontrado" como sucesso e o corpo de erro seria lido como se fosse o anúncio.
  */
 
+import '#/lib/zod-jitless'
+
 import { ErrorEnvelope } from '@aporta/shared'
 import type {
   DataTag,
@@ -161,6 +163,11 @@ const baseUrl = createIsomorphicFn()
   .client((): string => BASE_URL)
   .server(server.apiUrl)
 
+/** O cabeçalho do visitante que o SSR repassa à API; no navegador não há o que repassar. */
+const clientHeaders = createIsomorphicFn()
+  .client((): Record<string, string> => ({}))
+  .server(server.clientHeaders)
+
 /**
  * O prazo de um pedido à API, em milissegundos.
  *
@@ -276,6 +283,7 @@ async function send(
         // Sem corpo não há tipo a declarar, e um `Content-Type` num GET tira a
         // requisição do grupo das "simples" do CORS e custa um preflight.
         ...jsonHeader(init),
+        ...clientHeaders(),
         ...init?.headers,
       },
     })

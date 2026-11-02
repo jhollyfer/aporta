@@ -1,5 +1,7 @@
 import type { APIRequestContext } from '@playwright/test'
 
+import { StorefrontListingPaginateResponse } from '@aporta/shared'
+
 import { E2eEnv } from './env'
 
 /** O corpo de um anúncio válido (`OwnerListingCreateValidator`), com título único por chamada. */
@@ -52,5 +54,60 @@ export class E2eListing {
     }
 
     return body.id
+  }
+
+  /** Quantos anúncios a vitrine mostra agora (`meta.total` da API pública). */
+  static async publishedTotal(request: APIRequestContext): Promise<number> {
+    const response = await request.get(
+      `${E2eEnv.apiUrl}/storefront/listings?perPage=1`,
+    )
+
+    return StorefrontListingPaginateResponse.parse(await response.json()).meta
+      .total
+  }
+
+  /** A equipe aprova o anúncio (`PUT /administrator/listings/:id/review`) e ele entra na vitrine. */
+  static async approve(staff: APIRequestContext, id: string): Promise<void> {
+    const response = await staff.put(
+      `${E2eEnv.apiUrl}/administrator/listings/${id}/review`,
+      { data: { decision: 'APPROVE' } },
+    )
+
+    if (response.status() >= 300) {
+      throw new Error(
+        `a aprovação do anúncio do E2E respondeu ${response.status()}: ${await response.text()}`,
+      )
+    }
+  }
+
+  /** A equipe arquiva o anúncio (`DELETE /administrator/listings/:id`): sai da vitrine. */
+  static async archive(staff: APIRequestContext, id: string): Promise<void> {
+    await staff.delete(`${E2eEnv.apiUrl}/administrator/listings/${id}`)
+  }
+
+  /**
+   * Publica anúncios até a vitrine ter `minimum`, e devolve os que criou, para quem chamou
+   * arquivá-los no fim: o catálogo semeado tem 12, e `health.spec.ts` confere exatamente isso.
+   * Sem a limpeza, a segunda rodada veria 13 e reprovaria um spec que não tem culpa.
+   */
+  static async crowd(
+    owner: APIRequestContext,
+    staff: APIRequestContext,
+    minimum: number,
+  ): Promise<ReadonlyArray<string>> {
+    const missing = minimum - (await E2eListing.publishedTotal(owner))
+    const created: Array<string> = []
+
+    for (let index = 0; index < missing; index += 1) {
+      const id = await E2eListing.create(
+        owner,
+        `Kitnet da paginação ${Date.now()}-${index}`,
+      )
+
+      await E2eListing.approve(staff, id)
+      created.push(id)
+    }
+
+    return created
   }
 }

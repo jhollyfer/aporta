@@ -2,15 +2,15 @@ import { createEnv } from '@t3-oss/env-core'
 import { z } from 'zod'
 
 /**
- * Lê a `SERVER_API_URL`. O guarda de `import.meta.env.SSR` existe porque este módulo
+ * Lê uma variável só do servidor. O guarda de `import.meta.env.SSR` existe porque este módulo
  * também é avaliado no navegador, onde `process` não existe: sem ele, o `ReferenceError`
  * derrubaria a hidratação inteira. O Vite troca o `SSR` por constante no build, então o
  * ramo do servidor sai do bundle do cliente.
  */
-function readServerApiUrl(): string | undefined {
+function readServerEnv(name: string): string | undefined {
   if (!import.meta.env.SSR) return undefined
 
-  return process.env['SERVER_API_URL']
+  return process.env[name]
 }
 
 /**
@@ -28,6 +28,12 @@ function readServerApiUrl(): string | undefined {
  * `SERVER_API_URL` é só do servidor (sem o prefixo `VITE_` de propósito, para
  * nunca entrar no bundle do navegador): o endereço da API visto pelo SSR, pela
  * rede interna. Vem de `process.env`, que o Vite não expõe em `import.meta.env`.
+ *
+ * `STORAGE_PUBLIC_URL` também é só do servidor, e opcional: a origem do bucket (o
+ * `STORAGE_ENDPOINT` da API), que o `Content-Security-Policy` libera em `img-src` e
+ * `connect-src` para a foto abrir e o envio em partes chegar. Ausente, o CSP não menciona o
+ * bucket e as fotos reais são bloqueadas pelo navegador: sem a variável, só as cenas
+ * desenhadas aparecem. Lida em tempo de execução, então muda sem refazer o build.
  */
 export const env = createEnv({
   clientPrefix: 'VITE_',
@@ -37,10 +43,12 @@ export const env = createEnv({
   },
   server: {
     SERVER_API_URL: z.url().optional(),
+    STORAGE_PUBLIC_URL: z.url().optional(),
   },
   runtimeEnv: {
     ...import.meta.env,
-    SERVER_API_URL: readServerApiUrl(),
+    SERVER_API_URL: readServerEnv('SERVER_API_URL'),
+    STORAGE_PUBLIC_URL: readServerEnv('STORAGE_PUBLIC_URL'),
   },
   emptyStringAsUndefined: true,
 })

@@ -1,3 +1,4 @@
+import './lib/zod-jitless'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
@@ -6,6 +7,7 @@ import { getContext } from './integrations/tanstack-query/query-context'
 import { NotFoundPage, RouteError } from '#/components/common/not-found-page'
 import { ValidationMessage } from '@aporta/shared'
 
+import { readNonce } from '#/lib/csp-nonce'
 import { deLocalizeUrl, getLocale, localizeUrl } from '#/paraglide/runtime'
 
 export function getRouter() {
@@ -29,6 +31,9 @@ export function getRouter() {
     routeTree,
     context,
     scrollRestoration: true,
+    // O `nonce` do CSP nos `<script>` em linha que o Start escreve: sem ele a hidratação
+    // seria bloqueada pelo navegador, e o site abriria como HTML morto.
+    ssr: { nonce: readNonce() },
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
 

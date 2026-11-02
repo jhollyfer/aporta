@@ -1,9 +1,15 @@
 import { z } from 'zod'
 
 import { LISTING_PERIOD, LISTING_TYPE } from '@aporta/shared'
-import type { StorefrontListingPaginatePayload } from '@aporta/shared'
+import type {
+  StorefrontListingPaginatePayload,
+  StorefrontListingPinsPayload,
+} from '@aporta/shared'
 
-import { MAX_PER_PAGE } from '#/integrations/tanstack-query/queries/storefront'
+import {
+  DEFAULT_LISTING_PER_PAGE,
+  LISTING_PER_PAGE,
+} from '#/integrations/tanstack-query/queries/storefront'
 
 import { EMPTY_FILTERS } from '#/lib/filters'
 import type { ListingFilters } from '#/lib/filters'
@@ -34,6 +40,9 @@ export const listingsSearchSchema = z.object({
   period: z.enum(LISTING_PERIOD).optional().catch(undefined),
   min: z.number().int().nonnegative().optional().catch(undefined),
   max: z.number().int().nonnegative().optional().catch(undefined),
+  /* A página 1 não vai para o endereço: `page=1` e a ausência dela são a mesma lista. */
+  page: z.number().int().min(2).max(10_000).optional().catch(undefined),
+  perPage: z.literal(LISTING_PER_PAGE).optional().catch(undefined),
   view: z.enum(LISTINGS_VIEW).optional().catch(undefined),
   selected: z.string().optional().catch(undefined),
 })
@@ -64,9 +73,43 @@ export function toSearchPatch(patch: Partial<ListingFilters>): ListingsSearch {
 }
 
 /**
- * O search da URL em parâmetros da API: só o que o servidor filtra (`view` e `selected`
- * são da tela e não entram na chave de cache), com `min` e `max` nos nomes da API.
- * É a chave do `loader` e do componente, que por isso leem o mesmo cache.
+ * O filtro mudou: a lista é outra, e continuar na página 3 de um resultado que agora tem
+ * duas páginas mostraria uma página vazia. Toda mudança de filtro volta à primeira.
+ */
+export function withFirstPage(search: ListingsSearch): ListingsSearch {
+  return { ...search, page: undefined }
+}
+
+/** A página no endereço: a primeira some, porque `page=1` e a ausência dela são a mesma lista. */
+export function toPageParam(page: number): number | undefined {
+  if (page > 1) return page
+
+  return undefined
+}
+
+/**
+ * O filtro da API sem a página: o que o mapa pede (`/storefront/listings/pins`). O mapa não
+ * pagina, ele pede a janela visível, então a página e o tamanho dela não entram.
+ */
+export function toPinFilters(
+  search: ListingsSearch,
+): Omit<
+  StorefrontListingPinsPayload,
+  'minLng' | 'minLat' | 'maxLng' | 'maxLat'
+> {
+  return {
+    type: search.type,
+    neighborhood: search.neighborhood,
+    period: search.period,
+    minPrice: search.min,
+    maxPrice: search.max,
+  }
+}
+
+/**
+ * O search da URL em parâmetros da API: só o que o servidor filtra e pagina (`view` e
+ * `selected` são da tela e não entram na chave de cache), com `min` e `max` nos nomes da
+ * API. É a chave do `loader` e do componente, que por isso leem o mesmo cache.
  */
 export function toListingParams(
   search: ListingsSearch,
@@ -77,10 +120,9 @@ export function toListingParams(
     period: search.period,
     minPrice: search.min,
     maxPrice: search.max,
-    // O mapa mostra todos os pins de uma vez, então a listagem pede tudo numa página
-    // só, no teto da API. Limite conhecido: acima de 100 anúncios publicados os pins
-    // e os cards passam a cobrir só os 100 primeiros, e aí a listagem precisa de
-    // paginação (e o mapa de uma consulta própria por área).
-    perPage: MAX_PER_PAGE,
+    // Uma página de cards por vez: o mapa tem a consulta própria por janela
+    // (`toPinFilters`) e não depende mais de a lista trazer tudo.
+    page: search.page,
+    perPage: search.perPage ?? DEFAULT_LISTING_PER_PAGE,
   }
 }

@@ -412,5 +412,18 @@
   "staff_search_submit": "Buscar",
   "staff_search_clear": "Limpiar búsqueda",
   "staff_search_empty_title": "Ningún anuncio con ese texto",
-  "staff_search_empty_text": "Nada para \"{q}\" en este estado. Prueba otro fragmento del título u otro estado de la cola."
+  "staff_search_empty_text": "Nada para \"{q}\" en este estado. Prueba otro fragmento del título u otro estado de la cola.",
+  "listings_range": "Mostrando {from} a {to} de {total} inmuebles",
+  "listings_page_missing_title": "Esta página no existe",
+  "listings_page_missing_description": "La búsqueda tiene menos páginas que esta. Vuelve al inicio de la lista.",
+  "listings_page_first": "Ir a la primera página",
+  "map_pins_limit": "El mapa muestra {shown} de {total} inmuebles de esta zona. Acércate para verlos todos.",
+  "map_pins_empty": "Ningún inmueble en esta zona. Mueve el mapa o aléjate para ver más.",
+  "map_pins_error": "No se pudieron cargar los inmuebles del mapa.",
+  "map_pins_retry": "Intentar de nuevo",
+  "map_pins_rate_limited": "Demasiadas solicitudes al mapa. Espera un momento e inténtalo de nuevo.",
+  "map_pins_rate_limited_wait": "Demasiadas solicitudes al mapa. Inténtalo de nuevo en {seconds} s.",
+  "map_pin_open": "Ver anuncio: {type}",
+  "meta_og_image_alt": "Aporta, vivienda y guía de Benjamin Constant",
+  "map_selected_label": "Inmueble seleccionado en el mapa"
 }

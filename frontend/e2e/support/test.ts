@@ -5,6 +5,7 @@ import type { Locator, Page } from '@playwright/test'
 import { E2eAccount } from './account'
 import type { E2eSession } from './account'
 import { E2eEnv } from './env'
+import { E2eListing } from './listing'
 
 type UnexpectedErrors = {
   /** Declara como esperado um erro de console que o teste provoca de propósito. */
@@ -181,7 +182,15 @@ type Actors = {
   ownerPage: Page
   /** A página de quem não entrou: o visitante da vitrine. */
   visitorPage: Page
+  /**
+   * A vitrine com mais de uma página: o teste começa com `CROWDED_CATALOG` anúncios no ar e o
+   * que foi criado é arquivado no fim, para o catálogo voltar aos 12 do seeder.
+   */
+  crowdedCatalog: { total: number }
 }
+
+/** Um a mais que a página de 12: o suficiente para existir "Próxima". */
+const CROWDED_CATALOG = 13
 
 /**
  * O `test` da equipe: `page` já entra como moderadora, e `ownerPage` e `visitorPage` são os
@@ -205,6 +214,19 @@ export const staffTest = withSessions.extend<Actors>({
 
     await provide(await context.newPage())
     await context.close()
+  },
+  crowdedCatalog: async ({ page, ownerPage }, provide) => {
+    const created = await E2eListing.crowd(
+      ownerPage.request,
+      page.request,
+      CROWDED_CATALOG,
+    )
+
+    try {
+      await provide({ total: await E2eListing.publishedTotal(page.request) })
+    } finally {
+      for (const id of created) await E2eListing.archive(page.request, id)
+    }
   },
 })
 

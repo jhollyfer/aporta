@@ -1,4 +1,16 @@
+import type { Page } from '@playwright/test'
+
 import { expect, test } from './support/test'
+
+/** O total do resultado, lido de "Mostrando 1 a 12 de 25 imóveis": os cards são só a página. */
+async function listedTotal(page: Page): Promise<number> {
+  const text = await page
+    .getByText(/^Mostrando \d+ a \d+ de \d+ imóveis$/)
+    .innerText()
+  const total = /de (\d+) imóveis$/.exec(text)?.[1]
+
+  return Number(total)
+}
 
 test.describe('busca e filtros', () => {
   test('quando se busca um tipo na home, a listagem chega filtrada, com chip e contagem', async ({
@@ -19,13 +31,13 @@ test.describe('busca e filtros', () => {
       }),
     ).toBeVisible()
 
-    const cards = page.locator('main ul li a[href^="/listings/"]')
-    const count = await cards.count()
+    const total = await listedTotal(page)
 
-    expect(count).toBeGreaterThan(0)
-    // A contagem do botão é a do resultado: o visitante lê "Mostrar N imóveis" e vê N cards.
+    expect(total).toBeGreaterThan(0)
+    // A contagem do botão é a do resultado inteiro, e não a dos cards da página: o visitante lê
+    // "Mostrar N imóveis" e "Mostrando 1 a X de N", e os dois dizem o mesmo N.
     await expect(
-      page.getByRole('button', { name: `Mostrar ${count} imóveis` }),
+      page.getByRole('button', { name: `Mostrar ${total} imóveis` }),
     ).toBeVisible()
     await expect(
       page.getByRole('button', { name: 'Remover filtro Kitnet' }),
@@ -41,13 +53,12 @@ test.describe('busca e filtros', () => {
       page.getByRole('button', { name: 'Remover filtro Kitnet' }),
     )
 
-    const cards = page.locator('main ul li a[href^="/listings/"]')
-    const filtered = await cards.count()
+    const filtered = await listedTotal(page)
 
     await page.getByRole('button', { name: 'Remover filtro Kitnet' }).click()
 
     await expect(page).not.toHaveURL(/type=/)
-    await expect.poll(() => cards.count()).toBeGreaterThan(filtered)
+    await expect.poll(() => listedTotal(page)).toBeGreaterThan(filtered)
   })
 
   test('quando o endereço traz um filtro inválido, a página abre sem filtro', async ({

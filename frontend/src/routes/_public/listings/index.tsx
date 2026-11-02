@@ -21,10 +21,34 @@ export const Route = createFileRoute('/_public/listings/')({
       ...storefrontListingsQueryOptions(deps),
       staleTime: 'static',
     }),
-  head: () =>
-    pageHead({
-      path: '/listings',
-      title: m.listings_page_title(),
+  /*
+   * Cada página é uma URL própria e indexável: o canônico mantém o `page` (e só ele, o filtro
+   * não gera canônico), senão o buscador trataria a página 2 como cópia da 1 e deixaria de
+   * seguir os anúncios dela. O título leva "Página 2 de 3" para não repetir entre as páginas.
+   */
+  head: ({ loaderData }) => {
+    const page = loaderData?.meta.currentPage ?? 1
+    const title = m.listings_page_title()
+
+    if (loaderData === undefined || page <= 1) {
+      return pageHead({
+        path: '/listings',
+        title,
+        description: m.listings_page_description(),
+      })
+    }
+
+    const status = m.pagination_status({
+      page,
+      total: loaderData.meta.lastPage,
+    })
+
+    return pageHead({
+      path: `/listings?page=${page}`,
+      title: `${title} (${status})`,
       description: m.listings_page_description(),
-    }),
+      // Página além da última: a tela diz que não existe, e o buscador não deve guardá-la.
+      noindex: loaderData.data.length === 0,
+    })
+  },
 })

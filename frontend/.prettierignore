@@ -19,6 +19,10 @@ project.inlang/cache
 project.inlang/.meta.json
 project.inlang/README.md
 
+# O diretório `.lix` que a CLI do inlang recria com um README próprio a cada
+# `inlang check`: gerado, fora do git, e o `format:check` da CI roda depois dele.
+project.inlang/.lix
+
 # Saida do build e arquivos gerados pelo router e pelo Nitro: o build os regenera.
 .output/
 .tanstack/

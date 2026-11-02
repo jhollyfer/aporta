@@ -36,6 +36,8 @@ boot quando falta, conforme o schema.
 | `STORAGE_FORCE_PATH_STYLE` | api | não | não | `true` para MinIO, que só serve `endpoint/bucket/chave`; em produção (R2, S3, Spaces), remover | `true` |
 | `SEED_OWNER_EMAIL` | api | não | não | e-mail do primeiro administrador criado pelo seeder; "owner" aqui é o dono da plataforma, não o papel `OWNER` | `administrator@mail.com` |
 | `E2E_OWNER_PASSWORD` | e2e | não | **sim** | a mesma senha do seed: o E2E entra com ela como administrador, como dono de exemplo e como a moderadora semeada (`moderador.exemplo@aporta.example`). No CI nasce por rodada, mascarada | a mesma de `SEED_OWNER_PASSWORD` |
+| `STAFF_EMAIL`, `STAFF_NAME` | api | não | não | só o comando `node ace staff:create`; as flags `--email` e `--name` vencem, e na falta dos dois ele pergunta. A API sobe sem elas | `equipe@exemplo.com`, `Fulana` |
+| `STAFF_PASSWORD` | api | não | **sim** | só o `staff:create`; sem ela o comando pede a senha duas vezes, sem eco. Nunca é impressa. Tire do ambiente depois do uso | defina um valor forte |
 | `SEED_OWNER_PASSWORD` | api | não (o seeder, rodado à mão, exige) | **sim** | senha do primeiro administrador. Sem default: sem ela o seeder para, para não criar conta com credencial conhecida. O seeder roda só em desenvolvimento e teste | defina um valor forte |
 
 ### Só do `docker compose` local (`backend/docker-compose.yml`)
@@ -54,6 +56,7 @@ boot quando falta, conforme o schema.
 |---|---|---|---|---|---|
 | `VITE_SITE_URL` | web | não (tem default local) | não | endereço público do site, sem barra no fim; vira canônico, sitemap e `og:url`. Entra no bundle em tempo de build | `http://localhost:3000` |
 | `VITE_API_URL` | web | **sim** (`z.url()`, sem default) | não | base da API AdonisJS, sem barra no fim. O navegador chama a API direto a partir dela, e o SSR a usa quando `SERVER_API_URL` não existe. Sem ela o frontend não sobe: não há mais dado de exemplo para cair. Entra no bundle em tempo de build | `http://localhost:3333` |
+| `STORAGE_PUBLIC_URL` | web | não | não | origem pública do bucket (esquema e host, sem barra), só do servidor de SSR. Entra em `img-src` e `connect-src` do CSP: as fotos assinadas e o envio em partes vão direto ao bucket. Sem ela o navegador bloqueia a foto real | `https://<conta>.r2.cloudflarestorage.com` |
 | `SERVER_API_URL` | web | não | não | endereço da API visto só pelo servidor de SSR, pela rede interna do Coolify, para o pedido não sair para a internet e voltar. Sem o prefixo `VITE_` de propósito: nunca entra no bundle. Ausente, o servidor usa `VITE_API_URL`. Lida de `process.env` em tempo de execução. O sitemap também a usa | `http://api:3333` |
 | `PORT` | web | não | não | porta do servidor Nitro; o `Dockerfile-production` fixa `3000` | `3000` |
 | `E2E_BASE_URL` | e2e | sim, para rodar o E2E | não | o app sob teste; sem default, `e2e/support/env.ts` para dizendo qual falta | `http://localhost:3000` |
@@ -179,3 +182,34 @@ no GitHub. O smoke test depois do deploy confere `https://api-aporta.maiyu.com.b
 | API | 3333 | padrão do projeto |
 | Frontend (`pnpm dev`) | 3000 | padrão do projeto |
 | Redis | não se aplica | o projeto não usa Redis (o `academy` ocupa a 6382 na mesma máquina) |
+
+## 8. Primeira conta da equipe em produção
+
+O seeder não roda em produção (`DECISIONS.md` #11). A primeira conta nasce pelo comando, uma vez, no
+terminal da API no Coolify:
+
+```bash
+node ace staff:create --email=equipe@exemplo.com --name="Nome da pessoa" --role=ADMINISTRATOR
+```
+
+`--role` aceita `ADMINISTRATOR` (padrão) e `MODERATOR`; `OWNER` é recusado. E-mail já existente, mesmo
+arquivado, é recusado. A senha segue a política do cadastro.
+
+## 9. Lista de entrega do deploy (só o dono faz)
+
+Nada abaixo pode ser feito pelo repositório. O estado de cada item está em `TASKS.md`, fase 9.
+
+- [ ] GitHub, segredos: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `COOLIFY_TOKEN`.
+- [ ] GitHub, variáveis: `COOLIFY_URL`, `COOLIFY_UUID_API`, `COOLIFY_UUID_APP`.
+- [ ] Coolify: duas aplicações, API em `api-aporta.maiyu.com.br` e app em `aporta.maiyu.com.br`.
+- [ ] API: `DATABASE_URL`, bucket (`STORAGE_*`), `APP_KEY` nova, `CORS_ORIGINS=https://aporta.maiyu.com.br`,
+      `COOKIE_DOMAIN=.maiyu.com.br`, `TRUSTED_PROXIES` cobrindo o Traefik **e a rede do app**.
+- [ ] API: comando pós-deploy `node ace migration:run --force`.
+- [ ] App: `SERVER_API_URL` (rede interna) e `STORAGE_PUBLIC_URL` (origem do bucket).
+- [ ] Healthcheck das duas aplicações em `/health-check`.
+- [ ] Bucket: aplicar `backend/infra/r2-cors.json` e expor o cabeçalho `ETag`.
+- [ ] Agendar `node ace storages:prune`.
+- [ ] Rodar `node ace staff:create` e tirar `STAFF_PASSWORD` do ambiente.
+- [ ] Trocar o catálogo de exemplo: telefones, bairros, coordenadas e lugares reais (`TASKS.md` 7.10).
+- [ ] Decidir o HSTS com `includeSubDomains` e `preload` e a colisão de cookies (`DECISIONS.md` #9).
+- [ ] Conferir no primeiro run do CI e no smoke test do deploy.

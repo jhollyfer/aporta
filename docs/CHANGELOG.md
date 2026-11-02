@@ -32,6 +32,9 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
   como verificado e ver e resolver denúncias.
 - O dono vê o motivo quando a equipe pede ajuste, e salvar o anúncio o reenvia para análise.
 - "Denunciar este anúncio" na página do imóvel, sem precisar de conta.
+- Listagem em páginas de 12 ou 24 imóveis, com contagem e navegação; o mapa carrega só os imóveis
+  da área visível e avisa quando é preciso aproximar.
+- Ícone, manifesto e prévia de compartilhamento (WhatsApp e redes) com a marca do Aporta.
 - Botão "Chamar no WhatsApp" com mensagem pronta que cita o imóvel, fixo no rodapé no celular.
 - Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis), com a aba guardada no
   endereço e botão de WhatsApp nos lugares que têm número.
@@ -66,5 +69,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 ### Segurança
 
 - A denúncia pública tem limite por IP e guarda só um hash do IP.
+- Leituras públicas limitadas a 120 por minuto por IP; o site passa a enviar políticas de segurança de
+  conteúdo, de referência e de permissões.
 - Contas entram por sessão em cookie protegido, com limite de tentativas de senha e de cadastro por
   IP. Os cookies levam o nome do Aporta para não se misturar com os de outros sites da casa.

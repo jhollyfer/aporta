@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 5 · Dono e moderação feitos; falta o fechamento (paginação, limites, CI, deploy) | 59% (41 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-02 | 9 · Deploy: o código está pronto, falta a infraestrutura do dono | 65% (45 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -24,33 +24,34 @@
 
 ## Parou em
 
-Branch `feat/moderacao-fila-verificacao`, empilhada sobre `feat/anuncios-dono-cria-edita` (PR #19, ainda
-aberto). Entrou a moderação: `administrator/listings` (fila, detalhe, aprovar, recusar com motivo,
-arquivar), `administrator/owners/verify`, `administrator/reports`, a denúncia pública
-`POST /storefront/reports` (5 por hora por IP, só o HMAC do IP é guardado) e as migrações
-`users.verified_at`, `listings.published_at/review_*` e `reports`. O selo vem da conta. No frontend, o
-painel `_private/administrator` (fila, revisão, denúncias), o motivo de recusa no painel do dono com o
-estado "Precisa de ajuste", e o diálogo "Denunciar este anúncio" com campo isca. O seeder cria uma
-moderadora de exemplo.
+Branch `chore/vitrine-paginacao-limites-deploy`, empilhada sobre `feat/moderacao-fila-verificacao` (PR
+#20), que está sobre o PR #19. Entrou o fechamento da vitrine: listagem paginada, mapa pela janela
+visível (`/storefront/listings/pins`), limite de 120 leituras por minuto por IP com `Cache-Control` curto,
+ícones, manifesto e prévia de compartilhamento, cabeçalhos de segurança do app (CSP com nonce), o
+comando `staff:create` e a lista de entrega do deploy (`ENV.md` §9). Achei no fim que o SSR chamava a API
+com o IP do Nitro, o que juntaria todos os visitantes num balde só: o SSR agora repassa o
+`X-Forwarded-For`, conferido na chave `rlflx:storefrontRead_ip_<ip>` do limitador.
 
-Verificado nesta data: `shared` com 136 testes; backend com `pnpm check` (355 unitários) e E2E com 371
-passando e 42 falhando, todos de storage sem MinIO; frontend com `pnpm check`, 93 testes, build,
-`check-chunk-cycles` e E2E de navegador 90 de 90, nos dois temas.
+Verificado nesta data: `shared` com 145 testes; backend com `pnpm check` (365 unitários) e E2E com 398
+passando e 42 falhando, todos de storage sem MinIO; frontend com `pnpm check`, 127 testes, build,
+`check-chunk-cycles` e E2E de navegador 132 de 132. LCP de 188 a 312 ms e CLS 0 em `/` e `/listings`
+num celular emulado, sem limitar a rede.
 
-Não verificado: o CI do GitHub; o envio de arquivo ao bucket e a grade de fotos assinadas na revisão
-(sem MinIO); os 42 testes de storage; os idiomas en e es só por chave; a imagem Docker.
+Não verificado: o CI do GitHub; o envio de arquivo ao bucket; os 42 testes de storage; a imagem Docker;
+Lighthouse; a CSP só roda no build de produção; o limite por IP atrás do Traefik real; `staff:create`
+num terminal de produção; os idiomas en e es só por chave.
 
 ## Próximos passos
 
-1. Mesclar a branch e configurar `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção antes do
-   deploy do frontend (9.4): sem ela a navegação no cliente não carrega a vitrine.
+1. Mesclar os PRs na ordem (#19, #20 e este) e seguir a lista de entrega (`ENV.md` §9): sem
+   `CORS_ORIGINS=https://aporta.maiyu.com.br` a vitrine não carrega no cliente.
 2. Responder as perguntas abertas do `PRD.md` §8, principalmente quem verifica o dono e a política de
    anúncio parado: elas destravam a moderação (5.4 a 5.6).
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
-5. Fechamento (PR F): paginação, limites, imagem de compartilhamento, primeiro CI e lista de deploy.
-   Depois contrair as colunas do dono denormalizado de `listings`.
+5. Contrair as colunas do dono denormalizado de `listings` (`DECISIONS.md` #10), agora que todo anúncio
+   tem conta, e paginar sitemap, bairros e guia acima de 100.
 6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
 7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público
    (7.10).

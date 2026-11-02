@@ -268,10 +268,11 @@ quebra sem erro no log.
 
 ## 10. Escala e limites conhecidos
 
-- A listagem do app filtra no servidor, mas pede uma página só de 100 (`MAX_PER_PAGE`), porque o mapa
-  mostra todos os pins de uma vez. Hoje são 12 anúncios; passando de 100 publicados, a listagem, o
-  sitemap, os bairros e as abas do guia cortam o excedente, e a listagem precisa de paginação e o mapa de
-  uma consulta própria por área (`TASKS.md` 3.9).
+- A listagem do app é paginada (12 ou 24 por página) e o mapa pede só os pins da janela visível, até 500
+  (`GET /storefront/listings/pins`, com `meta.total` para pedir zoom). O sitemap, os bairros e as abas do
+  guia ainda pedem uma página de 100 e cortam o excedente acima disso.
+- Os limites por IP só valem por visitante se a API enxergar o IP dele: o SSR repassa o `X-Forwarded-For`
+  e `TRUSTED_PROXIES` precisa cobrir a rede do Nitro, senão o site inteiro divide 120 leituras por minuto.
 - A busca por texto da API usa `ILIKE '%termo%'` em título e descrição, sem índice próprio: serve ao
   volume de uma cidade e vira varredura da tabela se o catálogo crescer muito.
 - O limitador de requisições usa o Postgres: cada tentativa de login e cada passo de upload gera

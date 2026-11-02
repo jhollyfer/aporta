@@ -12,6 +12,6 @@ RUN git clone --depth 1 --branch "$MINIO_RELEASE" https://github.com/minio/minio
 RUN git clone --depth 1 --branch "$MC_RELEASE" https://github.com/minio/mc /src/mc \
  && cd /src/mc && go build -trimpath -o /out/mc .
 
-FROM alpine:3.22
+FROM alpine:3.24
 COPY --from=build /out/minio /out/mc /usr/local/bin/
 ENTRYPOINT ["minio"]

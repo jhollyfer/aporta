@@ -82,7 +82,7 @@ describe('labels', () => {
   test('when sweeping, it reaches every exported validator', () => {
     // A filter that matches nothing does not fail: the tests below would pass by
     // vacuity. Three global ones, plus those of each resource.
-    expect(validators.length).toBe(14)
+    expect(validators.length).toBe(17)
   })
 
   test('when checking fields, every validator field has a label', () => {

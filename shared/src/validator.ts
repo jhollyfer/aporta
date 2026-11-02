@@ -185,6 +185,13 @@ const PT_BR_LABELS = {
   rules: 'as regras da casa',
   ownerName: 'o seu nome',
   whatsapp: 'o WhatsApp',
+  bedrooms: 'o número de quartos',
+  bathrooms: 'o número de banheiros',
+
+  // Listing (owner's photos)
+  photos: 'as fotos',
+  storageId: 'o arquivo da foto',
+  environment: 'o ambiente da foto',
 
   // Public storefront filters
   slug: 'o endereço do anúncio',
@@ -235,6 +242,11 @@ export const FIELD_LABELS = {
     rules: 'las reglas de la casa',
     ownerName: 'su nombre',
     whatsapp: 'el WhatsApp',
+    bedrooms: 'el número de dormitorios',
+    bathrooms: 'el número de baños',
+    photos: 'las fotos',
+    storageId: 'el archivo de la foto',
+    environment: 'el ambiente de la foto',
     slug: 'la dirección del anuncio',
     period: 'el período de alquiler',
     minPrice: 'el valor mínimo',
@@ -278,6 +290,11 @@ export const FIELD_LABELS = {
     rules: 'the house rules',
     ownerName: 'your name',
     whatsapp: 'the WhatsApp number',
+    bedrooms: 'the number of bedrooms',
+    bathrooms: 'the number of bathrooms',
+    photos: 'the photos',
+    storageId: 'the photo file',
+    environment: 'the photo environment',
     slug: 'the listing address',
     period: 'the rental period',
     minPrice: 'the minimum price',

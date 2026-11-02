@@ -311,7 +311,8 @@ redireciona ao login em 401, com `?redirect=` da tela atual *(opinião da casa)*
   conferida)*: o Nitro não manda nenhum por padrão. `routeRules` com `headers` em `'/**'`
   (`_doc-lib/nitro.md#config`) ou middleware em `src/server.ts` enviam `Content-Security-Policy` com
   `frame-ancestors 'none'` e `connect-src`/`img-src` só para a API e, com upload pré-assinado
-  (`backend.md` §5.4), a origem pública do storage, nada além, `X-Content-Type-Options: nosniff`,
+  (`backend.md` §5.4), a origem pública do storage (`STORAGE_PUBLIC_URL`, lida por requisição em
+  `src/server.ts`, nunca fixada no build pelo `vite.config.ts`), nada além, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy: strict-origin-when-cross-origin` e HSTS sem `preload`. Sem `frame-ancestors`, a
   tela de login pode ser embutida em `iframe` por outro site (clickjacking).
 - **Endereço da API sem default de rede.** `src/env.ts` lê `VITE_API_URL` uma vez e o build falha
@@ -319,8 +320,8 @@ redireciona ao login em 401, com `?redirect=` da tela atual *(opinião da casa)*
   quem visita. O passo de build do CI recebe a variável (`tooling.md` §8).
 - **Dado pessoal não fica em `localStorage`**: sem validade, fica para o próximo usuário do
   computador. Guarde o id e busque o resto na API, ou expire.
-- **Nome das chaves**: `VITE_API_URL`, `VITE_SITE_URL`, `VITE_UPLOAD_MAX_SIZE`, `SERVER_API_URL` e as
-  `E2E_*`, com regra de nome e significado, estão no catálogo de `backend.md` §6.2; chave nova ou
+- **Nome das chaves**: `VITE_API_URL`, `VITE_SITE_URL`, `VITE_UPLOAD_MAX_SIZE`, `SERVER_API_URL`,
+  `SITE_ENV`, `STORAGE_PUBLIC_URL` e as `E2E_*`, com regra de nome e significado, estão no catálogo de `backend.md` §6.2; chave nova ou
   sinônimo (`VITE_API_BASE_URL`) não nasce aqui.
 - `src/env.ts` lê só `VITE_*`, uma vez, de forma síncrona, checado à mão (o módulo roda antes do
   router montar). `SERVER_API_URL` é lida por requisição só no ramo `.server()`.
@@ -945,7 +946,8 @@ _doc-lib/tanstack-start.md#guide/seo). O formato é da casa (`DECISIONS.md` #47)
   em detalhe, e o tipo do domínio (`Product`, `Course`, `Event`, `NewsArticle`) a partir do
   `loaderData` (formato de `scripts`: página oficial não conferida);
 - `robots: noindex, nofollow` em `_private/`, `_authentication/` e no 404; ambiente que não é
-  produção responde `noindex` global.
+  produção responde `noindex` global, decidido por `SITE_ENV` lida no servidor (só `production`
+  indexa), nunca por `import.meta.env.PROD`, que é igual em staging e produção.
 
 Mais:
 

@@ -10,5 +10,9 @@
   "DELETE /storages/{id}": "ADMINISTRATOR, MODERATOR",
   "POST /storages/{id}/complete": "ADMINISTRATOR, MODERATOR",
   "GET /storages/{id}/download": "ADMINISTRATOR, MODERATOR",
-  "GET /storages/{id}/parts": "ADMINISTRATOR, MODERATOR"
+  "GET /storages/{id}/parts": "ADMINISTRATOR, MODERATOR",
+  "GET /storefront/listings": "anonima",
+  "GET /storefront/listings/{slug}": "anonima",
+  "GET /storefront/neighborhoods": "anonima",
+  "GET /storefront/places": "anonima"
 }

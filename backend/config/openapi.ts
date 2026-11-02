@@ -77,6 +77,34 @@ const tags: TagRule[] = [
     singular: 'anexo',
     plural: 'anexos',
   },
+  {
+    prefix: '/storefront/listings',
+    name: 'Vitrine · Anúncios',
+    description:
+      'O catálogo de imóveis, **sem autenticação**. Só leitura, e só o que está `PUBLISHED` e fora ' +
+      'da lixeira: rascunho, em análise e arquivado respondem `404` igual ao que não existe. ' +
+      'O anúncio é lido pelo `slug`, e traz o contato do dono (WhatsApp) porque é para isso que ele existe.',
+    singular: 'anúncio',
+    plural: 'anúncios',
+  },
+  {
+    prefix: '/storefront/neighborhoods',
+    name: 'Vitrine · Bairros',
+    description:
+      'Os bairros de Benjamin Constant que o filtro dos anúncios oferece, **sem autenticação**. ' +
+      'Cada um traz o `slug` e o centro aproximado, para o pino do mapa.',
+    singular: 'bairro',
+    plural: 'bairros',
+  },
+  {
+    prefix: '/storefront/places',
+    name: 'Vitrine · Guia',
+    description:
+      'O guia da cidade, **sem autenticação**: onde comer, onde beber, o que está acontecendo e ' +
+      'os serviços úteis, por aba (`?category`).',
+    singular: 'lugar',
+    plural: 'lugares',
+  },
 ]
 
 const openapi = {

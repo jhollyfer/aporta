@@ -35,5 +35,10 @@
   "UNAUTHORIZED": "Não autorizado",
   "USER_ALREADY_EXISTS": "Usuário já existe",
   "USER_NOT_FOUND": "Usuário não encontrado",
-  "VALIDATION_ERROR": "Dados inválidos"
+  "VALIDATION_ERROR": "Dados inválidos",
+  "LISTING_NOT_FOUND": "Anúncio não encontrado",
+  "STOREFRONT_LISTING_PAGINATE_ERROR": "Erro interno do servidor",
+  "STOREFRONT_LISTING_SHOW_ERROR": "Erro interno do servidor",
+  "STOREFRONT_NEIGHBORHOOD_PAGINATE_ERROR": "Erro interno do servidor",
+  "STOREFRONT_PLACE_PAGINATE_ERROR": "Erro interno do servidor"
 }

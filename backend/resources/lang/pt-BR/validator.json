@@ -36,7 +36,12 @@
       "description": "a descrição",
       "rules": "as regras da casa",
       "ownerName": "o seu nome",
-      "whatsapp": "o WhatsApp"
+      "whatsapp": "o WhatsApp",
+      "slug": "o endereço do anúncio",
+      "period": "o período de aluguel",
+      "minPrice": "o valor mínimo",
+      "maxPrice": "o valor máximo",
+      "category": "a categoria"
     },
     "messages": {
       "required": "Informe { field }",

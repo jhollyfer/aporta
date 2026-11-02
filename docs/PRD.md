@@ -47,7 +47,7 @@ A coluna "Estado" diz o que existe no repositório em 2026-11-01.
 | 6 | Entrada e área do dono (Meus anúncios) | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Não existe na tela; a sessão existe na API |
 | 7 | Upload de fotos por ambiente | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Upload da API pronto, só para a equipe; a tela não envia |
 | 8 | Verificação do dono e moderação de anúncio | equipe | `USER-FLOWS.md#moderação-futura` | Não existe |
-| 9 | Português, espanhol e inglês | todos | | Pronto na tela (163 mensagens por idioma) |
+| 9 | Português, espanhol e inglês | todos | | Pronto na tela (165 mensagens por idioma) |
 
 ## 5. Fica de fora (nesta versão)
 

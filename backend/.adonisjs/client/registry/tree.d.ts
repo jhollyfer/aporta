@@ -7,6 +7,18 @@ export interface ApiDefinition {
     openapi: typeof routes['documentation.openapi']
     reference: typeof routes['documentation.reference']
   }
+  storefront: {
+    listings: {
+      paginate: typeof routes['storefront.listings.paginate']
+      show: typeof routes['storefront.listings.show']
+    }
+    neighborhoods: {
+      paginate: typeof routes['storefront.neighborhoods.paginate']
+    }
+    places: {
+      paginate: typeof routes['storefront.places.paginate']
+    }
+  }
   authentication: {
     signIn: typeof routes['authentication.sign_in']
     signOut: typeof routes['authentication.sign_out']

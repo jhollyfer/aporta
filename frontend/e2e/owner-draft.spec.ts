@@ -53,7 +53,7 @@ test.describe('cadastro do imóvel', () => {
     await expect(page.getByLabel('Tipo de imóvel')).toHaveValue('')
   })
 
-  test('quando se completa o fluxo, o anúncio é recebido e o rascunho é apagado', async ({
+  test('quando se completa o fluxo, a tela diz que está pronto e o rascunho continua salvo', async ({
     page,
     expectHydrated,
   }) => {
@@ -83,15 +83,16 @@ test.describe('cadastro do imóvel', () => {
 
     await page.getByLabel('Seu nome').fill('Seu Raimundo')
     await page.getByLabel('WhatsApp').fill('5597999990002')
-    await page.getByRole('button', { name: 'Enviar anúncio' }).click()
+    await page.getByRole('button', { name: 'Finalizar cadastro' }).click()
 
     await expect(
-      page.getByRole('heading', { name: 'Anúncio recebido' }),
+      page.getByRole('heading', { name: 'Anúncio pronto' }),
     ).toBeVisible()
+    // Ainda não há API: o texto diz isso e o rascunho segue guardado, em vez de fingir um envio.
     expect(
       await page.evaluate(() =>
         window.localStorage.getItem('aporta:listing-draft:v1'),
       ),
-    ).toBeNull()
+    ).toContain('Kitnet perto do porto')
   })
 })

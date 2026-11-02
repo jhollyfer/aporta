@@ -52,6 +52,53 @@ router
   .use(middleware.documentation())
 
 /**
+ * The public storefront. **No middleware at all**, and not by forgetfulness: it is the trait of
+ * the block. Choosing a place to live in Benjamin Constant does not require an account, and the
+ * visitor who has to sign up before seeing a price is the visitor who goes back to the WhatsApp
+ * group this platform exists to replace.
+ *
+ * What limits what comes out of here is not an authentication layer. Each resource's repository
+ * cuts the rows (`paginatePublished`, `findPublishedRecordBySlug`: `PUBLISHED` and outside the
+ * trash), and the storefront presenter cuts the columns (no `status`, no `deletedAt`, no keys).
+ * The owner's WhatsApp does leave, by design: it is the contact the ad exists to publish.
+ *
+ * **Reads only.** Nothing in this group creates, changes or removes, so it needs no per-IP write
+ * limit (`start/limiter.ts`); the day a write enters it, it carries its own throttle on the route.
+ * `storefront.e2e.spec.ts` proves both: no route asks for a cookie, and every one is a `GET`.
+ *
+ * The listing is reached by `slug`, which is what the storefront URL carries. The neighborhoods
+ * and the guide have no detail route: the screen only ever reads them as a list.
+ */
+router
+  .group(() => {
+    router
+      .group(() => {
+        router.get('/', [controllers.storefront.listings.paginate.Paginate])
+        router.get(':slug', [controllers.storefront.listings.show.Show])
+      })
+      .prefix('listings')
+      .as('listings')
+
+    router
+      .group(() => {
+        router.get('/', [
+          controllers.storefront.neighborhoods.paginate.Paginate,
+        ])
+      })
+      .prefix('neighborhoods')
+      .as('neighborhoods')
+
+    router
+      .group(() => {
+        router.get('/', [controllers.storefront.places.paginate.Paginate])
+      })
+      .prefix('places')
+      .as('places')
+  })
+  .prefix('storefront')
+  .as('storefront')
+
+/**
  * Session. No middleware on purpose - not forgetfulness, it is the trait
  * of the block: it is the entry door, and requiring a session here would make it unreachable.
  *

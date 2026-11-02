@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { useMutation } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -14,7 +13,6 @@ import type { OwnerListingCreate } from '@aporta/shared'
 import { PillButton } from '#/components/common/pill-button'
 import { Stepper } from '#/components/common/stepper'
 import { useDraftStorage } from '#/hooks/use-draft-storage'
-import { submitListingMutation } from '#/integrations/tanstack-query/mutations/listings'
 import { m } from '#/paraglide/messages'
 
 import {
@@ -55,7 +53,7 @@ const TIPS: Record<string, () => ReadonlyArray<string>> = {
  */
 function RouteComponent(): React.JSX.Element {
   const [step, setStep] = React.useState(0)
-  const [sent, setSent] = React.useState<string | null>(null)
+  const [ready, setReady] = React.useState<string | null>(null)
   const draft = useDraftStorage(DRAFT_KEY, ClientListingDraftValidator)
 
   const form = useForm<OwnerListingCreate>({
@@ -63,8 +61,6 @@ function RouteComponent(): React.JSX.Element {
     defaultValues: EMPTY_LISTING_DRAFT,
     mode: 'onTouched',
   })
-
-  const submit = useMutation(submitListingMutation)
 
   /* Restaura uma vez, quando o storage responde: `reset` troca os valores sem marcar campo como tocado. */
   React.useEffect(() => {
@@ -98,12 +94,10 @@ function RouteComponent(): React.JSX.Element {
   function handleSubmit() {
     void form.handleSubmit(
       (data) => {
-        submit.mutate(data, {
-          onSuccess: (result) => {
-            draft.clear()
-            setSent(result.title)
-          },
-        })
+        // Grava na hora: o salvamento comum espera 400 ms parado, e quem finaliza logo depois de
+        // digitar perderia o último campo do rascunho.
+        draft.save({ ...EMPTY_LISTING_DRAFT, ...data })
+        setReady(data.title)
       },
       (errors) => {
         const first = STEPS.findIndex((spec) =>
@@ -114,17 +108,24 @@ function RouteComponent(): React.JSX.Element {
     )()
   }
 
-  if (sent !== null) {
+  if (ready !== null) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 pt-12 pb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-          {m.owner_sent_title()}
+          {m.owner_ready_title()}
         </h1>
         <p className="text-lg text-ink-soft">
-          {m.owner_sent_text({ title: sent })}
+          {m.owner_ready_text({ title: ready })}
         </p>
-        <div>
-          <PillButton to="/" tone="moss" scale="lg">
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setReady(null)}
+            className="h-14 rounded-full bg-moss px-8 text-base font-extrabold text-paper transition-[background-color,transform] hover:bg-moss-deep active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
+          >
+            {m.owner_ready_edit()}
+          </button>
+          <PillButton to="/" tone="outline" scale="lg">
             {m.not_found_home()}
           </PillButton>
         </div>
@@ -174,11 +175,7 @@ function RouteComponent(): React.JSX.Element {
             <ContactStep control={form.control} />
           </Stepper.Step>
           {tips !== undefined && <Stepper.Tips items={tips()} />}
-          <Stepper.Nav
-            onBeforeNext={validateStep}
-            onSubmit={handleSubmit}
-            pending={submit.isPending}
-          />
+          <Stepper.Nav onBeforeNext={validateStep} onSubmit={handleSubmit} />
         </form>
       </Stepper>
     </div>

@@ -7,12 +7,13 @@
 
 ## 1. Visão geral
 
-Estado em 2026-11-01. As setas pontilhadas ainda não existem: hoje o app lê dados de exemplo de
-`frontend/src/lib/data` e não chama a API para anúncios, bairros nem guia.
+Estado em 2026-11-02. A API já responde anúncios, bairros e guia em `/storefront`, mas a seta
+pontilhada ainda não existe: o app lê dados de exemplo de `frontend/src/lib/data` e não chama essas
+rotas. A ligação é a tarefa 3.6 de `TASKS.md`.
 
 ```
 Visitante (navegador) ──HTTPS──▶ Web (TanStack Start, SSR em Nitro) ─ ─ ─▶ API (AdonisJS 7) ──▶ PostgreSQL
-        │                              │                (anúncios, bairros e guia: a criar)      │
+        │                              │                (/storefront: pronta, ainda sem uso)      │
         │                              └──── @aporta/shared ─────────────────────────────────────┤
         │                                    (validators Zod, enums, records, responses, Either) │
         └──PUT direto das partes do upload──▶ Bucket S3 (MinIO local; S3 ou R2 em produção) ◀────┘
@@ -63,10 +64,14 @@ substantivo no plural, a ação é verbo.
 | documentation | openapi, reference | show | desenvolvedores | Feito |
 | Anúncios do dono | listings | criar, editar, listar os próprios, arquivar | `OWNER` | A criar |
 | Anúncios da equipe | listings | revisar, aprovar, arquivar, verificar dono | `MODERATOR`, `ADMINISTRATOR` | A criar |
-| Vitrine pública | listings, neighborhoods, places | listar com filtro, mostrar | visitante sem login | A criar |
+| storefront | listings, neighborhoods, places | listings: paginate, show (por `slug`); neighborhoods e places: paginate | visitante sem login | Feito no backend (só `GET`); o frontend ainda não a chama |
 
 Raiz de `app/features/`: também `health-check.controller.ts` (`GET /health-check`). Os nomes dos
 módulos novos saem da árvore da casa quando forem criados.
+
+O grupo `storefront` não tem middleware de propósito, e só tem rota `GET` (`SECURITY.md` §2.5). Cada
+recurso tem um presenter (`listings.presenter.ts`, `neighborhoods.presenter.ts`,
+`places.presenter.ts`) que escolhe campo a campo o que sai.
 
 Entidades de domínio (uma pasta por entidade em `app/domain/`) e quem escreve em cada tabela: só o repository da
 entidade dona (`_standards/domain.md` §5).
@@ -77,9 +82,14 @@ entidade dona (`_standards/domain.md` §5).
 | Storage | `storages` | `StorageRepository` | nasce `PENDING` e só vira `UPLOADED` no `complete`, depois de conferir tamanho e assinatura do arquivo; o backend recusa anexar o que não é `UPLOADED`; todo arquivo tem dono (`owner_id`, obrigatório) e a chave no bucket nunca vem do nome enviado |
 | Sessão | `auth_access_tokens` | `SessionTokenRepository` | par de tokens opacos (acesso 1 dia, renovação 7 dias), guardados como hash |
 | Limites de requisição | `rate_limits` | pelo `@adonisjs/limiter` | contagem por IP, por conta ou por usuário |
+| Anúncio | `listings`, `listing_photos` | `ListingRepository` | nasce `DRAFT`; precisa de título, de ao menos um período e de preço mensal, diário ou os dois, em reais inteiros acima de zero; só `PUBLISHED` fora da lixeira chega à vitrine |
+| Bairro | `neighborhoods` | `NeighborhoodRepository` | nome não vazio, centro com coordenadas válidas, `slug` único mesmo entre os arquivados |
+| Lugar do guia | `places` | `PlaceRepository` | nome não vazio; só o evento (`EVENT`) tem data e o evento exige data |
 
-Anúncio, bairro e lugar do guia ainda não são entidades de domínio. Seus tipos hoje vivem em
-`shared/src/records/`.
+A foto do anúncio não é entidade: é uma posição dentro do `Listing` (`ListingPhotoProps`, com o
+ambiente e sem arquivo). Os três repositories só leem: nenhum tem `save`, e a escrita entra com a
+tarefa 3.5. Cada um tem implementação `lucid` e `memory`, e o teste de contrato roda nas duas
+(`listing.repository.e2e.spec.ts` e os irmãos).
 
 ### 4.1 Linguagem do domínio
 
@@ -112,20 +122,45 @@ Só as tabelas que existem (migrations em `backend/database/migrations/`).
 | `storages` | id, filename, original_name, mimetype, size, path, status, upload_id, part_size, owner_id, deleted_at | pertence a `users` (`RESTRICT`) | índice por estado e data para a varredura de uploads abandonados |
 | `auth_access_tokens` | id, tokenable_id, type, name, hash, abilities, last_used_at, expires_at | pertence a `users` (`CASCADE`) | credencial viva, enviada em cookie `httpOnly` |
 | `rate_limits` | chave e contagem do limitador | | |
+| `neighborhoods` | id, slug (único), name, lat, lng, created_at, updated_at, deleted_at | tem muitos `listings` e `places` | coordenadas em `double precision`, para o driver entregar número; o centro é aproximado |
+| `listings` | id, slug (único), status (`DRAFT`, `PENDING`, `PUBLISHED`, `ARCHIVED`; nasce `DRAFT`), type, title, description, neighborhood_id, address, price_monthly, price_daily, cost_water, cost_electricity, cost_internet, periods (`text[]`), minimum_stay_months, available_from, bedrooms, bathrooms, furnished, rules (`text[]`), owner_name, owner_whatsapp, owner_verified_at, lat, lng, created_at, updated_at, deleted_at | pertence a `neighborhoods` (`RESTRICT`); tem muitas `listing_photos` | dono denormalizado nas colunas `owner_*` (`DECISIONS.md` #10); `CHECK` exige preço mensal ou diário; índice em (`status`, `deleted_at`) e em `neighborhood_id`; arquivamento por `deleted_at` |
+| `listing_photos` | id, listing_id, environment, position | pertence a `listings` (`CASCADE`); único em (`listing_id`, `position`) | sem chave para `storages` ainda: é o espaço de uma foto, e a resposta leva `url: null` |
+| `places` | id, category, name, description, neighborhood_id, address, hours, whatsapp (opcional), date (só evento), created_at, updated_at, deleted_at | pertence a `neighborhoods` (`RESTRICT`) | índice em (`category`, `deleted_at`) e em `neighborhood_id` |
 
-A tabela de anúncios, de fotos do anúncio, de bairros e do guia ainda não existe. O contrato dela
-parte de `Listing`, `Neighborhood` e `Place` em `shared/src/records/`.
+Migrations `1787985601500` a `1787985601530` criam as quatro tabelas novas, nesta ordem: bairros,
+anúncios, fotos, lugares.
+
+**Leitura da vitrine.** O model `Listing` tem o escopo `published` (status `PUBLISHED` e fora da
+lixeira), aplicado em toda leitura de `ListingRepository`; `Neighborhood` e `Place` cortam só a
+lixeira. A faixa de preço e a ordenação `price` usam
+`COALESCE(price_monthly, price_daily * 30)`, com a constante `Listing.DAYS_PER_MONTH = 30` lida pelo
+SQL e pela entidade. Ordenar por `price` usa `orderByRaw` com `id` de desempate, para dois anúncios
+de mesmo preço não trocarem de lugar entre páginas. A busca (`search`) olha título e descrição do
+anúncio, nome e descrição do lugar, e nome do bairro, sem diferenciar maiúscula.
+
+**Dado de exemplo.** Os seeders `neighborhood`, `listing` e `place` (`environment = ['development']`)
+leem `backend/database/data/` e são idempotentes: bairros e anúncios por `slug`, lugares por categoria
+e nome. Entram 6 bairros, 12 anúncios, 53 fotos e 10 lugares. Não rodam no ambiente `test`
+(`DECISIONS.md` #11). O seeder de usuário continua exigindo `SEED_OWNER_PASSWORD`.
 
 ## 6. Fluxo de dados
 
-**Busca hoje** (dados de exemplo): visitante abre `/listings?type=KITNET&neighborhood=centro` →
+**Busca pela API (existe, ainda não usada pelo app):** `GET /storefront/listings?type=KITNET&neighborhood=centro`
+→ validator confere o filtro (422 com o campo se algo sai da lista) → use-case chama
+`ListingRepository.paginatePublished` → o repository corta `PUBLISHED` fora da lixeira, aplica os
+filtros e a ordem (`createdAt` decrescente se nada for pedido) → `ListingPresenter` monta cada item
+campo a campo. `GET /storefront/listings/:slug` devolve o anúncio ou `404` `LISTING_NOT_FOUND`, o
+mesmo para rascunho, em análise, arquivado, na lixeira e inexistente.
+
+**Busca hoje no app** (dados de exemplo): visitante abre `/listings?type=KITNET&neighborhood=centro` →
 `validateSearch` valida a URL com Zod e descarta o valor inválido → a tela lê `LISTINGS` de
 `lib/data` e filtra em `filterListings` (hotel entra na faixa de preço pela diária vezes 30) →
 `ListingCard` e `ListingMap` desenham a lista e os pins.
 
 **Cadastro hoje:** `/list-your-place` valida cada etapa com `OwnerListingCreateValidator` (de
-`shared/`), grava o rascunho no `localStorage` com `ClientListingDraftValidator`, e o envio
-(`submitListingMutation`) só devolve o título depois de 500 ms.
+`shared/`) e grava o rascunho no `localStorage` com `ClientListingDraftValidator`. O último passo,
+"Finalizar cadastro", só valida o formulário inteiro e mostra "Anúncio pronto", avisando que o envio
+ainda não está no ar; não há chamada à API e o rascunho não é apagado.
 
 **Cadastro com a API** (alvo): o mesmo `OwnerListingCreateValidator` vira o validator VineJS par
 no backend (paridade por `validators:check`) → `POST` de anúncio com a conta `OWNER` → use-case
@@ -198,8 +233,10 @@ quebra sem erro no log.
 
 ## 10. Escala e limites conhecidos
 
-- A busca lê todos os anúncios na tela e filtra no cliente: aceitável com 12 exemplos, e a
-  paginação e o filtro no servidor entram com a API de anúncios.
+- A busca do app ainda lê todos os anúncios na tela e filtra no cliente: aceitável com 12 exemplos.
+  A API já pagina e filtra no servidor (`perPage` até 100), e o app passa a usá-la com a tarefa 3.6.
+- A busca por texto da API usa `ILIKE '%termo%'` em título e descrição, sem índice próprio: serve ao
+  volume de uma cidade e vira varredura da tabela se o catálogo crescer muito.
 - O limitador de requisições usa o Postgres: cada tentativa de login e cada passo de upload gera
   escrita no banco. Uma só instância da API e o banco comum bastam para a escala de uma cidade; mais
   réplicas funcionam porque o estado está no banco, não na memória.

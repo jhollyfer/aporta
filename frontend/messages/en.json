@@ -120,8 +120,6 @@
   "owner_page_description": "Register your house, studio, room or hotel in a few steps and talk to people searching.",
   "owner_title": "List your place",
   "owner_lead": "Six short steps. What you write is saved on this device, so you can leave to take the photos and come back later.",
-  "owner_sent_title": "Listing received",
-  "owner_sent_text": "We received \"{title}\". We will check the details before publishing.",
   "step_type": "Type",
   "step_place": "Address",
   "step_values": "Prices",
@@ -132,7 +130,7 @@
   "stepper_progress_label": "Registration progress",
   "stepper_back": "Back",
   "stepper_next": "Continue",
-  "stepper_submit": "Send listing",
+  "stepper_submit": "Finish",
   "stepper_tips_title": "Tips for this step",
   "tip_photo_facade": "The front of the house, head on and in daylight.",
   "tip_photo_bedroom": "The whole bedroom, not just the bed.",
@@ -162,5 +160,8 @@
   "field_owner_name": "Your name",
   "field_whatsapp": "WhatsApp",
   "field_whatsapp_hint": "With area code, numbers only. This is where chats arrive.",
-  "stepper_sending": "Sending…"
+  "stepper_sending": "Sending…",
+  "owner_ready_title": "Listing ready",
+  "owner_ready_text": "\"{title}\" is complete, but sending listings is not live yet. Your draft stays saved on this device.",
+  "owner_ready_edit": "Back to the form"
 }

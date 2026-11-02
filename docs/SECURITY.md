@@ -7,8 +7,9 @@
 > papel novo (`_standards/documentation.md` §5). Segredo encontrado no caminho é redigido aqui,
 > nunca copiado.
 >
-> Estado em 2026-11-01: o domínio de anúncios ainda não existe no backend. Onde uma proteção só
-> existe como plano, a linha diz "Planejado" e não conta como mitigação pronta.
+> Estado em 2026-11-02: o backend lê anúncios, bairros e guia em rotas públicas (`/storefront`),
+> só `GET`, e ainda não escreve anúncio. Onde uma proteção só existe como plano, a linha diz
+> "Planejado" e não conta como mitigação pronta.
 
 ## 1. Como reportar uma vulnerabilidade
 
@@ -35,6 +36,8 @@ aberta em `PRD.md` §8 e em `MEMORY.md`.
 flowchart LR
   user[Navegador] -->|HTTPS| web[App SSR]
   user -->|HTTPS com cookie| api[API]
+  user -->|GET sem sessão| pub[API pública /storefront]
+  pub --> db
   user -->|PUT das partes assinadas| bucket[(Bucket S3)]
   web -.->|futuro: consulta de anúncios| api
   api --> db[(PostgreSQL)]
@@ -50,6 +53,7 @@ flowchart LR
 | navegador para o bucket | navegador e S3 | URL de parte assinada (1 hora), `Content-Type` fixado na assinatura, bucket privado, CORS restrito à origem do app | `backend/app/services/multipart/multipart.service.ts`, `backend/infra/r2-cors.json` |
 | visitante para o app | navegador e SSR | busca validada por Zod com `.catch`, sem segredo no bundle (só `VITE_*`), sem HTML de usuário | `frontend/src/routes/_public/listings/-search.ts`, `frontend/src/env.ts` |
 | equipe para a documentação da API | navegador e `/openapi.json`, `/documentation` | só a equipe vê; os demais recebem 404 | `backend/app/middleware/documentation.middleware.ts` |
+| visitante para a API pública | navegador e `/storefront` | só `GET`; sem sessão por desenho; o repository corta a linha (`PUBLISHED` fora da lixeira), o presenter corta a coluna; `perPage` até 100 e `search` até 100 caracteres | `backend/start/routes.ts`, `backend/app/features/storefront/storefront.e2e.spec.ts`, `backend/app/features/storefront/*/*.presenter.ts` |
 | papel para o grupo `/storages` | sessão e arquivos | sessão e papel `ADMINISTRATOR` ou `MODERATOR` | `backend/start/routes.ts` |
 | CI para o Coolify | GitHub Actions e a instância | `COOLIFY_TOKEN` como segredo, UUIDs e URL em `vars` do repositório | `.github/workflows/main-deploy-coolify.yml` |
 
@@ -59,8 +63,8 @@ flowchart LR
 |---|---|---|---|---|
 | Conta e senha da equipe | tomada de conta de moderação deixa publicar ou arquivar anúncio | C, I | senha em hash scrypt na tabela `users` | ninguém lê a senha |
 | Sessão (cookie) | quem a tem age como a conta | C | cookie `httpOnly` e hash na tabela `auth_access_tokens` | o próprio navegador |
-| WhatsApp, nome e e-mail do dono | dado pessoal (LGPD); número exposto atrai spam e golpe | C | futura tabela de anúncios; hoje, só o `localStorage` do dono e os dados de exemplo (telefones fictícios) | visitante vê o WhatsApp do anúncio publicado, por design; equipe vê o resto |
-| Anúncio e selo "dono verificado" | a confiança do produto: selo falso ou anúncio falso é golpe | I | futura tabela de anúncios | dono edita o próprio, equipe modera |
+| WhatsApp, nome e e-mail do dono | dado pessoal (LGPD); número exposto atrai spam e golpe | C | `listings.owner_name` e `listings.owner_whatsapp` (dono denormalizado); o `localStorage` do dono no rascunho; hoje a tabela só tem os dados de exemplo (telefones fictícios) | qualquer visitante vê nome e WhatsApp do anúncio publicado, por design; o e-mail do dono não existe nesta tabela |
+| Anúncio e selo "dono verificado" | a confiança do produto: selo falso ou anúncio falso é golpe | I | tabela `listings`, coluna `owner_verified_at` | a resposta pública só diz se o dono é verificado, nunca quando; dono edita o próprio e equipe modera quando a escrita existir |
 | Fotos dos imóveis | privacidade da casa e prova de que o imóvel existe | C, I | bucket privado, leitura por URL assinada | dono do anúncio, equipe |
 | Segredos de deploy | publicar versão adulterada | C, I | segredos e `vars` do repositório; variáveis do painel do Coolify | quem tem acesso ao repositório e ao painel |
 | Disponibilidade do site | a decisão de moradia é sazonal (chegada dos calouros, festival) | D | Coolify | todos |
@@ -74,7 +78,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | chamar qualquer rota pública e mexer na URL de busca | ler o banco ou o bucket diretamente |
 | criar conta de dono, quando o cadastro existir, e publicar anúncio falso | interceptar TLS |
 | trocar ids na URL e no corpo | forjar o cabeçalho `Origin` de um navegador, nem `Sec-Fetch-Site` |
-| coletar todos os WhatsApps publicados | assumir o painel do Coolify ou o GitHub |
+| paginar a listagem pública inteira e coletar todos os WhatsApps publicados, sem sessão | assumir o painel do Coolify ou o GitHub |
 | usar computador compartilhado (lan house) depois do dono | escrever no `localStorage` de outro usuário |
 | mandar arquivo disfarçado de imagem | enganar a conferência da assinatura do arquivo no servidor |
 
@@ -87,6 +91,10 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | perfil | `GET` e `PUT /account` | internet para a API | `backend/app/features/account/profile/` |
 | upload e biblioteca | `/storages` e URL assinada de cada parte | navegador para o bucket | `backend/app/features/storage/files/`, `backend/app/services/multipart/` |
 | documentação da API | `/openapi.json`, `/documentation` | equipe | `backend/app/middleware/documentation.middleware.ts` |
+| listagem pública de anúncios | `GET /storefront/listings` com `page`, `perPage`, `search`, `type`, `neighborhood`, `period`, `minPrice`, `maxPrice`, `sort`, `direction` | visitante para a API pública | `backend/app/features/storefront/listings/paginate/`, `backend/app/validators/storefront/listings.validator.ts` |
+| anúncio pelo `slug` | `GET /storefront/listings/:slug` | visitante para a API pública | `backend/app/features/storefront/listings/show/` |
+| bairros | `GET /storefront/neighborhoods` | visitante para a API pública | `backend/app/features/storefront/neighborhoods/paginate/` |
+| guia | `GET /storefront/places` com `category` | visitante para a API pública | `backend/app/features/storefront/places/paginate/` |
 | busca pública | `/listings` com parâmetros na URL | visitante para o app | `frontend/src/routes/_public/listings/-search.ts` |
 | detalhe do anúncio | `/listings/$slug` | visitante para o app | `frontend/src/routes/_public/listings/$slug.tsx` |
 | guia | `/guide?category=` | visitante para o app | `frontend/src/routes/_public/guide/-search.ts` |
@@ -108,12 +116,14 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | TM-006 | Upload malicioso: SVG ou HTML servido do bucket, tipo falso, arquivo enorme | média | alto | alta | lista fechada de tipos sem SVG, tipo e extensão pelo `mimetype` declarado, conferência de assinatura e tamanho no `complete`, teto `UPLOAD_MAX_SIZE`, limite de 60 requisições por hora por usuário | `shared/src/enums/storage-mimetype.ts`, `backend/app/domain/shared/file-signature.value-object.unit.spec.ts`, `backend/app/domain/storage/storage.unit.spec.ts`, `backend/app/features/storage/files/complete/complete.e2e.spec.ts` |
 | TM-007 | Injeção de HTML no pin do mapa por texto do dono | média | médio | média | o HTML do pin leva só o preço formatado, nunca texto do dono | `frontend/src/components/common/listing-map/listing-map-canvas.tsx`; sem teste automatizado (lacuna em `TEST-PLAN.md`) |
 | TM-008 | Número de WhatsApp malformado ou com texto no link | média | médio | média | o link remove tudo que não é dígito e codifica a mensagem; o formulário só aceita dígitos. O validator de `shared/` só confere o tamanho (10 a 13), sem exigir dígitos: a API precisa recusar caractere não numérico | `frontend/src/lib/whatsapp.ts`, `frontend/src/lib/whatsapp.test.ts`, `shared/src/validators/owner/listings.validator.ts` |
-| TM-009 | Coleta em massa dos WhatsApps publicados para spam ou golpe | alta | médio | média | Aceito por desenho (o número é público para o contato direto); Planejado: avaliar proteção quando houver API (limite por IP, não listar o número na resposta de listagem) | decisão em aberto em `MEMORY.md` |
-| TM-010 | Rascunho do cadastro (nome e WhatsApp) lido por quem usa o mesmo computador depois | média | médio | média | o rascunho sai do aparelho quando o envio dá certo; chave versionada; mantido só no navegador | `frontend/src/hooks/use-draft-storage.ts`; sem aviso ao dono sobre computador compartilhado (lacuna) |
+| TM-009 | Coleta em massa dos WhatsApps publicados para spam ou golpe | alta | médio | média | Aceito por desenho (o número é público para o contato direto). A API pública já devolve `owner.whatsapp` na listagem e no detalhe, até 100 anúncios por página, sem sessão e sem limite por IP. Planejado: avaliar limite por IP e não listar o número na resposta de listagem | `backend/app/features/storefront/listings/listings.presenter.ts`, `backend/app/features/storefront/listings/paginate/paginate.e2e.spec.ts`; sem teste que prove um limite, porque não há |
+| TM-010 | Rascunho do cadastro (nome e WhatsApp) lido por quem usa o mesmo computador depois | média | médio | média | chave versionada e mantido só no navegador; o cadastro ainda não envia nada e não apaga o rascunho ao concluir, então ele fica no aparelho até o dono limpar os dados do site; o apagamento no envio volta quando o envio existir | `frontend/src/hooks/use-draft-storage.ts`; sem aviso ao dono sobre computador compartilhado (lacuna) |
 | TM-011 | Filtro de URL malformado derruba a página ou injeta valor | alta | baixo | baixa | cada campo da busca tem `.catch(undefined)` e o bairro é conferido contra a lista real; o React escapa o texto | `frontend/src/routes/_public/listings/-search.ts`, `frontend/src/routes/_public/listings/-search.test.ts` |
 | TM-012 | Segredo ou credencial no repositório ou no CI | média | alto | alta | varredura de segredo em todas as refs, `pnpm audit` em produção, seeder sem senha padrão e só fora de produção, workflows sem `pull_request_target` | `.github/workflows/ci.yml`, `.gitleaks.toml`, `backend/database/seeders/user.seed.ts` |
 | TM-013 | Anúncio velho ou já alugado exposto como disponível (engenharia social e perda de confiança) | alta | médio | média | Planejado: política de prazo sem atualização; hoje a tela mostra "atualizado há X dias" | `frontend/src/components/common/owner-card/owner-card.tsx`; política em aberto em `PRD.md` §8 |
 | TM-014 | Colisão de cookie com outro projeto da casa: com `COOKIE_DOMAIN=.maiyu.com.br` e os mesmos nomes `access-token` e `refresh-token`, o login em um projeto sobrescreve a sessão do outro, e um projeto recebe o cookie do outro | média | médio | média | Não mitigado. Confirmar em produção e, se colidir, usar nomes de cookie por projeto ou mover a API para um subdomínio do app (decisão do dono, `DECISIONS.md` #9) | `backend/config/session-token.ts`; sem teste |
+| TM-015 | Enumeração por `slug`: o visitante tenta endereços de anúncio para achar rascunho, anúncio em análise ou arquivado | média | baixo | baixa | Rascunho, em análise, arquivado, na lixeira e inexistente respondem o mesmo `404` `LISTING_NOT_FOUND`, então a resposta não confirma que o anúncio existe; o escopo `published` do model corta a linha na consulta. O `slug` de anúncio publicado é público por desenho, e a resposta traz `id` em UUID, nunca sequencial | `backend/app/features/storefront/listings/show/show.e2e.spec.ts` ("answers the same 404"), `backend/app/repositories/listing/listing.repository.e2e.spec.ts`, `backend/app/models/listing.ts` |
+| TM-016 | Raspagem ou carga na leitura pública: muitas chamadas a `/storefront`, inclusive com `search` | média | médio | média | Os limites de entrada são `perPage` até 100 e `search` até 100 caracteres, nos dois validators. Não há limite de requisições por IP nas rotas públicas: o grupo só tem `GET` e a decisão foi pôr o limite junto com a primeira escrita. A busca é `ILIKE` sem índice próprio. Planejado: limite por IP se o tráfego pedir | `backend/app/validators/storefront/`, `backend/start/routes.ts`, `backend/start/limiter.ts`; sem teste de carga
 
 ### 2.7 Calibragem de criticidade
 
@@ -121,7 +131,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
   de verificação concedido por falha (o produto promete confiança).
 - Alto: golpe que passa pela moderação, upload que expõe HTML do bucket, segredo no repositório.
 - Médio: número de WhatsApp coletado em massa, dado pessoal no rascunho local.
-- Baixo: enumeração de recurso público, filtro de URL inválido.
+- Baixo: enumeração de recurso público (TM-015), filtro de URL inválido.
 
 ### 2.8 Para revisão manual
 
@@ -137,6 +147,14 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 - Conferir em produção a colisão de cookies de sessão com outros projetos do domínio `maiyu.com.br` (TM-014).
 - Revisar cada rota de anúncio nova quanto a escopo por sessão, 404 igual ao inexistente e ao dado
   que a listagem pública devolve do dono.
+- O que a API pública devolve do dono: `name`, `whatsapp`, `verified` e a data de atualização do
+  anúncio. Nunca devolve `status`, `deletedAt`, `neighborhoodId`, o instante de verificação
+  (`owner_verified_at`) nem o `id` de usuário (não há `owner_id` ainda). Cada presenter lista os
+  campos permitidos e o E2E do detalhe compara a lista inteira de chaves, então uma coluna nova
+  não vaza sozinha. Bairro sai sem `id` e sem datas; lugar sai sem `neighborhoodId`, `deletedAt` e carimbos de criação e atualização.
+- Quando uma rota de escrita entrar em `/storefront`, ela leva limite próprio na rota
+  (`backend/start/routes.ts`) e o teste de "só `GET`" em `storefront.e2e.spec.ts` precisa mudar de
+  propósito.
 
 ## 3. Autenticação e sessão
 
@@ -165,7 +183,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 
 | Perfil | Pode hoje | Não pode |
 |---|---|---|
-| visitante | ver busca, detalhe, guia, e abrir o WhatsApp | qualquer rota autenticada |
+| visitante | ver busca, detalhe, guia, e abrir o WhatsApp; ler `/storefront` sem sessão | qualquer rota autenticada |
 | `OWNER` | ver e editar a própria conta | `/storages` e a documentação da API |
 | `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar de vez, gerir contas (regra do papel; ainda sem rotas) |
 | `ADMINISTRATOR` | tudo o que a equipe faz e apagar de vez | |
@@ -205,8 +223,8 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | Dado | Finalidade | Base legal | Retenção | Exclusão |
 |---|---|---|---|---|
 | Nome e e-mail da conta | entrar e identificar quem opera ou anuncia | execução de contrato (a confirmar com o dono) | enquanto a conta existir | arquivamento lógico hoje; anonimização em prazo ainda não definida |
-| Nome e WhatsApp do dono no anúncio | o visitante falar com o dono | execução de contrato e consentimento do dono ao publicar (a confirmar com o dono) | enquanto o anúncio estiver publicado | definir com a política de anúncio parado (`PRD.md` §8) |
-| Rascunho do cadastro | não perder o que foi digitado | consentimento implícito do uso do formulário | no navegador do dono, até o envio ou até o dono limpar os dados do site | apagado no envio com sucesso |
+| Nome e WhatsApp do dono no anúncio | o visitante falar com o dono | execução de contrato e consentimento do dono ao publicar (a confirmar com o dono) | enquanto o anúncio estiver publicado; as colunas `owner_name` e `owner_whatsapp` ficam em `listings` mesmo arquivado, e a API pública não devolve anúncio arquivado | definir com a política de anúncio parado (`PRD.md` §8) |
+| Rascunho do cadastro | não perder o que foi digitado | consentimento implícito do uso do formulário | no navegador do dono, até o dono limpar os dados do site: o cadastro ainda não envia, então o rascunho não é apagado | o dono limpa os dados do site; quando o envio existir, apagar no envio com sucesso |
 | Foto do imóvel | mostrar o imóvel | execução de contrato | enquanto o anúncio existir | apagar o objeto do bucket junto com o anúncio (a implementar) |
 
 A base legal e os prazos são proposta técnica, não parecer jurídico: o dono do produto confirma

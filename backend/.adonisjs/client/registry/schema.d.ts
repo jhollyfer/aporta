@@ -47,6 +47,58 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/documentation/reference/show/show.controller').default['handle']>>>
     }
   }
+  'storefront.listings.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/storefront/listings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/storefront/listings.validator').StorefrontListingPaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/listings/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/listings/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/listings/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'storefront.listings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/storefront/listings/:slug'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { slug: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/storefront/listings.validator').StorefrontListingShowValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/listings/show/show.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/listings/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/listings/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'storefront.neighborhoods.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/storefront/neighborhoods'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/storefront/neighborhoods.validator').StorefrontNeighborhoodPaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/neighborhoods/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/neighborhoods/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/neighborhoods/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'storefront.places.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/storefront/places'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/storefront/places.validator').StorefrontPlacePaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/storefront/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'authentication.sign_in': {
     methods: ["POST"]
     pattern: '/authentication/sign-in'

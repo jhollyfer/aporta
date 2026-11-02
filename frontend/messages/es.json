@@ -120,8 +120,6 @@
   "owner_page_description": "Registre su casa, estudio, habitación u hotel en pocos pasos y hable con quien busca.",
   "owner_title": "Anuncie su inmueble",
   "owner_lead": "Seis pasos cortos. Lo que escribe queda guardado en este dispositivo, así que puede salir a tomar las fotos y volver después.",
-  "owner_sent_title": "Anuncio recibido",
-  "owner_sent_text": "Recibimos \"{title}\". Revisaremos los datos antes de publicar.",
   "step_type": "Tipo",
   "step_place": "Dirección",
   "step_values": "Valores",
@@ -132,7 +130,7 @@
   "stepper_progress_label": "Progreso del registro",
   "stepper_back": "Volver",
   "stepper_next": "Continuar",
-  "stepper_submit": "Enviar anuncio",
+  "stepper_submit": "Finalizar registro",
   "stepper_tips_title": "Consejos para este paso",
   "tip_photo_facade": "La fachada, de frente y de día.",
   "tip_photo_bedroom": "El dormitorio completo, no solo la cama.",
@@ -162,5 +160,8 @@
   "field_owner_name": "Su nombre",
   "field_whatsapp": "WhatsApp",
   "field_whatsapp_hint": "Con código de área, solo números. Es donde llegan las conversaciones.",
-  "stepper_sending": "Enviando…"
+  "stepper_sending": "Enviando…",
+  "owner_ready_title": "Anuncio listo",
+  "owner_ready_text": "\"{title}\" está completo, pero el envío de anuncios todavía no está disponible. Su borrador sigue guardado en este dispositivo.",
+  "owner_ready_edit": "Volver al registro"
 }

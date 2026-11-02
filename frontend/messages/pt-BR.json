@@ -120,8 +120,6 @@
   "owner_page_description": "Cadastre sua casa, kitnet, quarto ou hotel em poucos passos e fale com quem procura.",
   "owner_title": "Anuncie seu imóvel",
   "owner_lead": "Seis passos curtos. O que você escreve fica salvo neste aparelho, então pode sair para tirar as fotos e voltar depois.",
-  "owner_sent_title": "Anúncio recebido",
-  "owner_sent_text": "Recebemos \"{title}\". Vamos conferir os dados antes de publicar.",
   "step_type": "Tipo",
   "step_place": "Endereço",
   "step_values": "Valores",
@@ -132,7 +130,7 @@
   "stepper_progress_label": "Progresso do cadastro",
   "stepper_back": "Voltar",
   "stepper_next": "Continuar",
-  "stepper_submit": "Enviar anúncio",
+  "stepper_submit": "Finalizar cadastro",
   "stepper_tips_title": "Dicas para esta etapa",
   "tip_photo_facade": "Fachada, de frente e de dia.",
   "tip_photo_bedroom": "O quarto inteiro, não só a cama.",
@@ -162,5 +160,8 @@
   "field_owner_name": "Seu nome",
   "field_whatsapp": "WhatsApp",
   "field_whatsapp_hint": "Com DDD, só números. É para onde chegam as conversas.",
-  "stepper_sending": "Enviando…"
+  "stepper_sending": "Enviando…",
+  "owner_ready_title": "Anúncio pronto",
+  "owner_ready_text": "\"{title}\" está completo, mas o envio de anúncios ainda não está no ar. Seu rascunho continua salvo neste aparelho.",
+  "owner_ready_edit": "Voltar ao cadastro"
 }

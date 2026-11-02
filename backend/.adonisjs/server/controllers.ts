@@ -65,4 +65,24 @@ export const controllers = {
       },
     },
   },
+  storefront: {
+    listings: {
+      paginate: {
+        Paginate: () => import('#features/storefront/listings/paginate/paginate.controller'),
+      },
+      show: {
+        Show: () => import('#features/storefront/listings/show/show.controller'),
+      },
+    },
+    neighborhoods: {
+      paginate: {
+        Paginate: () => import('#features/storefront/neighborhoods/paginate/paginate.controller'),
+      },
+    },
+    places: {
+      paginate: {
+        Paginate: () => import('#features/storefront/places/paginate/paginate.controller'),
+      },
+    },
+  },
 }

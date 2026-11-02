@@ -36,7 +36,12 @@
       "description": "the description",
       "rules": "the house rules",
       "ownerName": "your name",
-      "whatsapp": "the WhatsApp number"
+      "whatsapp": "the WhatsApp number",
+      "slug": "the listing address",
+      "period": "the rental period",
+      "minPrice": "the minimum price",
+      "maxPrice": "the maximum price",
+      "category": "the category"
     },
     "messages": {
       "required": "Enter { field }",

@@ -41,5 +41,19 @@
   "STOREFRONT_LISTING_PAGINATE_ERROR": "Error interno del servidor",
   "STOREFRONT_LISTING_SHOW_ERROR": "Error interno del servidor",
   "STOREFRONT_NEIGHBORHOOD_PAGINATE_ERROR": "Error interno del servidor",
-  "STOREFRONT_PLACE_PAGINATE_ERROR": "Error interno del servidor"
+  "STOREFRONT_PLACE_PAGINATE_ERROR": "Error interno del servidor",
+  "LISTING_TITLE_EMPTY": "Título del anuncio vacío",
+  "LISTING_PRICE_REQUIRED": "Ingrese el valor del alquiler",
+  "LISTING_PRICE_INVALID": "Valor inválido: use reales enteros mayores que cero",
+  "LISTING_PERIODS_EMPTY": "Seleccione al menos un período",
+  "LISTING_PHOTOS_LIMIT": "Demasiadas fotos en el anuncio",
+  "LISTING_PHOTO_DUPLICATED": "Archivo repetido en las fotos del anuncio",
+  "LISTING_ALREADY_ARCHIVED": "Anuncio ya archivado",
+  "NEIGHBORHOOD_NOT_FOUND": "Barrio no encontrado",
+  "OWNER_LISTING_CREATE_ERROR": "Error interno del servidor",
+  "OWNER_LISTING_PAGINATE_ERROR": "Error interno del servidor",
+  "OWNER_LISTING_SHOW_ERROR": "Error interno del servidor",
+  "OWNER_LISTING_UPDATE_ERROR": "Error interno del servidor",
+  "OWNER_LISTING_ARCHIVE_ERROR": "Error interno del servidor",
+  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Error interno del servidor"
 }

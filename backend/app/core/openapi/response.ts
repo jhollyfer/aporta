@@ -1,6 +1,9 @@
 import {
   AccountProfileShowResponse,
   AccountProfileUpdateResponse,
+  OwnerListingPaginateResponse,
+  OwnerListingPhotoCreateResponse,
+  OwnerListingShowResponse,
   StorageFileCompleteResponse,
   StorageFileCreateResponse,
   StorageFilePaginateResponse,
@@ -38,6 +41,14 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
    * The other `authentication/session` actions answer `204` and need no entry.
    */
   'authentication/session/sign-up': AccountProfileShowResponse,
+
+  /**
+   * The owner's ads. `show`, `create` and `update` answer the same shape; `paginate` has its own
+   * key, and the photos answer with the whole ad. `archive` answers `204` and needs no entry.
+   */
+  'owner/listings': OwnerListingShowResponse,
+  'owner/listings/paginate': OwnerListingPaginateResponse,
+  'owner/listing-photos': OwnerListingPhotoCreateResponse,
 
   /**
    * `create` and `parts` answer the upload plan, not the file; `download`

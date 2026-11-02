@@ -49,6 +49,16 @@ test.group('roles > without session', (group) => {
     listed.assertStatus(401)
     parts.assertStatus(401)
   })
+
+  test("when the request is for the owner's ads without a session, answers 401, and not 403", async ({
+    client,
+  }) => {
+    const listed = await client.get('/owner/listings')
+    const created = await client.post('/owner/listings')
+
+    listed.assertStatus(401)
+    created.assertStatus(401)
+  })
 })
 
 /**
@@ -77,32 +87,46 @@ test.group('roles > the account is for every role', (group) => {
 })
 
 /**
- * Third row: **the attachments are staff only**. The library has no per-owner rule yet, so the
- * `OWNER` is refused with `403` on every route of the group, and the staff passes.
+ * Third row: **the attachments are for the staff and the owners**. The `OWNER` uploads the
+ * pictures of his ads, so the group lets him in; what he reaches inside it is `StoragePolicy`'s
+ * (proved in the attachments specs), and the matrix only proves that the door is open to the three
+ * roles and shut to a request without a session.
  */
-test.group('roles > the attachments are staff only', (group) => {
+test.group(
+  'roles > the attachments are for the staff and the owners',
+  (group) => {
+    group.each.setup(() => resetDatabase())
+
+    test('when the actor is the administrator, a moderator or an owner, listing the attachments answers 200', async ({
+      client,
+    }) => {
+      const sessions = [
+        await authenticateAsAdministrator(client),
+        await authenticateAsModerator(client),
+        await authenticateAsOwner(client),
+      ]
+
+      for (const session of sessions) {
+        const response = await client.get('/storages').cookies(session)
+
+        response.assertStatus(200)
+      }
+    })
+  },
+)
+
+/**
+ * Fourth row: **the owner's ads are for the `OWNER` only**. The staff reviews other people's ads
+ * through its own routes, and an administrator creating an ad here would be creating it under his
+ * own account, so the group refuses the staff with `403` (the role is known, and it is the wrong
+ * one).
+ */
+test.group("roles > the owner's ads are for the OWNER only", (group) => {
   group.each.setup(() => resetDatabase())
 
-  test('when the actor is an owner, every attachments route answers 403', async ({
+  test('when the actor is the administrator or a moderator, every owner route answers 403', async ({
     client,
     assert,
-  }) => {
-    const session = await authenticateAsOwner(client)
-
-    const responses = [
-      await client.get('/storages').cookies(session),
-      await client.get('/storages/qualquer').cookies(session),
-      await client.delete('/storages/qualquer').cookies(session),
-    ]
-
-    for (const response of responses) {
-      response.assertStatus(403)
-      assert.equal(errorBody(response).code, 'ACCESS_DENIED')
-    }
-  })
-
-  test('when the actor is the administrator or a moderator, listing the attachments answers 200', async ({
-    client,
   }) => {
     const sessions = [
       await authenticateAsAdministrator(client),
@@ -110,9 +134,28 @@ test.group('roles > the attachments are staff only', (group) => {
     ]
 
     for (const session of sessions) {
-      const response = await client.get('/storages').cookies(session)
+      const responses = [
+        await client.get('/owner/listings').cookies(session),
+        await client.post('/owner/listings').cookies(session),
+        await client
+          .get('/owner/listings/00000000-0000-4000-8000-000000000001')
+          .cookies(session),
+      ]
 
-      response.assertStatus(200)
+      for (const response of responses) {
+        response.assertStatus(403)
+        assert.equal(errorBody(response).code, 'ACCESS_DENIED')
+      }
     }
+  })
+
+  test('when the actor is an owner, listing his ads answers 200', async ({
+    client,
+  }) => {
+    const session = await authenticateAsOwner(client)
+
+    const response = await client.get('/owner/listings').cookies(session)
+
+    response.assertStatus(200)
   })
 })

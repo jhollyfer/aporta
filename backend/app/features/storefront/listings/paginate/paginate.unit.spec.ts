@@ -6,8 +6,8 @@ import { test } from '@japa/runner'
 import StorefrontListingPaginateUseCase from './paginate.use-case.ts'
 
 import ListingMemoryRepository from '#repositories/listing/listing.memory.repository'
-import ListingRepository from '#repositories/listing/listing.repository'
-import { listingIn } from '#tests/listing-fixtures'
+import StorageFake from '#services/storage/storage.fake'
+import { FailingListingRepository, listingIn } from '#tests/listing-fixtures'
 
 function repositoryWith(neighborhoodId: string) {
   const listings = new ListingMemoryRepository()
@@ -42,7 +42,10 @@ test.group('storefront > listings > paginate (unit)', () => {
     listings.put(
       listingIn(LISTING_STATUS.DRAFT, { slug: 'rascunho', neighborhoodId }),
     )
-    const useCase = new StorefrontListingPaginateUseCase(listings)
+    const useCase = new StorefrontListingPaginateUseCase(
+      listings,
+      new StorageFake(),
+    )
 
     const result = await useCase.execute({})
 
@@ -75,7 +78,10 @@ test.group('storefront > listings > paginate (unit)', () => {
         priceMonthly: 500,
       }),
     )
-    const useCase = new StorefrontListingPaginateUseCase(listings)
+    const useCase = new StorefrontListingPaginateUseCase(
+      listings,
+      new StorageFake(),
+    )
 
     const kitnets = await useCase.execute({ type: LISTING_TYPE.KITNET })
     const range = await useCase.execute({
@@ -95,17 +101,9 @@ test.group('storefront > listings > paginate (unit)', () => {
   test('when the repository fails, it answers 500 with the module code', async ({
     assert,
   }) => {
-    class FailingListingRepository extends ListingRepository {
-      findPublishedRecordBySlug(): never {
-        throw new Error('database down')
-      }
-
-      paginatePublished(): never {
-        throw new Error('database down')
-      }
-    }
     const useCase = new StorefrontListingPaginateUseCase(
       new FailingListingRepository(),
+      new StorageFake(),
     )
 
     const result = await useCase.execute({})

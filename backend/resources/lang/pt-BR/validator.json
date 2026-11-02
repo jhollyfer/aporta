@@ -41,7 +41,12 @@
       "period": "o período de aluguel",
       "minPrice": "o valor mínimo",
       "maxPrice": "o valor máximo",
-      "category": "a categoria"
+      "category": "a categoria",
+      "bedrooms": "o número de quartos",
+      "bathrooms": "o número de banheiros",
+      "photos": "as fotos",
+      "storageId": "o arquivo da foto",
+      "environment": "o ambiente da foto"
     },
     "messages": {
       "required": "Informe { field }",

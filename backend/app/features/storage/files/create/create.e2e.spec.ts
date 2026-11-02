@@ -18,9 +18,9 @@ import {
 } from '#validators/storage/files.validator'
 
 /**
- * The file as a neutral, shared record: it does not belong to the
- * form that sent it, and ownership authorizes nothing. What rules is the state
- * (`PENDING` or `UPLOADED`) and the live reference.
+ * The file is a neutral record: it does not belong to the form that uses it. Who may reach it
+ * is `StoragePolicy` (the staff, or the account that uploaded it), and what rules the rest is
+ * the state (`PENDING` or `UPLOADED`) and the live reference.
  */
 
 /** The same refusal over HTTP: the envelope and the request language. */

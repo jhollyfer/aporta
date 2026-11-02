@@ -43,6 +43,30 @@ export const controllers = {
     },
   },
   HealthCheck: () => import('#features/health-check.controller'),
+  owner: {
+    listingPhotos: {
+      create: {
+        Create: () => import('#features/owner/listing-photos/create/create.controller'),
+      },
+    },
+    listings: {
+      archive: {
+        Archive: () => import('#features/owner/listings/archive/archive.controller'),
+      },
+      create: {
+        Create: () => import('#features/owner/listings/create/create.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/owner/listings/paginate/paginate.controller'),
+      },
+      show: {
+        Show: () => import('#features/owner/listings/show/show.controller'),
+      },
+      update: {
+        Update: () => import('#features/owner/listings/update/update.controller'),
+      },
+    },
+  },
   storage: {
     files: {
       complete: {

@@ -1,9 +1,10 @@
-import { LISTING_STATUS } from '@aporta/shared'
+import { LISTING_STATUS, UPLOAD_STATUS } from '@aporta/shared'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 import { ListingPhotoFactory } from '#database/factories/listing-photo.factory'
-import { resetDatabase } from '#tests/database-fixtures'
+import { UserFactory } from '#database/factories/user.factory'
+import { resetDatabase, storageRecord } from '#tests/database-fixtures'
 import { body, errorBody, list, object } from '#tests/response-fixtures'
 import {
   archivedListing,
@@ -96,6 +97,42 @@ test.group('storefront > listings > show', (group) => {
       String(object(body(response).owner).updatedAt),
       /^\d{4}-\d{2}-\d{2}$/,
     )
+  })
+
+  test('when a photo has a finished file, its url is the signed address; one whose upload never finished stays null', async ({
+    client,
+    assert,
+  }) => {
+    const centro = await neighborhood()
+    const owner = await UserFactory.create()
+    const row = await listing({ slug: 'com-fotos', neighborhoodId: centro.id })
+    const done = await storageRecord({ ownerId: owner.id })
+    const half = await storageRecord({
+      ownerId: owner.id,
+      status: UPLOAD_STATUS.PENDING,
+    })
+    await ListingPhotoFactory.merge({
+      listingId: row.id,
+      position: 0,
+      environment: 'FACADE',
+      storageId: done.id,
+    }).create()
+    await ListingPhotoFactory.merge({
+      listingId: row.id,
+      position: 1,
+      environment: 'KITCHEN',
+      storageId: half.id,
+    }).create()
+
+    const response = await client.get('/storefront/listings/com-fotos')
+
+    response.assertStatus(200)
+    const [first, second] = list(body(response).photos)
+    assert.include(String(first?.url), done.path)
+    assert.include(String(first?.url), 'X-Amz-Signature')
+    assert.isNull(second?.url)
+    // The public photo carries the address, never the key of the `storages` row.
+    assert.sameMembers(Object.keys(first ?? {}), ['id', 'environment', 'url'])
   })
 
   test('when the ad is draft, pending, archived, trashed or unknown, answers the same 404', async ({

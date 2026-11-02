@@ -6,9 +6,9 @@ import { body, errorBody } from '#tests/response-fixtures'
 import { authenticateAsAdministrator } from '#tests/session-fixtures'
 
 /**
- * The file as a neutral, shared record: it does not belong to the
- * form that sent it, and ownership authorizes nothing. What rules is the state
- * (`PENDING` or `UPLOADED`) and the live reference.
+ * The file is a neutral record: it does not belong to the form that uses it. Who may reach it
+ * is `StoragePolicy` (the staff, or the account that uploaded it), and what rules the rest is
+ * the state (`PENDING` or `UPLOADED`) and the live reference.
  */
 
 test.group('storage > files > show', (group) => {

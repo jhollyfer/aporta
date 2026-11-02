@@ -4,6 +4,7 @@ import {
   UPLOAD_STATUS,
   z,
   type Paginated,
+  type StorageMimetype,
   type TrashedMode,
 } from '@aporta/shared'
 import { DateTime } from 'luxon'
@@ -38,6 +39,11 @@ const REFERENCES = [
     table: 'users',
     column: 'avatar_id',
     reference: STORAGE_REFERENCE.USER_AVATAR,
+  },
+  {
+    table: 'listing_photos',
+    column: 'storage_id',
+    reference: STORAGE_REFERENCE.LISTING_PHOTO,
   },
 ] as const
 
@@ -87,6 +93,7 @@ export default class StorageLucidRepository extends StorageRepository {
 
     if (criteria.status) query.where('status', criteria.status)
     if (criteria.mimetype) query.where('mimetype', criteria.mimetype)
+    if (criteria.ownerId) query.where('ownerId', criteria.ownerId)
 
     // The `OR` goes inside the `where`: loose, the search would cancel the status filter.
     if (criteria.search) {
@@ -135,6 +142,25 @@ export default class StorageLucidRepository extends StorageRepository {
       .withScopes((scopes) => scopes.notDeleted())
 
     // The count only matches when every distinct id matches a live file.
+    return rows.length === distinct.length
+  }
+
+  async allUploadedBy(
+    ids: ReadonlyArray<string>,
+    ownerId: string,
+    mimetypes: ReadonlyArray<StorageMimetype>,
+  ): Promise<boolean> {
+    const distinct = [...new Set(ids)]
+
+    if (distinct.length === 0) return true
+
+    const rows = await StorageModel.query()
+      .whereIn('id', distinct)
+      .where('ownerId', ownerId)
+      .whereIn('mimetype', [...mimetypes])
+      .where('status', UPLOAD_STATUS.UPLOADED)
+      .withScopes((scopes) => scopes.notDeleted())
+
     return rows.length === distinct.length
   }
 

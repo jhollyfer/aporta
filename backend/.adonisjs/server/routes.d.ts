@@ -17,6 +17,12 @@ export type ScannedRoutes = {
     'authentication.refresh': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'profile.update': { paramsTuple?: []; params?: {} }
+    'owner.listings.paginate': { paramsTuple?: []; params?: {} }
+    'owner.listings.create': { paramsTuple?: []; params?: {} }
+    'owner.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.create': { paramsTuple?: []; params?: {} }
     'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -34,6 +40,8 @@ export type ScannedRoutes = {
     'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
     'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
+    'owner.listings.paginate': { paramsTuple?: []; params?: {} }
+    'owner.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -48,6 +56,8 @@ export type ScannedRoutes = {
     'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
     'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
+    'owner.listings.paginate': { paramsTuple?: []; params?: {} }
+    'owner.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -58,13 +68,17 @@ export type ScannedRoutes = {
     'authentication.sign_up': { paramsTuple?: []; params?: {} }
     'authentication.sign_out': { paramsTuple?: []; params?: {} }
     'authentication.refresh': { paramsTuple?: []; params?: {} }
+    'owner.listings.create': { paramsTuple?: []; params?: {} }
+    'owner.listings.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.create': { paramsTuple?: []; params?: {} }
     'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'profile.update': { paramsTuple?: []; params?: {} }
+    'owner.listings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
+    'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

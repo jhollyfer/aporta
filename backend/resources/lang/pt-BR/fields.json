@@ -6,5 +6,12 @@
   "STORAGE_CONTENT_MISMATCH": "O conteúdo do arquivo enviado não é { declared }.",
   "STORAGE_IN_USE": "Arquivo em uso em: { references }. Desvincule-o antes de excluí-lo.",
   "STORAGE_NOT_FOUND": "Arquivo não encontrado",
-  "STORAGE_SIZE_MISMATCH": "O arquivo enviado tem { received } bytes, e { declared } foram declarados."
+  "STORAGE_SIZE_MISMATCH": "O arquivo enviado tem { received } bytes, e { declared } foram declarados.",
+  "LISTING_TITLE_EMPTY": "Informe o título do anúncio",
+  "LISTING_PRICE_REQUIRED": "Informe o valor do aluguel",
+  "LISTING_PRICE_INVALID": "Use reais inteiros acima de zero",
+  "LISTING_PERIODS_EMPTY": "Selecione ao menos um período",
+  "LISTING_PHOTOS_LIMIT": "Fotos demais no anúncio",
+  "LISTING_PHOTO_DUPLICATED": "Esse arquivo já está nas fotos do anúncio",
+  "NEIGHBORHOOD_NOT_FOUND": "Bairro não encontrado"
 }

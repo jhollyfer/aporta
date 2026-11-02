@@ -75,8 +75,9 @@ export async function placeOf(
 
 /**
  * Writes an entity built without a database as rows: the listing and its photos in order. The
- * neighborhood row has to exist already (`neighborhoodId` is a foreign key): the spec creates it
- * with `neighborhood()` and builds the entity with its id. It is how the Lucid side of the contract
+ * neighborhood row has to exist already (`neighborhoodId` is a foreign key), and so do the account
+ * (`ownerId`) and the files (`storageId`) the entity points to: the spec creates them and builds the
+ * entity with their ids. It is how the Lucid side of the contract
  * test receives the same `Listing` the memory side is `put`.
  */
 export async function seedListing(
@@ -87,6 +88,7 @@ export async function seedListing(
   const row = await ListingFactory.merge({
     id: snapshot.id,
     slug: snapshot.slug,
+    ownerId: snapshot.ownerId,
     status: snapshot.status,
     type: snapshot.type,
     title: snapshot.title,
@@ -118,6 +120,7 @@ export async function seedListing(
       id: photo.id,
       listingId: row.id,
       environment: photo.environment,
+      storageId: photo.storageId,
       position,
     }).create()
   }

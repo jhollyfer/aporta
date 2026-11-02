@@ -1,9 +1,18 @@
-import type { Paginated } from '@aporta/shared'
+import {
+  left,
+  right,
+  type Either,
+  type Paginated,
+  type StorageFileShowResponse,
+} from '@aporta/shared'
 
 import MemoryRows, { type SortValue, type StoredRow } from '#core/memory-rows'
+import RepositoryFailure from '#core/repository-failure'
+import { UNIQUE_CONFLICT, type UniqueConflict } from '#core/unique-conflict'
 import Listing, { type ListingProps } from '#domain/listing/listing.entity'
 import ListingRepository, {
   type ListingNeighborhood,
+  type ListingOwnedCriteria,
   type ListingPublishedCriteria,
   type ListingRecord,
   type ListingSortColumn,
@@ -22,8 +31,8 @@ export type ListingStamps = {
 
 /**
  * The in-memory listing repository (`_standards/domain.md` §5.3): what the use-case unit tests
- * use, and the contract test runs the same cases against it as against Lucid. `put` and
- * `putNeighborhood` are how a spec seeds it: the contract has no write yet.
+ * use, and the contract test runs the same cases against it as against Lucid. `put`,
+ * `putNeighborhood` and `putFile` are how a spec seeds it without going through `save`.
  *
  * The rules a query would apply are the entity's (`isPublished`, `monthlyEquivalent`), so the two
  * implementations answer the same question from the same definition.
@@ -31,10 +40,79 @@ export type ListingStamps = {
 export default class ListingMemoryRepository extends ListingRepository {
   readonly #rows = new Map<string, Row>()
   readonly #neighborhoods = new Map<string, ListingNeighborhood>()
+  readonly #files = new Map<string, StorageFileShowResponse>()
 
   /** A neighborhood the listings can point to, by the key the entity carries. */
   putNeighborhood(id: string, neighborhood: ListingNeighborhood): void {
     this.#neighborhoods.set(id, structuredClone(neighborhood))
+  }
+
+  /** A live `UPLOADED` file a photo may show, by the key the photo carries. */
+  putFile(file: StorageFileShowResponse): void {
+    this.#files.set(file.id, structuredClone(file))
+  }
+
+  findById(id: string): Promise<Listing | null> {
+    const row = this.#rows.get(id)
+    if (!row || row.deletedAt !== null) return Promise.resolve(null)
+
+    return Promise.resolve(this.entity(row))
+  }
+
+  findRecordById(id: string): Promise<ListingRecord | null> {
+    const found = this.visible().find(({ row }) => row.id === id)
+    if (!found || found.row.deletedAt !== null) return Promise.resolve(null)
+
+    return Promise.resolve(this.record(found))
+  }
+
+  paginateOwned(
+    criteria: ListingOwnedCriteria,
+  ): Promise<Paginated<ListingRecord>> {
+    const found = this.visible().filter(
+      ({ row }) =>
+        row.deletedAt === null &&
+        row.ownerId === criteria.ownerId &&
+        (criteria.status === undefined || row.status === criteria.status) &&
+        MemoryRows.contains([row.title, row.description], criteria.search),
+    )
+
+    return Promise.resolve(
+      MemoryRows.page(found, criteria, {
+        sortValue: ({ row }) => this.sortValue(row, criteria.sort),
+        toItem: (each) => this.record(each),
+      }),
+    )
+  }
+
+  /**
+   * What Postgres refuses becomes the same fact here: a taken `slug` is `UniqueConflict`, and a
+   * neighborhood that does not exist is a failure, like the foreign key.
+   */
+  save(
+    listing: Listing,
+  ): Promise<Either<UniqueConflict | RepositoryFailure, ListingRecord>> {
+    const snapshot = listing.snapshot()
+
+    for (const row of this.#rows.values()) {
+      if (row.slug === snapshot.slug && row.id !== snapshot.id)
+        return Promise.resolve(left(UNIQUE_CONFLICT))
+    }
+
+    if (!this.#neighborhoods.has(snapshot.neighborhoodId))
+      return Promise.resolve(
+        left(RepositoryFailure.of(new Error('neighborhood does not exist'))),
+      )
+
+    this.put(listing)
+
+    const saved = this.visible().find(({ row }) => row.id === snapshot.id)
+    if (!saved)
+      return Promise.resolve(
+        left(RepositoryFailure.of(new Error('listing vanished after save'))),
+      )
+
+    return Promise.resolve(right(this.record(saved)))
   }
 
   put(listing: Listing, stamps?: ListingStamps): void {
@@ -126,12 +204,25 @@ export default class ListingMemoryRepository extends ListingRepository {
     return { props, createdAt, updatedAt }
   }
 
+  /** The files the photos show, only the ones that were put: the others are slots with no picture. */
+  private filesOf(props: ListingProps): StorageFileShowResponse[] {
+    const files: StorageFileShowResponse[] = []
+
+    for (const photo of props.photos) {
+      const file = this.#files.get(photo.storageId ?? '')
+      if (file) files.push(structuredClone(file))
+    }
+
+    return files
+  }
+
   private record({ row, neighborhood }: Stored): ListingRecord {
     const { props, createdAt, updatedAt } = this.split(row)
 
     return {
       listing: Listing.restore(props),
       neighborhood: structuredClone(neighborhood),
+      files: this.filesOf(props),
       createdAt,
       updatedAt: updatedAt ?? createdAt,
     }

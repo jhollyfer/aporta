@@ -15,3 +15,13 @@ export type NeighborhoodCoordinatesInvalid = {
 
 export type NeighborhoodError =
   NeighborhoodNameEmpty | NeighborhoodCoordinatesInvalid
+
+/**
+ * A neighborhood a record points at by `slug` that does not exist or is in the trash. `field` is
+ * the payload field that carried it, so the answer can point at it. Not a fact the entity
+ * produces: the repository lookup does, and it lives here because the neighborhood owns the word.
+ */
+export type NeighborhoodNotFound = {
+  readonly code: 'NEIGHBORHOOD_NOT_FOUND'
+  readonly field: string
+}

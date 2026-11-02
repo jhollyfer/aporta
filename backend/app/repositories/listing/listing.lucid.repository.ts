@@ -1,15 +1,26 @@
+import db from '@adonisjs/lucid/services/db'
+import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import {
   LISTING_PERIODS,
   SORT_DIRECTION,
+  UPLOAD_STATUS,
+  left,
+  right,
   z,
+  type Either,
   type Paginated,
   type SortDirection,
+  type StorageFileShowResponse,
 } from '@aporta/shared'
 
+import RepositoryFailure from '#core/repository-failure'
+import type { UniqueConflict } from '#core/unique-conflict'
 import Listing from '#domain/listing/listing.entity'
 import ListingModel from '#models/listing'
+import ListingPhotoModel from '#models/listing-photo'
 import NeighborhoodModel from '#models/neighborhood'
 import ListingRepository, {
+  type ListingOwnedCriteria,
   type ListingPublishedCriteria,
   type ListingRecord,
 } from '#repositories/listing/listing.repository'
@@ -46,8 +57,108 @@ const Periods = z.array(z.enum(LISTING_PERIODS))
  *
  * The `OR` of the search goes inside its own `where`: loose, it would cancel the status filter, and
  * a draft would reach whoever typed a word from its title.
+ *
+ * The owner's reads are cut to the live rows (`notDeleted`) and, for the list, to the account in
+ * the same query. `save` writes the row and the photos in one transaction: the photos are replaced
+ * as a set, so a failure in the second step cannot leave an ad with half a gallery.
  */
 export default class ListingLucidRepository extends ListingRepository {
+  async findById(id: string): Promise<Listing | null> {
+    const row = await this.live().where('id', id).first()
+
+    if (!row) return null
+    return this.toEntity(row)
+  }
+
+  async findRecordById(id: string): Promise<ListingRecord | null> {
+    const row = await this.live().where('id', id).first()
+
+    if (!row) return null
+    return this.toRecord(row)
+  }
+
+  async paginateOwned(
+    criteria: ListingOwnedCriteria,
+  ): Promise<Paginated<ListingRecord>> {
+    const query = this.live().where('ownerId', criteria.ownerId)
+
+    if (criteria.status) query.where('status', criteria.status)
+
+    if (criteria.search) {
+      const search = `%${criteria.search}%`
+
+      query.where((builder) => {
+        builder.whereILike('title', search).orWhereILike('description', search)
+      })
+    }
+
+    if (criteria.sort === 'price') {
+      query.orderByRaw(
+        `${MONTHLY_EQUIVALENT} ${DIRECTION_SQL[criteria.direction]}`,
+      )
+
+      return LucidMapping.page(query, { ...criteria, sort: 'id' }, (row) =>
+        this.toRecord(row),
+      )
+    }
+
+    return LucidMapping.page(query, criteria, (row) => this.toRecord(row))
+  }
+
+  async save(
+    listing: Listing,
+  ): Promise<Either<UniqueConflict | RepositoryFailure, ListingRecord>> {
+    const saved = await LucidMapping.unlessUnique(this.persist(listing))
+
+    if (saved.isLeft()) return left(saved.value)
+    if (saved.value) return right(saved.value)
+
+    // The row was just written in the same call: not finding it is an infrastructure failure.
+    return left(
+      RepositoryFailure.of(
+        new Error(`listing ${listing.id} vanished after save`),
+      ),
+    )
+  }
+
+  private async persist(listing: Listing): Promise<ListingRecord | null> {
+    const snapshot = listing.snapshot()
+
+    await db.transaction(async (trx) => {
+      const row = await ListingModel.updateOrCreate(
+        { id: snapshot.id },
+        this.toRow(listing),
+        { client: trx },
+      )
+
+      // The set is rewritten, not patched: positions are `UNIQUE` per ad, and an update that
+      // moved one photo onto another's position would trip the index halfway through.
+      await ListingPhotoModel.query({ client: trx })
+        .where('listingId', row.id)
+        .delete()
+
+      await ListingPhotoModel.createMany(
+        snapshot.photos.map((photo, position) => ({
+          id: photo.id,
+          listingId: row.id,
+          environment: photo.environment,
+          storageId: photo.storageId,
+          position,
+        })),
+        { client: trx },
+      )
+    })
+
+    // Read without the trash cut: an archive is a save too, and it has to answer with the row
+    // as it was written instead of failing on the row it just moved to the trash.
+    const saved = await this.withRelations(ListingModel.query())
+      .where('id', snapshot.id)
+      .first()
+
+    if (!saved) return null
+    return this.toRecord(saved)
+  }
+
   async findPublishedRecordBySlug(slug: string): Promise<ListingRecord | null> {
     const row = await this.published().where('slug', slug).first()
 
@@ -106,10 +217,29 @@ export default class ListingLucidRepository extends ListingRepository {
   }
 
   private published() {
-    return ListingModel.query()
-      .withScopes((scopes) => scopes.published())
-      .preload('neighborhood')
-      .preload('photos')
+    return this.withRelations(
+      ListingModel.query().withScopes((scopes) => scopes.published()),
+    )
+  }
+
+  private live() {
+    return this.withRelations(
+      ListingModel.query().withScopes((scopes) => scopes.notDeleted()),
+    )
+  }
+
+  private withRelations(
+    query: ModelQueryBuilderContract<typeof ListingModel, ListingModel>,
+  ) {
+    return (
+      query
+        .preload('neighborhood')
+        // The callback only configures the nested preload; the query runs with the parent's, so the
+        // builder it returns is not a promise anyone awaits.
+        .preload('photos', (photos) => {
+          void photos.preload('storage')
+        })
+    )
   }
 
   private toRecord(row: ListingModel): ListingRecord {
@@ -119,8 +249,63 @@ export default class ListingLucidRepository extends ListingRepository {
         slug: row.neighborhood.slug,
         name: row.neighborhood.name,
       },
+      files: this.filesOf(row),
       createdAt: row.createdAt.toJSDate(),
       updatedAt: row.updatedAt.toJSDate(),
+    }
+  }
+
+  /**
+   * The files the photos show, only the ones a visitor may be given: `UPLOADED` and outside the
+   * trash. A cancelled or half-sent file keeps the slot and loses the picture.
+   */
+  private filesOf(row: ListingModel): StorageFileShowResponse[] {
+    const files: StorageFileShowResponse[] = []
+
+    for (const photo of row.photos) {
+      const storage = photo.storage
+      if (!storage) continue
+      if (storage.status !== UPLOAD_STATUS.UPLOADED) continue
+      if (storage.deletedAt !== null) continue
+
+      const file = LucidMapping.file(storage)
+      if (file) files.push(file)
+    }
+
+    return files
+  }
+
+  /** The columns the entity decides; the time stamps belong to the model. */
+  private toRow(listing: Listing) {
+    const snapshot = listing.snapshot()
+
+    return {
+      slug: snapshot.slug,
+      ownerId: snapshot.ownerId,
+      status: snapshot.status,
+      type: snapshot.type,
+      title: snapshot.title,
+      description: snapshot.description,
+      neighborhoodId: snapshot.neighborhoodId,
+      address: snapshot.address,
+      priceMonthly: snapshot.priceMonthly,
+      priceDaily: snapshot.priceDaily,
+      costWater: snapshot.costs.water,
+      costElectricity: snapshot.costs.electricity,
+      costInternet: snapshot.costs.internet,
+      periods: [...snapshot.periods],
+      minimumStayMonths: snapshot.minimumStayMonths,
+      availableFrom: LucidMapping.fromCalendarDate(snapshot.availableFrom),
+      bedrooms: snapshot.bedrooms,
+      bathrooms: snapshot.bathrooms,
+      furnished: snapshot.furnished,
+      rules: [...snapshot.rules],
+      ownerName: snapshot.owner.name,
+      ownerWhatsapp: snapshot.owner.whatsapp,
+      ownerVerifiedAt: LucidMapping.dateTime(snapshot.owner.verifiedAt),
+      lat: snapshot.lat,
+      lng: snapshot.lng,
+      deletedAt: LucidMapping.dateTime(snapshot.deletedAt),
     }
   }
 
@@ -128,6 +313,7 @@ export default class ListingLucidRepository extends ListingRepository {
     return Listing.restore({
       id: row.id,
       slug: row.slug,
+      ownerId: row.ownerId,
       status: row.status,
       type: row.type,
       title: row.title,
@@ -161,6 +347,7 @@ export default class ListingLucidRepository extends ListingRepository {
         .map((photo) => ({
           id: photo.id,
           environment: photo.environment,
+          storageId: photo.storageId,
         })),
       deletedAt: LucidMapping.date(row.deletedAt),
     })

@@ -41,5 +41,19 @@
   "STOREFRONT_LISTING_PAGINATE_ERROR": "Internal server error",
   "STOREFRONT_LISTING_SHOW_ERROR": "Internal server error",
   "STOREFRONT_NEIGHBORHOOD_PAGINATE_ERROR": "Internal server error",
-  "STOREFRONT_PLACE_PAGINATE_ERROR": "Internal server error"
+  "STOREFRONT_PLACE_PAGINATE_ERROR": "Internal server error",
+  "LISTING_TITLE_EMPTY": "The listing title is empty",
+  "LISTING_PRICE_REQUIRED": "Enter the rent",
+  "LISTING_PRICE_INVALID": "Invalid price: use whole reais above zero",
+  "LISTING_PERIODS_EMPTY": "Select at least one period",
+  "LISTING_PHOTOS_LIMIT": "Too many photos on the listing",
+  "LISTING_PHOTO_DUPLICATED": "File repeated in the listing photos",
+  "LISTING_ALREADY_ARCHIVED": "Listing already archived",
+  "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found",
+  "OWNER_LISTING_CREATE_ERROR": "Internal server error",
+  "OWNER_LISTING_PAGINATE_ERROR": "Internal server error",
+  "OWNER_LISTING_SHOW_ERROR": "Internal server error",
+  "OWNER_LISTING_UPDATE_ERROR": "Internal server error",
+  "OWNER_LISTING_ARCHIVE_ERROR": "Internal server error",
+  "OWNER_LISTING_PHOTO_CREATE_ERROR": "Internal server error"
 }

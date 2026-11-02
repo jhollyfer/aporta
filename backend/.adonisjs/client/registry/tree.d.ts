@@ -29,6 +29,16 @@ export interface ApiDefinition {
     show: typeof routes['profile.show']
     update: typeof routes['profile.update']
   }
+  owner: {
+    listings: {
+      paginate: typeof routes['owner.listings.paginate']
+      create: typeof routes['owner.listings.create']
+      show: typeof routes['owner.listings.show']
+      update: typeof routes['owner.listings.update']
+      archive: typeof routes['owner.listings.archive']
+      photos: typeof routes['owner.listings.photos']
+    }
+  }
   storages: {
     paginate: typeof routes['storages.paginate']
     create: typeof routes['storages.create']

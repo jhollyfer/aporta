@@ -14,6 +14,12 @@ export type NeighborhoodListCriteria = PageCriteria<NeighborhoodSortColumn>
  * (`docs/TASKS.md`).
  */
 export default abstract class NeighborhoodRepository {
+  /**
+   * The live neighborhood with this `slug`, or null. The owner's form names the neighborhood by
+   * the address the storefront filter uses, and the ad needs its id and its center.
+   */
+  abstract findBySlug(slug: string): Promise<Neighborhood | null>
+
   /** The neighborhoods outside the trash. The slug is `UNIQUE` across the whole table. */
   abstract paginate(
     criteria: NeighborhoodListCriteria,

@@ -6,5 +6,12 @@
   "STORAGE_CONTENT_MISMATCH": "The uploaded file content is not { declared }.",
   "STORAGE_IN_USE": "The file is in use in: { references }. Unlink it before deleting it.",
   "STORAGE_NOT_FOUND": "File not found",
-  "STORAGE_SIZE_MISMATCH": "The uploaded file is { received } bytes, but { declared } were declared."
+  "STORAGE_SIZE_MISMATCH": "The uploaded file is { received } bytes, but { declared } were declared.",
+  "LISTING_TITLE_EMPTY": "Enter the listing title",
+  "LISTING_PRICE_REQUIRED": "Enter the rent",
+  "LISTING_PRICE_INVALID": "Use whole reais above zero",
+  "LISTING_PERIODS_EMPTY": "Select at least one period",
+  "LISTING_PHOTOS_LIMIT": "Too many photos on the listing",
+  "LISTING_PHOTO_DUPLICATED": "That file is already in the listing photos",
+  "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found"
 }

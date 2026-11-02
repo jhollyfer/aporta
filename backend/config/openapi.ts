@@ -73,10 +73,22 @@ const tags: TagRule[] = [
     description:
       'Upload em três passos, porque o binário **não** atravessa esta aplicação: o ' +
       '`POST` abre e devolve URLs assinadas, o navegador sobe as partes direto no bucket, e o ' +
-      '`complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload), que não autoriza nada - ' +
-      'quem anexa guarda a referência.',
+      '`complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload): ' +
+      'a equipe alcança todos os arquivos e o dono de imóvel só os que ele mesmo enviou, e o ' +
+      'arquivo de outra conta responde `404` igual ao que não existe. Quem anexa guarda a referência.',
     singular: 'anexo',
     plural: 'anexos',
+  },
+  {
+    prefix: '/owner/listings',
+    name: 'Dono · Anúncios',
+    description:
+      'Os anúncios do dono de imóvel autenticado: cadastrar, editar, listar os próprios, ' +
+      'arquivar e anexar fotos. O anúncio nasce `PENDING` e só a revisão da equipe o publica. ' +
+      'O escopo é a conta da sessão, nunca um campo do corpo, e anúncio de outra conta ' +
+      'responde `404` igual ao que não existe.',
+    singular: 'anúncio',
+    plural: 'anúncios',
   },
   {
     prefix: '/storefront/listings',

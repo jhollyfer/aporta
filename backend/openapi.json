@@ -27,7 +27,11 @@
     },
     {
       "name": "Anexos",
-      "description": "Upload em três passos, porque o binário **não** atravessa esta aplicação: o `POST` abre e devolve URLs assinadas, o navegador sobe as partes direto no bucket, e o `complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload), que não autoriza nada - quem anexa guarda a referência."
+      "description": "Upload em três passos, porque o binário **não** atravessa esta aplicação: o `POST` abre e devolve URLs assinadas, o navegador sobe as partes direto no bucket, e o `complete` confirma contra o objeto real. O registro nasce com o dono (quem abriu o upload): a equipe alcança todos os arquivos e o dono de imóvel só os que ele mesmo enviou, e o arquivo de outra conta responde `404` igual ao que não existe. Quem anexa guarda a referência."
+    },
+    {
+      "name": "Dono · Anúncios",
+      "description": "Os anúncios do dono de imóvel autenticado: cadastrar, editar, listar os próprios, arquivar e anexar fotos. O anúncio nasce `PENDING` e só a revisão da equipe o publica. O escopo é a conta da sessão, nunca um campo do corpo, e anúncio de outra conta responde `404` igual ao que não existe."
     },
     {
       "name": "Vitrine · Anúncios",
@@ -427,6 +431,693 @@
         }
       }
     },
+    "/owner/listings": {
+      "get": {
+        "operationId": "ownerListingsPaginate",
+        "summary": "Listar anúncios",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsPaginateResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingPaginateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Os anúncios do dono autenticado, em qualquer estado fora a lixeira: o que está no ar, o que espera revisão e o que ainda é rascunho. O recorte por conta é a sessão, dentro da consulta, e não há parâmetro de dono para forjar: anúncio de outra conta não aparece, nem na contagem.\n\n`?status` recorta por estado e `?search` filtra por título e descrição.\n\n`?sort` aceita createdAt, updatedAt, price e `?direction` aceita asc ou desc. Padrão: página 1, 20 por página, do mais recente para o mais antigo.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "PENDING",
+                "PUBLISHED",
+                "ARCHIVED"
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "price"
+              ]
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ownerListingsCreate",
+        "summary": "Criar anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "201": {
+            "description": "Recurso criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsCreateResponse201"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingCreateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Cadastra o anúncio do dono autenticado. O anúncio **nasce `PENDING`**, aguardando a revisão da equipe, e nunca `PUBLISHED`: o dono não publica o próprio anúncio, e nenhum campo do corpo muda isso.\n\nO dono do anúncio é a conta da sessão, nunca um campo do corpo. O nome e o WhatsApp que o visitante vê são os do corpo (`ownerName`, `whatsapp`), não os da conta.\n\n`neighborhood` é o `slug` de um bairro de `GET /storefront/neighborhoods`; o pino do mapa usa o centro desse bairro. O endereço público (`slug`) sai do título mais um sufixo, e é gerado aqui.\n\n`rules` é um texto com uma regra por linha. `bedrooms` e `bathrooms` são opcionais e, ausentes, valem 1. As fotos entram depois, em `POST /owner/listings/:id/photos`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerListingsCreateBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/listings/{id}": {
+      "get": {
+        "operationId": "ownerListingsShow",
+        "summary": "Detalhar anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsShowResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingShowErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "O anúncio do dono, em qualquer estado fora a lixeira, com o `status` e a chave do arquivo de cada foto.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe, nunca `403`: um `403` confirmaria a quem sonda que aquele uuid é um anúncio.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "ownerListingsUpdate",
+        "summary": "Atualizar anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsUpdateResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingUpdateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Edita o anúncio do dono. Todo campo é opcional: só o que vier no corpo muda, e campo ausente significa \"não mexer\", não \"apagar\".\n\nO estado **não** muda por aqui: nem o `status`, nem o endereço público (`slug`), nem o dono são campos do corpo, e o que o corpo trouxer a mais é descartado. Trocar o nome ou o WhatsApp do contato tira o selo de dono verificado, porque a equipe confirmou uma pessoa por trás de um número, e um número novo é uma pessoa nova até alguém confirmar.\n\nTrocar o bairro muda o pino do mapa para o centro do novo bairro.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerListingsUpdateBody"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "ownerListingsArchive",
+        "summary": "Arquivar anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingArchiveErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Tira o anúncio do ar: o estado vira `ARCHIVED` e o anúncio vai para a lixeira, na mesma transição, porque a vitrine lê as duas condições e um anúncio arquivado pela metade ainda seria encontrado. Depois disso nenhuma leitura do dono o devolve.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      }
+    },
+    "/owner/listings/{id}/photos": {
+      "post": {
+        "operationId": "ownerListingsPhotos",
+        "summary": "Anexar fotos ao anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "201": {
+            "description": "Recurso criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsPhotosResponse201"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingPhotoCreateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Liga arquivos **já enviados** (`POST /storages` e `complete`) ao anúncio, cada um ao ambiente que mostra, no fim da galeria e na ordem do corpo. O binário não passa por aqui: só a chave `storageId` da linha de `storages`.\n\nCada arquivo precisa estar `UPLOADED`, ser uma imagem e ter sido enviado pela conta da sessão. Arquivo de outra conta, ainda `PENDING`, de outro tipo ou inexistente responde o mesmo `422`, para não confirmar a quem sonda que aquele uuid existe.\n\nO anúncio aceita até 12 fotos no total, contando as que já tem, e não aceita o mesmo arquivo duas vezes. Responde `201` com o anúncio inteiro, fotos na ordem e com a URL assinada de leitura.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerListingsPhotosBody"
+              }
+            }
+          }
+        }
+      }
+    },
     "/storages": {
       "get": {
         "operationId": "storagesPaginate",
@@ -456,7 +1147,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -486,7 +1177,7 @@
             }
           }
         },
-        "description": "A biblioteca de arquivos do painel. `?search` filtra por nome original, nome gerado e tipo, `?status` separa o que já subiu do upload em aberto, e `?mimetype` recorta um tipo só.\n\n`?mimetype` aceita image/jpeg, image/png, image/webp, image/gif, application/pdf, audio/mpeg, audio/mp4, audio/ogg, audio/wav.\n\n`?sort` aceita originalName, mimetype, size, createdAt e `?direction` aceita asc ou desc. Padrão: página 1, 20 por página, do mais recente para o mais antigo - numa biblioteca de arquivos o que interessa é o que acabou de subir.",
+        "description": "A biblioteca de arquivos. A equipe lê a coleção toda; o dono de imóvel lê só os arquivos que ele mesmo enviou, e o recorte é feito dentro da consulta, pela sessão, sem parâmetro de dono para forjar.\n\n`?search` filtra por nome original, nome gerado e tipo, `?status` separa o que já subiu do upload em aberto, e `?mimetype` recorta um tipo só.\n\n`?mimetype` aceita image/jpeg, image/png, image/webp, image/gif, application/pdf, audio/mpeg, audio/mp4, audio/ogg, audio/wav.\n\n`?sort` aceita originalName, mimetype, size, createdAt e `?direction` aceita asc ou desc. Padrão: página 1, 20 por página, do mais recente para o mais antigo - numa biblioteca de arquivos o que interessa é o que acabou de subir.",
         "security": [
           {
             "cookieAuth": []
@@ -494,7 +1185,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -611,7 +1303,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -659,7 +1351,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -707,7 +1400,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -747,7 +1440,7 @@
             }
           }
         },
-        "description": "Devolve o registro nu, sem envelope: o rótulo original, o tipo, o tamanho, o estado do upload e a `url` derivada.\n\nVale também para o arquivo ainda `PENDING` - a tela de detalhe é onde se descobre que um upload ficou pela metade. Quem anexa é que exige `UPLOADED`.",
+        "description": "Devolve o registro nu, sem envelope: o rótulo original, o tipo, o tamanho, o estado do upload e a `url` derivada.\n\nVale também para o arquivo ainda `PENDING` - a tela de detalhe é onde se descobre que um upload ficou pela metade. Quem anexa é que exige `UPLOADED`.\n\nO dono de imóvel só alcança os arquivos que ele mesmo enviou; o de outra conta responde o mesmo `404` do que não existe.",
         "security": [
           {
             "cookieAuth": []
@@ -755,7 +1448,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -793,7 +1487,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -851,7 +1545,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -898,7 +1593,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -956,7 +1651,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -1006,7 +1702,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1054,7 +1750,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -1101,7 +1798,7 @@
             }
           },
           "403": {
-            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR, OWNER.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1149,7 +1846,8 @@
         ],
         "x-roles": [
           "ADMINISTRATOR",
-          "MODERATOR"
+          "MODERATOR",
+          "OWNER"
         ],
         "parameters": [
           {
@@ -2091,6 +2789,41 @@
           "code"
         ]
       },
+      "Error409ListingAlreadyArchivedListingPhotoDuplicated": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              409
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "LISTING_ALREADY_ARCHIVED",
+              "LISTING_PHOTO_DUPLICATED"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
       "Error409StorageInUse": {
         "type": "object",
         "properties": {
@@ -2178,6 +2911,48 @@
             "enum": [
               "CURRENT_PASSWORD_INVALID",
               "PASSWORD_SAME_AS_CURRENT",
+              "STORAGE_NOT_FOUND",
+              "VALIDATION_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code",
+          "errors"
+        ]
+      },
+      "Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              422
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "LISTING_PERIODS_EMPTY",
+              "LISTING_PHOTOS_LIMIT",
+              "LISTING_PRICE_INVALID",
+              "LISTING_PRICE_REQUIRED",
+              "LISTING_TITLE_EMPTY",
+              "NEIGHBORHOOD_NOT_FOUND",
               "STORAGE_NOT_FOUND",
               "VALIDATION_ERROR"
             ]
@@ -2498,6 +3273,216 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "AUTHENTICATION_SESSION_SIGN_UP_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingArchiveErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_ARCHIVE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingCreateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_CREATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingPaginateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_PAGINATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingPhotoCreateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_PHOTO_CREATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingShowErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_SHOW_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingUpdateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_UPDATE_ERROR",
               "SERVER_ERROR"
             ]
           },
@@ -2899,6 +3884,1524 @@
           "status",
           "code"
         ]
+      },
+      "OwnerListingsCreateBody": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "neighborhood": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120
+          },
+          "monthly": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "daily": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "water": {
+            "type": "boolean"
+          },
+          "electricity": {
+            "type": "boolean"
+          },
+          "internet": {
+            "type": "boolean"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 4
+          },
+          "minimumStayMonths": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 36
+          },
+          "title": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 600
+          },
+          "rules": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "ownerName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "whatsapp": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 13
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "bathrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "type",
+          "furnished",
+          "neighborhood",
+          "address",
+          "monthly",
+          "water",
+          "electricity",
+          "internet",
+          "periods",
+          "minimumStayMonths",
+          "title",
+          "description",
+          "ownerName",
+          "whatsapp"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsCreateResponse201": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "storageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "storageId",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt",
+          "status",
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsPaginateResponse200": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "HOUSE",
+                    "APARTMENT",
+                    "KITNET",
+                    "ROOM",
+                    "HOTEL"
+                  ]
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "neighborhood": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "address": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "monthly": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "daily": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "monthly",
+                    "daily"
+                  ],
+                  "additionalProperties": false
+                },
+                "costs": {
+                  "type": "object",
+                  "properties": {
+                    "water": {
+                      "type": "boolean"
+                    },
+                    "electricity": {
+                      "type": "boolean"
+                    },
+                    "internet": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "water",
+                    "electricity",
+                    "internet"
+                  ],
+                  "additionalProperties": false
+                },
+                "periods": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "SEMESTER",
+                      "ACADEMIC_YEAR",
+                      "MONTHLY",
+                      "DAILY"
+                    ]
+                  }
+                },
+                "minimumStayMonths": {
+                  "type": "number"
+                },
+                "availableFrom": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "bedrooms": {
+                  "type": "number"
+                },
+                "bathrooms": {
+                  "type": "number"
+                },
+                "furnished": {
+                  "type": "boolean"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "owner": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "verified": {
+                      "type": "boolean"
+                    },
+                    "whatsapp": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "verified",
+                    "whatsapp",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "DRAFT",
+                    "PENDING",
+                    "PUBLISHED",
+                    "ARCHIVED"
+                  ]
+                },
+                "photos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "environment": {
+                        "type": "string",
+                        "enum": [
+                          "FACADE",
+                          "BEDROOM",
+                          "BATHROOM",
+                          "KITCHEN",
+                          "LIVING"
+                        ]
+                      },
+                      "storageId": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "environment",
+                      "storageId",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "type",
+                "title",
+                "description",
+                "neighborhood",
+                "address",
+                "price",
+                "costs",
+                "periods",
+                "minimumStayMonths",
+                "availableFrom",
+                "bedrooms",
+                "bathrooms",
+                "furnished",
+                "rules",
+                "owner",
+                "lat",
+                "lng",
+                "createdAt",
+                "updatedAt",
+                "status",
+                "photos"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsPhotosBody": {
+        "type": "object",
+        "properties": {
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "storageId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "environment": {
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                }
+              },
+              "required": [
+                "storageId",
+                "environment"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 12
+          }
+        },
+        "required": [
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsPhotosResponse201": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "storageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "storageId",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt",
+          "status",
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsShowResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "storageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "storageId",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt",
+          "status",
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsUpdateBody": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "neighborhood": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120
+          },
+          "monthly": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "daily": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "water": {
+            "type": "boolean"
+          },
+          "electricity": {
+            "type": "boolean"
+          },
+          "internet": {
+            "type": "boolean"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 4
+          },
+          "minimumStayMonths": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 36
+          },
+          "title": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 600
+          },
+          "rules": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "ownerName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "whatsapp": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 13
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "bathrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "OwnerListingsUpdateResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "storageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "storageId",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt",
+          "status",
+          "photos"
+        ],
+        "additionalProperties": false
       },
       "PaginationMeta": {
         "type": "object",

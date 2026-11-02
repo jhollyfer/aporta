@@ -41,7 +41,12 @@
       "period": "the rental period",
       "minPrice": "the minimum price",
       "maxPrice": "the maximum price",
-      "category": "the category"
+      "category": "the category",
+      "bedrooms": "the number of bedrooms",
+      "bathrooms": "the number of bathrooms",
+      "photos": "the photos",
+      "storageId": "the photo file",
+      "environment": "the photo environment"
     },
     "messages": {
       "required": "Enter { field }",

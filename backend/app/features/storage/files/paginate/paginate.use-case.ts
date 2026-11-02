@@ -1,9 +1,12 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import {
+  STAFF_USER_ROLES,
   left,
   right,
+  type Actor,
   type Either,
+  type Merge,
   type StorageFilePaginateResponse,
 } from '@aporta/shared'
 
@@ -16,11 +19,14 @@ import StorageRepository from '#repositories/storage/storage.repository'
 import StorageContract from '#services/storage/storage.contract'
 import type { StorageFilePaginatePayload } from '#validators/storage/files.validator'
 
-type Payload = StorageFilePaginatePayload
+type Payload = Merge<StorageFilePaginatePayload, { readonly actor: Actor }>
 type Response = Either<HTTPException, StorageFilePaginateResponse>
 
 /**
- * The panel file library. "Live" by the same criterion as
+ * The file library. The staff reads the whole collection and any other role only the files it
+ * sent: the cut is `ownerId` in the criteria, applied inside the query, and it is **fail-closed**
+ * (`_standards/backend.md` §4.6): the unrestricted read is the staff's by name, so a role added
+ * tomorrow starts seeing its own files and nothing more. "Live" by the same criterion as
  * `StorageRepository.allUploaded`: diverging would make the listing offer a file
  * that the attachment refuses. The search covers the name the user recognizes, the generated
  * key and the type.
@@ -32,13 +38,17 @@ export default class StorageFilePaginateUseCase {
     private readonly storage: StorageContract,
   ) {}
 
-  async execute(payload: Payload): Promise<Response> {
+  async execute({ actor, ...payload }: Payload): Promise<Response> {
     try {
       // `recentFirst` and not `sortOrder`: in a file library what
       // matters is what was just uploaded.
       const [sort, direction] = recentFirst(payload)
 
+      let ownerId: string | undefined = actor.id
+      if (STAFF_USER_ROLES.includes(actor.role)) ownerId = undefined
+
       const page = await this.files.paginate({
+        ownerId,
         page: payload.page ?? PAGINATION.PAGE,
         perPage: payload.perPage ?? PAGINATION.PER_PAGE,
         search: payload.search,

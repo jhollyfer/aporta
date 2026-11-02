@@ -35,20 +35,14 @@ type SessionCookieAttributes = {
 }
 
 /**
- * The first origin of `CORS_ORIGINS`, which is the client address.
- *
- * The first and not the whole list because `SameSite.between` answers per pair, and the
- * cookie attribute is a single one. Whoever serves more than one front on different sites
- * is in the case where `none` is mandatory anyway.
+ * `lax` unless the deploy puts the app and the API on different sites, which is what
+ * `APP_CLIENT_URL` declares: a missing configuration falls to `lax`, because `none` by mistake
+ * sends the cookie on every request from another site (`_standards/backend.md` §4.10).
  */
-const [firstOrigin] = (env.get('CORS_ORIGINS') ?? '').split(',')
-
 let sameSite: 'lax' | 'none' = 'lax'
-if (app.inProduction)
-  sameSite = SameSite.between(
-    firstOrigin?.trim() || undefined,
-    env.get('APP_SERVER_URL'),
-  ).value
+const clientUrl = env.get('APP_CLIENT_URL')
+if (app.inProduction && clientUrl)
+  sameSite = SameSite.between(clientUrl, env.get('APP_SERVER_URL')).value
 
 const attributes: SessionCookieAttributes = {
   httpOnly: true,

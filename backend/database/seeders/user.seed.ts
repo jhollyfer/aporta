@@ -1,3 +1,4 @@
+import logger from '@adonisjs/core/services/logger'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { ACTIVE_STATUS, USER_ROLE } from '@aporta/shared'
 
@@ -8,35 +9,33 @@ import env from '#start/env'
  * The first administrator. No endpoint creates an account without a session - the panel is
  * the only user entry door -, so without this seeder a new database
  * would have nowhere to start. "Owner" in `SEED_OWNER_*` is the owner of the platform: it has
- * nothing to do with the `OWNER` role, which is the owner of a property.
+ * nothing to do with the `OWNER` role, which is the owner of a property. Switched on by
+ * `SEED_OWNER_PASSWORD`, in any environment.
  */
 export default class extends BaseSeeder {
-  /**
-   * Outside production (`_standards/backend.md` §3, a seeder that writes a credential):
-   * there the first administrator is created by whoever operates, and this record would be
-   * a known default credential with administrator power.
-   */
-  static override environment = ['development', 'test']
-
   override async run() {
-    const email = env.get('SEED_OWNER_EMAIL') ?? 'administrator@mail.com'
+    const email = env.get('SEED_OWNER_EMAIL')
     const password = env.get('SEED_OWNER_PASSWORD')
 
     /*
-     * Without a password the seeder stops, and does not invent one.
-     *
-     * It used to be a literal here, and the repository is the wrong place for a
-     * credential: whoever read this file entered as owner in every environment
-     * that had run the seeder - production included. A default,
-     * even a "temporary" one, goes back to being exactly that.
-     *
-     * Failing here is safe because a seeder is run by hand: the application boots without this
-     * variable, and only whoever seeds needs it.
+     * The seed is switched on by the password having a value, in any environment (`_standards/backend.md`
+     * §6.2, "Seed ligado pela chave"): empty skips it with one line and the rest of `db:seed` runs.
+     * The password is never a literal here, and the seeder does not invent one: the repository is the
+     * wrong place for a credential, and whoever read this file would enter as administrator in every
+     * environment that had run it.
      */
     if (!password) {
+      logger.info(
+        'SEED_OWNER_PASSWORD is empty: the first administrator seed was skipped',
+      )
+      return
+    }
+
+    // The pair goes together: a password with no e-mail would create an account nobody can name.
+    if (!email) {
       throw new Error(
-        'SEED_OWNER_PASSWORD missing. Set a password in the environment before running the seeder: ' +
-          'SEED_OWNER_PASSWORD=<password> node ace db:seed',
+        'SEED_OWNER_EMAIL missing. SEED_OWNER_PASSWORD and SEED_OWNER_EMAIL go together: ' +
+          'SEED_OWNER_EMAIL=<email> SEED_OWNER_PASSWORD=<password> node ace db:seed',
       )
     }
 

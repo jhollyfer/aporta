@@ -53,7 +53,7 @@ anúncios não tem teste, porque o catálogo semeado tem 12 (`TASKS.md` 3.9).
 | Conta e entrada do dono | cadastro, entrada, "Minha conta", sair | e-mail repetido, senha fraca, confirmação diferente, portão sem sessão, destino externo recusado | `e2e/auth.spec.ts` e `sign-up.e2e.spec.ts` no backend (papel `OWNER` mesmo com `role` no corpo, sem cookie no cadastro); `redirect-search.test.ts` unitário. O limite de 5 por minuto é limpo em `rate_limits` antes da suíte |
 | Entrada da equipe | `sign-in`, perfil, `sign-out` | credencial errada, limite de tentativas | Backend com E2E (§3.1) |
 | Upload de arquivo (equipe e dono) | `POST /storages`, partes, `complete` | tipo fora da lista, tamanho divergente, assinatura falsa, arquivo de outro dono (404) | Backend com E2E, **não verificado nesta data** (sem MinIO); o 404 de arquivo alheio e o 409 de arquivo em uso foram testados sem bucket |
-| Moderação | aprovar, arquivar, verificar dono | dono de outro anúncio (404) | Falta: a moderação da equipe não existe; o 404 do anúncio alheio já tem E2E no lado do dono |
+| Moderação e denúncia | o dono envia, a equipe recusa com motivo, o dono reenvia, a equipe aprova, o visitante denuncia, a equipe resolve | motivo curto ou longo demais, dono no painel (volta à conta), segundo arquivamento (409), denúncia de anúncio fora do ar (404), isca preenchida | `e2e/moderation.spec.ts` (usa a moderadora semeada e `E2E_OWNER_PASSWORD`, a mesma do seed); backend `administrator/*` e `storefront/reports/create` com unitário e E2E. Antes da suíte: `delete from rate_limits` (entrada 5 por minuto e denúncia 5 por hora por IP). Um E2E interrompido deixa um anúncio no ar e o `health.spec` vê 13 em vez de 12 |
 
 ## 3. Matriz requisito × teste
 

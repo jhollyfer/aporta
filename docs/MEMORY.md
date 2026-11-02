@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 5 · Dono (conta, anúncio e fotos feitos; falta a moderação) | 54% (37 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-02 | 5 · Dono e moderação feitos; falta o fechamento (paginação, limites, CI, deploy) | 59% (41 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -24,24 +24,21 @@
 
 ## Parou em
 
-Branch `feat/anuncios-dono-cria-edita`, sobre a `main` com a conta do dono (PR #18). Entrou a escrita do
-anúncio: `owner/listings` (criar em análise, listar, ver, editar, arquivar) e `owner/listing-photos`
-(liga até 12 arquivos já enviados a ambientes), `listing.policy.ts` com 404 para anúncio alheio,
-`/storages` aberto ao `OWNER` com policy por dono do arquivo, `listings.owner_id` e
-`listing_photos.storage_id`, e a vitrine devolvendo `photos[].url` assinada. No frontend, o cadastro
-envia de verdade (sem sessão, guarda o rascunho e vai ao login), o passo de fotos sobe pelo fluxo
-multipart com retomada, e `_private/owner/listings` lista, edita e arquiva. O seeder cria uma conta de
-dono de exemplo e liga os 12 anúncios a ela, sem tirar as colunas do dono denormalizado.
+Branch `feat/moderacao-fila-verificacao`, empilhada sobre `feat/anuncios-dono-cria-edita` (PR #19, ainda
+aberto). Entrou a moderação: `administrator/listings` (fila, detalhe, aprovar, recusar com motivo,
+arquivar), `administrator/owners/verify`, `administrator/reports`, a denúncia pública
+`POST /storefront/reports` (5 por hora por IP, só o HMAC do IP é guardado) e as migrações
+`users.verified_at`, `listings.published_at/review_*` e `reports`. O selo vem da conta. No frontend, o
+painel `_private/administrator` (fila, revisão, denúncias), o motivo de recusa no painel do dono com o
+estado "Precisa de ajuste", e o diálogo "Denunciar este anúncio" com campo isca. O seeder cria uma
+moderadora de exemplo.
 
-Verificado nesta data: `shared` com 128 testes, backend com `pnpm check` (299 unitários) e E2E com 316
+Verificado nesta data: `shared` com 136 testes; backend com `pnpm check` (355 unitários) e E2E com 371
 passando e 42 falhando, todos de storage sem MinIO; frontend com `pnpm check`, 93 testes, build,
-`check-chunk-cycles` e E2E de navegador 63 de 63. O teste de acessibilidade do tema claro na home
-falhou em 3 de cerca de 8 rodadas completas: o axe lia o contraste com a entrada `.enter` ainda em
-curso, e o fixture agora espera as animações do documento antes de medir.
+`check-chunk-cycles` e E2E de navegador 90 de 90, nos dois temas.
 
-Não verificado: o CI do GitHub nunca rodou; o envio de arquivo ao bucket (a sequência `POST /storages`,
-`PUT` assinado, `complete`, `POST .../photos`) e o CORS do bucket expondo `ETag`; os 42 testes de storage;
-a imagem Docker.
+Não verificado: o CI do GitHub; o envio de arquivo ao bucket e a grade de fotos assinadas na revisão
+(sem MinIO); os 42 testes de storage; os idiomas en e es só por chave; a imagem Docker.
 
 ## Próximos passos
 
@@ -52,7 +49,7 @@ a imagem Docker.
 3. Conferir o primeiro CI no GitHub (workflows nunca rodaram) e cadastrar os `vars` e segredos do deploy
    (9.1, 9.3).
 4. Paginar a listagem e o mapa antes de o catálogo chegar a 100 anúncios (3.9).
-5. Moderação da equipe (PR seguinte): fila, aprovar e recusar com motivo, verificar o dono e denúncia.
+5. Fechamento (PR F): paginação, limites, imagem de compartilhamento, primeiro CI e lista de deploy.
    Depois contrair as colunas do dono denormalizado de `listings`.
 6. Rodar os 42 testes de storage com MinIO (8.3) e fornecer as variáveis do Coolify (9.1).
 7. Conferir bairros, coordenadas, telefones e lugares de exemplo com o dono antes de abrir ao público

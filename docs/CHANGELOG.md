@@ -5,7 +5,8 @@ Mudanças de Aporta que quem usa percebe. Formato
 [SemVer](https://semver.org/lang/pt-BR/). Regras em `_standards/documentation.md` §7.
 
 Ainda não houve release nem tag: tudo abaixo está na branch de trabalho e acumula em
-`[Não lançado]`. Os imóveis, lugares, bairros e telefones que as telas mostram são de exemplo.
+`[Não lançado]`. Os imóveis, lugares, bairros e telefones que o site mostra vêm do banco, mas o
+catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ## [Não lançado]
 
@@ -28,12 +29,23 @@ Ainda não houve release nem tag: tudo abaixo está na branch de trabalho e acum
   salvo no próprio aparelho. O envio ainda não grava o anúncio nem as fotos.
 - API pública de leitura de bairros, anúncios e guia (`GET /storefront/listings`,
   `/storefront/listings/:slug`, `/storefront/neighborhoods` e `/storefront/places`), com paginação,
-  ordenação e filtros por tipo, bairro, período e faixa de preço. Ainda é interna: o site continua
-  mostrando os dados de exemplo e só passa a consultá-la na próxima etapa.
+  ordenação e filtros por tipo, bairro, período e faixa de preço.
 - Site em português, espanhol (`/es`) e inglês (`/en`), com troca de idioma no cabeçalho.
 - Tema claro e escuro que acompanha a configuração do aparelho.
 - `sitemap.xml` e `robots.txt` para os buscadores.
 - Cenas desenhadas no lugar das fotos de cada ambiente, até chegarem fotos reais.
+
+### Alterado
+
+- O site agora lê imóveis, bairros e guia da API, e não mais de dados de exemplo embutidos: a home, a
+  listagem, o detalhe, o guia e o `sitemap.xml` mostram o que está no banco. A faixa de preço passou
+  a ser calculada no servidor, com a diária do hotel valendo 30 vezes. A listagem e o mapa mostram até
+  100 anúncios.
+- Quando a API está fora do ar, a página mostra "Algo deu errado" com "Tentar de novo", que refaz o
+  carregamento. Anúncio que não existe continua dando a página 404 do site, e um bairro desconhecido
+  no endereço mostra a lista vazia com "Limpar".
+- O `sitemap.xml` passa a listar cada anúncio publicado nos três idiomas. Se a API não responder, sai
+  só com as páginas fixas e não fica em cache.
 
 ### Corrigido
 

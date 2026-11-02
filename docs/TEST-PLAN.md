@@ -10,8 +10,9 @@
 > typecheck, `pattern:check`, `authz:check`, `depcruise`, `validators:check` (10 pares),
 > `openapi:check` (16 de 16 operações), `di:check` (28 classes) e 226 testes unitários. **No E2E do
 > backend, 231 testes passam e 42 falham, todos de storage**, porque o ambiente não tem MinIO. O
-> frontend foi verificado de novo depois do conserto do cadastro: Vitest com 34 testes e E2E de
-> navegador com 35, contra o backend semeado. O CI nunca rodou no GitHub.
+> frontend foi verificado depois da ligação com a API: Vitest com 43 testes em 8 arquivos e E2E de
+> navegador com 37, contra o backend semeado; `tsc`, ESLint, Prettier, build e `check-chunk-cycles`
+> verdes (40 chunks, nenhum ciclo). O CI nunca rodou no GitHub.
 
 ## 1. Níveis
 
@@ -24,11 +25,13 @@
 | Guarda de ciclo de chunk | `frontend/scripts/check-chunk-cycles.mjs`, depois do build | `.output/` | pull request e push na `main` |
 | E2E do frontend | Playwright (Chromium), contra o build do app e o backend reais | `frontend/e2e/*.spec.ts` | pull request e push na `main`, job "Frontend - E2E (Playwright)"; localmente `pnpm --filter ./frontend test:e2e` com `E2E_BASE_URL` e `E2E_API_URL` |
 
-**E2E do frontend.** 35 testes, todos verdes localmente em 25 s contra `.output/server` e o
-`node ace serve`: `health.spec.ts` (app e API, `200`, `no-store`), `search.spec.ts`,
-`listing-detail.spec.ts`, `guide.spec.ts`, `owner-draft.spec.ts`, `locale.spec.ts` e `a11y.spec.ts`
-(axe sem violação `serious` ou `critical` nos dois temas, e sem rolagem horizontal em 320 px com
-movimento reduzido). O fixture automático `errors` reprova `pageerror` e `console.error` da própria
+**E2E do frontend.** 37 testes, todos verdes contra `.output/server` e o `node ace serve` com o
+catálogo semeado: `health.spec.ts` (`/health-check` do app e da API, `200`, `no-store`, e
+`GET /storefront/listings` com `200`, 12 itens e `meta.total` 12), `search.spec.ts`,
+`listing-detail.spec.ts`, `guide.spec.ts`, `owner-draft.spec.ts`, `locale.spec.ts`, `api-down.spec.ts`
+(a API cai com a página aberta e a listagem mostra "Algo deu errado" com "Tentar de novo") e
+`a11y.spec.ts` (axe sem violação `serious` ou `critical` nos dois temas, e sem rolagem horizontal em
+320 px com movimento reduzido). As telas leem a API de verdade; só o `api-down.spec.ts` a derruba, com `page.route`. O fixture automático `errors` reprova `pageerror` e `console.error` da própria
 origem. Os ladrilhos do OpenStreetMap são de terceiro e ficam fora dessa checagem. O job do CI com
 este mesmo comando ainda não rodou no GitHub.
 
@@ -36,14 +39,16 @@ Comandos: `pnpm check` na raiz roda os `check` de cada pacote; `pnpm test:unit` 
 
 ## 2. Fluxos críticos
 
-Os fluxos públicos do app rodam com dados de exemplo e têm spec E2E de navegador. A API pública de
-leitura já tem E2E no backend (§3 e §3.1), mas nenhuma tela a chama, então não há spec de navegador
-sobre ela; o dos fluxos que dependem dela entra com a ligação do frontend (`TASKS.md` 3.6).
+Os fluxos públicos do app têm spec E2E de navegador contra a API real e o catálogo semeado, e a API
+pública de leitura tem E2E no backend (§3 e §3.1). Lacunas honestas: o SSR com a API fora do ar foi
+conferido à mão com `curl`, e nenhum E2E o cobre, porque `page.route` só intercepta o navegador e o
+`api-down.spec.ts` prova só a navegação no cliente (`TASKS.md` 8.4); a listagem com mais de 100
+anúncios não tem teste, porque o catálogo semeado tem 12 (`TASKS.md` 3.9).
 
 | Fluxo | Caminho feliz | Caminhos de erro | Teste |
 |---|---|---|---|
-| Procuro onde morar | home, busca, detalhe, toque no WhatsApp | filtro sem resultado, URL inválida, anúncio inexistente (404) | `e2e/search.spec.ts` e `e2e/listing-detail.spec.ts`; a lógica de filtro tem unitário (§3) |
-| Guia da cidade | troca de aba, WhatsApp do lugar | categoria inválida | `e2e/guide.spec.ts` |
+| Procuro onde morar | home, busca, detalhe, toque no WhatsApp | filtro sem resultado, URL inválida, anúncio inexistente (404), API fora do ar | `e2e/search.spec.ts`, `e2e/listing-detail.spec.ts` e `e2e/api-down.spec.ts`; a leitura da URL e a tradução em pedido à API têm unitário (§3) |
+| Guia da cidade | troca de aba, WhatsApp do lugar | categoria inválida | `e2e/guide.spec.ts`; aba vazia: Lacuna, o catálogo semeado tem lugares nas quatro categorias |
 | Tenho um imóvel para anunciar | seis etapas, "Finalizar cadastro", tela "Anúncio pronto" que avisa que o envio não está no ar | campo inválido, volta à etapa com erro, rascunho restaurado | `e2e/owner-draft.spec.ts` (erro em português, rascunho restaurado e corrompido, fluxo completo com o rascunho ainda salvo ao fim); o validator do cadastro tem unitário (§3). Não há envio para testar |
 | Entrada da equipe | `sign-in`, perfil, `sign-out` | credencial errada, limite de tentativas | Backend com E2E (§3.1); sem tela ainda |
 | Upload de arquivo (equipe) | `POST /storages`, partes, `complete` | tipo fora da lista, tamanho divergente, assinatura falsa | Backend com E2E, **não verificado nesta data** (sem MinIO) |
@@ -57,10 +62,15 @@ caso.
 
 | Requisito | Critério | Nível | Teste |
 |---|---|---|---|
-| BUS-01 | WHEN o visitante combina filtros, THE SYSTEM SHALL aplicar todos (E, não OU) | unitário | `frontend/src/lib/filters.test.ts`: "combina os filtros com E, não com OU" |
-| BUS-02 | WHEN o filtro de preço compara hotel e aluguel, THE SYSTEM SHALL tratar a diária como 30 vezes | unitário | `filters.test.ts`: "converte a diária do hotel em 30 dias" |
+| BUS-01 | WHEN o visitante combina filtros, THE SYSTEM SHALL aplicar todos (E, não OU), no servidor | E2E (backend) | VIT-03 e VIT-04 abaixo; no frontend, `frontend/src/routes/_public/listings/-search.test.ts`: "traduz min e max para os nomes da API e pede a página inteira" |
+| BUS-02 | WHEN o filtro de preço compara hotel e aluguel, THE SYSTEM SHALL tratar a diária como 30 vezes | E2E (backend) | VIT-04 abaixo: a regra saiu do frontend com `filterListings` e mora em `COALESCE(price_monthly, price_daily * 30)` |
 | BUS-03 | IF a URL traz tipo, bairro ou preço inválido, THEN THE SYSTEM SHALL descartar o campo sem falhar | unitário | `frontend/src/routes/_public/listings/-search.test.ts`: "descarta tipo inválido em vez de falhar", "descarta bairro que não existe", "descarta preço negativo" |
 | BUS-04 | THE SYSTEM SHALL devolver o filtro à URL e da URL ao filtro sem perda | unitário | `-search.test.ts`: "ida e volta preservam o filtro" |
+| BUS-05 | THE SYSTEM SHALL pedir à API só o que filtra, sem `view` nem `selected`, para trocar de vista não refazer o `loader` | unitário | `-search.test.ts`: "não carrega o que é só da tela (vista e pin selecionado)" |
+| BUS-06 | WHEN o `slug` de bairro da URL não existe, THE SYSTEM SHALL manter o valor e deixar a API devolver lista vazia | unitário | `-search.test.ts`: "mantém o slug de um bairro, e quem confere se existe é a API"; a tela vazia com "Limpar": `e2e/search.spec.ts` |
+| API-01 | WHEN a API responde o `code` de recurso ausente, THE SYSTEM SHALL virar `notFound()`; qualquer outro erro, THE SYSTEM SHALL relançá-lo | unitário | `frontend/src/lib/load-or-not-found.test.ts`; o 404 dentro da casca: `e2e/listing-detail.spec.ts` |
+| API-02 | THE SYSTEM SHALL montar a query só com os valores preenchidos, mantendo o zero e escapando caractere reservado | unitário | `frontend/src/lib/query-string.test.ts` |
+| API-03 | WHEN a API cai com a página aberta, THE SYSTEM SHALL mostrar o erro com "Tentar de novo" | E2E | `e2e/api-down.spec.ts`; o SSR com a API fora do ar: Lacuna (`TASKS.md` 8.4) |
 | CON-01 | WHEN o visitante toca em "Chamar no WhatsApp", THE SYSTEM SHALL montar `wa.me` só com dígitos e a mensagem codificada | unitário | `frontend/src/lib/whatsapp.test.ts` |
 | FRE-01 | THE SYSTEM SHALL mostrar dias inteiros desde a atualização, nunca negativos | unitário | `frontend/src/lib/format.test.ts`: `daysSince` |
 | SEO-01 | THE SYSTEM SHALL escapar `&` e montar URL absoluta sem barra dupla no sitemap | unitário | `frontend/src/lib/sitemap.test.ts` |
@@ -135,7 +145,7 @@ prova. Membro sem teste aparece como lacuna.
 | `GET /openapi.json` | 200 | `documentation/openapi/show/show.e2e.spec.ts` |
 | | 404 | `documentation/openapi/show/show.e2e.spec.ts` |
 | `GET /health-check` (API) | 200 | `backend/app/features/health-check.e2e.spec.ts` |
-| `GET /health-check` (app) | 200 | Lacuna: rota do app sem teste |
+| `GET /health-check` (app) | 200 | `frontend/e2e/health.spec.ts` |
 | `GET /storefront/listings` | 200 | `paginate.e2e.spec.ts`: "brings only the published ones" e "answers 200 with an empty page" |
 | | 422 | `paginate.e2e.spec.ts`: "?sort is outside the closed tuple" |
 | | 401, 403, 404 | Não se aplica: rota pública, sem sessão e sem recurso por id |
@@ -151,18 +161,18 @@ prova. Membro sem teste aparece como lacuna.
 | `ListingStatus` | `PUBLISHED` | `paginate.e2e.spec.ts` e `show.e2e.spec.ts` |
 | | `DRAFT` `PENDING` `ARCHIVED` | `paginate.e2e.spec.ts` e `show.e2e.spec.ts`: ficam fora da listagem e respondem 404 no detalhe |
 | `ListingSortColumn` | `createdAt` `updatedAt` `price` | `listing.repository.e2e.spec.ts`: "sorting by price or by date" cobre os três; no E2E das rotas só a ordem padrão (`createdAt` decrescente) tem caso |
-| `/listings`, `/listings/$slug`, `/guide`, `/list-your-place` | renderiza | Lacuna: sem teste de rota; entram no E2E da fase final |
+| `/listings`, `/listings/$slug`, `/guide`, `/list-your-place` | renderiza | `search.spec.ts`, `listing-detail.spec.ts`, `guide.spec.ts` e `owner-draft.spec.ts`, mais `a11y.spec.ts` nos dois temas |
 | `UserRole` | `ADMINISTRATOR` | `role.middleware.e2e.spec.ts` |
 | | `MODERATOR` | `role.middleware.e2e.spec.ts` |
 | | `OWNER` | `role.middleware.e2e.spec.ts` |
 | `UploadStatus` | `PENDING` | `show.e2e.spec.ts`: "still PENDING"; `delete.e2e.spec.ts` (**não verificados**) |
 | | `UPLOADED` | `complete.e2e.spec.ts` (**não verificado**) |
-| `ListingType` | `HOUSE` `APARTMENT` `KITNET` `ROOM` `HOTEL` | Parcial: `filters.test.ts` "filtra por tipo" testa um tipo; os rótulos de cada tipo são `Record` fechado e quebram a compilação se faltar um |
-| `ListingPeriod` | `SEMESTER` `ACADEMIC_YEAR` `MONTHLY` `DAILY` | Parcial: `filters.test.ts` "filtra por período oferecido"; sem teste por membro |
+| `ListingType` | `HOUSE` `APARTMENT` `KITNET` `ROOM` `HOTEL` | Parcial: `-search.test.ts` "aceita um tipo válido" testa um tipo e `e2e/search.spec.ts` outro; os rótulos de cada tipo são `Record` fechado e quebram a compilação se faltar um |
+| `ListingPeriod` | `SEMESTER` `ACADEMIC_YEAR` `MONTHLY` `DAILY` | Parcial: o filtro por período é do backend (`paginate.e2e.spec.ts`, "?type, ?neighborhood and ?period"); sem teste por membro |
 | `PhotoEnvironment` | `FACADE` `BEDROOM` `BATHROOM` `KITCHEN` `LIVING` | Lacuna: só o `Record` de rótulos fecha o conjunto |
 | `PlaceCategory` | `EAT` `DRINK` `EVENT` `SERVICE` | Parcial: `places/paginate/paginate.e2e.spec.ts` testa `EVENT` e `DRINK`; `guideSearchSchema` do app sem teste |
 | `Locale` | `pt-BR` `es` `en` | Backend: `detect-user-locale.middleware.e2e.spec.ts`; frontend: Lacuna |
-| `LISTINGS_VIEW` | `list` `map` | Lacuna: `-search.test.ts` não cobre `view` nem `selected` |
+| `LISTINGS_VIEW` | `list` `map` | Lacuna: `-search.test.ts` só prova que `view` e `selected` não vão para a API, não que o schema aceite cada valor |
 
 Rota nova entra aqui com os status dela; valor novo de enum, com a linha dele. As rotas de
 `/storefront` ficam sem 401 e 403 porque não há sessão. Cada rota de anúncio que exigir sessão (o
@@ -187,9 +197,11 @@ Rota nova entra aqui com os status dela; valor novo de enum, com a linha dele. A
 - O catálogo de exemplo (`backend/database/seeders/{neighborhood,listing,place}.seed.ts`) não roda
   no ambiente `test`: o `resetDatabase()` não o recria, e cada E2E de `/storefront` cria os anúncios,
   bairros e lugares que conta (`DECISIONS.md` #11).
-- Os dados de exemplo do frontend (`frontend/src/lib/data/`) servem às telas e a alguns testes de
-  filtro; teste de comportamento cria o próprio dado e não depende dos 12 imóveis de exemplo.
-- O E2E do frontend (fase final) cria o próprio dado pela API, limpa no fim e não depende de ordem.
+- O frontend não tem dado de exemplo: o E2E de navegador roda contra o backend com o catálogo semeado
+  (`node ace db:seed`, 6 bairros, 12 anúncios e 10 lugares) e depende desses números (`health.spec.ts`
+  confere os 12). Teste de unidade do frontend não faz rede; `vitest.config.ts` define
+  `VITE_API_URL` só para os módulos que importam `env.ts` carregarem.
+- Teste novo de comportamento do backend cria o próprio dado, limpa no fim e não depende de ordem.
 
 ## 6. Critério de pronto
 

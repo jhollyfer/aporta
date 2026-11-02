@@ -27,7 +27,7 @@
 - Os papéis em `shared/src/enums/user-role.ts` e a lista `STAFF_USER_ROLES`: papel novo nasce fora
   da lista de equipe de propósito.
 - Os telefones de exemplo (prefixo `5597999990`) e as coordenadas dos bairros em
-  `frontend/src/lib/data/` e em `backend/database/data/` (os mesmos dados, lidos pelos seeders): trocar por número ou ponto real sem conferência manda visitante a uma
+  `backend/database/data/` (lidos pelos seeders; o frontend não guarda cópia): trocar por número ou ponto real sem conferência manda visitante a uma
   pessoa de verdade ou a um pin fora do lugar.
 - `backend/infra/r2-cors.json` e qualquer política de CORS do bucket.
 - O texto do selo "dono verificado" e a regra de quem o recebe: é promessa de confiança do produto

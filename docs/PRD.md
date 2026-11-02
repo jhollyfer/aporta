@@ -35,15 +35,15 @@ Meta numérica ainda não definida pelo dono: ver §7 e §8.
 
 ## 4. Primeira versão (MVP)
 
-A coluna "Estado" diz o que existe no repositório em 2026-11-01.
+A coluna "Estado" diz o que existe no repositório em 2026-11-02.
 
 | # | Funcionalidade | Para quem | Fluxo | Estado |
 |---|---|---|---|---|
-| 1 | Busca e listagem de imóveis com filtros na URL (tipo, bairro, período, faixa de preço), mapa de apoio e alternância lista/mapa no celular | visitante | `USER-FLOWS.md#procuro-onde-morar` | Tela pronta, com dados de exemplo |
-| 2 | Página do imóvel: galeria por ambiente, valores com o que está incluso, regras, dono e "Chamar no WhatsApp" | visitante | `USER-FLOWS.md#procuro-onde-morar` | Tela pronta, com dados de exemplo |
-| 3 | Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis) | turista, calouro | `USER-FLOWS.md#guia-da-cidade` | Tela pronta, com dados de exemplo |
+| 1 | Busca e listagem de imóveis com filtros na URL (tipo, bairro, período, faixa de preço), mapa de apoio e alternância lista/mapa no celular | visitante | `USER-FLOWS.md#procuro-onde-morar` | Pronto, lendo a API com catálogo de exemplo |
+| 2 | Página do imóvel: galeria por ambiente, valores com o que está incluso, regras, dono e "Chamar no WhatsApp" | visitante | `USER-FLOWS.md#procuro-onde-morar` | Pronto, lendo a API com catálogo de exemplo |
+| 3 | Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis) | turista, calouro | `USER-FLOWS.md#guia-da-cidade` | Pronto, lendo a API com catálogo de exemplo |
 | 4 | Cadastro do imóvel pelo dono, em seis etapas, com progresso e rascunho salvo | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Formulário pronto; o envio não grava nada |
-| 5 | API de anúncios, bairros e guia | todos | | Não existe |
+| 5 | API de anúncios, bairros e guia | todos | `USER-FLOWS.md#procuro-onde-morar` | Leitura pública pronta (`GET /storefront`); a escrita do dono não existe |
 | 6 | Entrada e área do dono (Meus anúncios) | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Não existe na tela; a sessão existe na API |
 | 7 | Upload de fotos por ambiente | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Upload da API pronto, só para a equipe; a tela não envia |
 | 8 | Verificação do dono e moderação de anúncio | equipe | `USER-FLOWS.md#moderação-futura` | Não existe |
@@ -72,11 +72,11 @@ A coluna "Estado" diz o que existe no repositório em 2026-11-01.
 
 ## 7. Métricas de sucesso
 
-Só entram métricas que a equipe consegue medir com o que o sistema registra ou passará a registrar. Não há medição hoje porque o domínio de anúncios ainda não existe, e nenhuma meta numérica foi dada pelo dono.
+Só entram métricas que a equipe consegue medir com o que o sistema registra ou passará a registrar. Não há medição hoje: a API só lê o catálogo de exemplo, sem anúncio real, e nenhuma meta numérica foi dada pelo dono.
 
 | Métrica | Hoje | Meta | Como medir |
 |---|---|---|---|
-| Anúncios ativos | sem dado (a API de anúncios não existe) | a definir pelo dono | contagem no banco, por bairro e tipo |
+| Anúncios ativos | sem dado (só o catálogo de exemplo) | a definir pelo dono | contagem no banco, por bairro e tipo |
 | Anúncios com dono verificado | sem dado | a definir pelo dono | proporção sobre os ativos, quando a verificação existir |
 | Anúncios atualizados nos últimos 30 dias | sem dado | a definir pelo dono | data de atualização do anúncio, a mesma que o selo "atualizado há X dias" exibe |
 | Anúncios com as cinco fotos por ambiente | sem dado | a definir pelo dono | contagem das fotos por ambiente de cada anúncio |

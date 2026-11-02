@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   StorefrontListingPaginateValidator,
+  StorefrontListingPinsValidator,
   StorefrontListingShowValidator,
 } from './listings.validator.js'
 import { ValidationFixture } from '../../validation-fixtures.js'
@@ -69,5 +70,58 @@ describe('StorefrontListingShowValidator', () => {
         StorefrontListingShowValidator.safeParse({ slug: 'a'.repeat(101) }),
       ),
     ).toEqual(['slug'])
+  })
+})
+
+describe('the map window (minLng, minLat, maxLng, maxLat)', () => {
+  const WINDOW = { minLng: -70.1, minLat: -4.4, maxLng: -69.9, maxLat: -4.3 }
+
+  it('when the four bounds come together, the catalog and the pins accept them', () => {
+    expect(StorefrontListingPaginateValidator.safeParse(WINDOW).success).toBe(
+      true,
+    )
+    expect(StorefrontListingPinsValidator.safeParse(WINDOW).success).toBe(true)
+  })
+
+  it('when only some bounds come, it refuses it pointing at minLng', () => {
+    const result = StorefrontListingPaginateValidator.safeParse({
+      minLat: -4.4,
+      maxLat: -4.3,
+    })
+    const pins = StorefrontListingPinsValidator.safeParse({ maxLng: -69.9 })
+
+    expect(ValidationFixture.fields(result)).toEqual(['minLng'])
+    expect(ValidationFixture.fields(pins)).toEqual(['minLng'])
+  })
+
+  it('when a bound is outside the globe, it refuses it pointing at the field', () => {
+    const result = StorefrontListingPinsValidator.safeParse({
+      ...WINDOW,
+      minLat: -91,
+      maxLng: 181,
+    })
+
+    expect(ValidationFixture.fields(result)).toEqual(['maxLng', 'minLat'])
+  })
+
+  it('when the bounds are blank, they count as missing', () => {
+    const result = StorefrontListingPaginateValidator.safeParse({
+      minLng: '',
+      minLat: '',
+      maxLng: '',
+      maxLat: '',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('when pins are asked with page, perPage or sort, those keys are not part of the contract', () => {
+    const parsed = StorefrontListingPinsValidator.parse({
+      page: 2,
+      sort: 'price',
+    })
+
+    expect(parsed).not.toHaveProperty('page')
+    expect(parsed).not.toHaveProperty('sort')
   })
 })

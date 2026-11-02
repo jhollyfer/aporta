@@ -198,6 +198,10 @@ const PT_BR_LABELS = {
   period: 'o período de aluguel',
   minPrice: 'o valor mínimo',
   maxPrice: 'o valor máximo',
+  minLng: 'a longitude mínima',
+  minLat: 'a latitude mínima',
+  maxLng: 'a longitude máxima',
+  maxLat: 'a latitude máxima',
   category: 'a categoria',
   // Moderation and reports
   decision: 'a decisão',
@@ -258,6 +262,10 @@ export const FIELD_LABELS = {
     period: 'el período de alquiler',
     minPrice: 'el valor mínimo',
     maxPrice: 'el valor máximo',
+    minLng: 'la longitud mínima',
+    minLat: 'la latitud mínima',
+    maxLng: 'la longitud máxima',
+    maxLat: 'la latitud máxima',
     category: 'la categoría',
     decision: 'la decisión',
     note: 'el motivo',
@@ -312,6 +320,10 @@ export const FIELD_LABELS = {
     period: 'the rental period',
     minPrice: 'the minimum price',
     maxPrice: 'the maximum price',
+    minLng: 'the minimum longitude',
+    minLat: 'the minimum latitude',
+    maxLng: 'the maximum longitude',
+    maxLat: 'the maximum latitude',
     category: 'the category',
     decision: 'the decision',
     note: 'the reason',
@@ -507,6 +519,10 @@ export const RichTextDocumentSchema = z
 
 export type RichTextDocument = z.infer<typeof RichTextDocumentSchema>
 
+const BOUNDS_KEYS = ['minLng', 'minLat', 'maxLng', 'maxLat'] as const
+
+type BoundsPayload = Partial<Record<(typeof BOUNDS_KEYS)[number], number>>
+
 /**
  * What `Rule.optional` returns: the field that may be missing, and for which `''` means missing
  * (the bodyparser's `convertEmptyStringsToNull` does the same on the API).
@@ -685,6 +701,45 @@ export class Rule {
       perPage: Rule.optional(z.number().min(1).max(100)),
       search: Rule.optional(z.string().max(100)),
     }
+  }
+
+  /**
+   * The map window as four numbers (`minLng`, `minLat`, `maxLng`, `maxLat`), in decimal degrees.
+   * Four fields and not one `bbox=a,b,c,d` text: each number is validated on its own (a latitude
+   * above 90 points at `maxLat`), and the query string needs no parser of its own on either side.
+   * They only mean something together, which `Rule.boundsComplete()` enforces.
+   */
+  static boundsFields(): {
+    minLng: BlankableField<z.ZodNumber>
+    minLat: BlankableField<z.ZodNumber>
+    maxLng: BlankableField<z.ZodNumber>
+    maxLat: BlankableField<z.ZodNumber>
+  } {
+    return {
+      minLng: Rule.optional(z.number().min(-180).max(180)),
+      minLat: Rule.optional(z.number().min(-90).max(90)),
+      maxLng: Rule.optional(z.number().min(-180).max(180)),
+      maxLat: Rule.optional(z.number().min(-90).max(90)),
+    }
+  }
+
+  /**
+   * The window is all or nothing: three corners of a rectangle select nothing sensible, and
+   * silently ignoring them would show the whole city on a map the visitor thought was zoomed in.
+   * The backend's `requiredIfAnyExists` on each bound, pointed at the one that is missing
+   * (`refine` takes a single `path`, so the error always points at `minLng`).
+   */
+  static boundsComplete(): [
+    check: (payload: BoundsPayload) => boolean,
+    params: { path: Array<PropertyKey>; params: { rule: string } },
+  ] {
+    return [
+      (payload) => {
+        const given = BOUNDS_KEYS.filter((key) => payload[key] !== undefined)
+        return given.length === 0 || given.length === BOUNDS_KEYS.length
+      },
+      { path: ['minLng'], params: { rule: 'required' } },
+    ]
   }
 
   /**

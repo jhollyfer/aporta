@@ -24,6 +24,8 @@
 
 ## Parou em
 
+Pós-merge do PR #23, o CI da `main` ficou vermelho por duas causas que já existiam: o `pnpm-lock.yaml` sem `packageManagerDependencies` (o Dockerfile instala o pnpm 12, que exige o bloco por causa do `devEngines`) e o README gerado em `project.inlang/.lix` no `format:check`. Corrigidos na branch `fix/ci-lockfile-pnpm` (tarefa 9.11); o build das imagens e o CI completo ainda precisam rodar no GitHub.
+
 Branch `chore/env-catalogo-padrao`: todas as chaves de ambiente no catálogo da régua
 (`_standards/backend.md` §6 a §6.3, `DECISIONS.md` #276 da régua; upstream jhollyfer/maiyu-pattern#16).
 Backend: `APP_CLIENT_URL` (decide o `sameSite`; ausente cai em `lax`) e `SEED_DEMO_PASSWORD`; seed ligado

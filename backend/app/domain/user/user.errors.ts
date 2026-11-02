@@ -10,4 +10,8 @@ export type UserAlreadyArchived = { readonly code: 'USER_ALREADY_ARCHIVED' }
 /** Restoring, reusing or permanently deleting what is not in the trash. */
 export type UserNotArchived = { readonly code: 'USER_NOT_ARCHIVED' }
 
-export type UserError = UserAlreadyArchived | UserNotArchived
+/** The seal is for the people who advertise: staff and archived accounts do not carry it. */
+export type UserNotVerifiable = { readonly code: 'USER_NOT_VERIFIABLE' }
+
+export type UserError =
+  UserAlreadyArchived | UserNotArchived | UserNotVerifiable

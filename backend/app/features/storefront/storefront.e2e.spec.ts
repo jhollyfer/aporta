@@ -35,14 +35,14 @@ test.group('storefront > the whole group', (group) => {
       .filter((route) => route.pattern.startsWith('/storefront'))
   }
 
-  test('when the routes are listed, there are four and every one is a read', ({
+  test('when the routes are listed, there are five and every one is a read but the scam report', ({
     assert,
   }) => {
     const routes = storefrontRoutes()
 
-    // Listings (paginate, show), neighborhoods and places (paginate). The number is here so that
-    // adding a route to the group forces a look at this file.
-    assert.lengthOf(routes, 4)
+    // Listings (paginate, show), neighborhoods and places (paginate), and the report. The number
+    // is here so that adding a route to the group forces a look at this file.
+    assert.lengthOf(routes, 5)
 
     // `HEAD` is left out because Adonis registers it on its own alongside every `GET`. Without
     // filtering by method before counting: a new write would go unnoticed, which is precisely what
@@ -51,10 +51,15 @@ test.group('storefront > the whole group', (group) => {
       route.methods.some((method) => method !== 'GET' && method !== 'HEAD'),
     )
 
-    assert.deepEqual(writes, [])
+    // The one write is the public report, and it is exactly the one named here: a second write
+    // entering the group fails this line.
+    assert.deepEqual(
+      writes.map((route) => route.pattern),
+      ['/storefront/reports'],
+    )
   })
 
-  test('when the routes are compared with the health check, none carries a middleware of its own', ({
+  test('when the routes are compared with the health check, only the report carries one: its throttle', ({
     assert,
   }) => {
     // The server-level stack (body parser, i18n, JSON, silent auth...) is on every route, so the
@@ -66,10 +71,15 @@ test.group('storefront > the whole group', (group) => {
 
     assert.isDefined(probe)
 
+    const base = probe?.middleware.all().size ?? 0
+
     for (const route of storefrontRoutes()) {
+      // The report adds the per-IP throttle and nothing else: no `auth()`, no role.
+      const expected = base + Number(route.pattern === '/storefront/reports')
+
       assert.equal(
         route.middleware.all().size,
-        probe?.middleware.all().size,
+        expected,
         `${route.pattern} declares middleware of its own`,
       )
     }
@@ -95,5 +105,15 @@ test.group('storefront > the whole group', (group) => {
         `${route.pattern} required a session`,
       )
     }
+
+    const report = await client
+      .post('/storefront/reports')
+      .json({ slug: randomUUID(), reason: 'SCAM' })
+
+    assert.notInclude(
+      [401, 403],
+      report.status(),
+      'the report required a session',
+    )
   })
 })

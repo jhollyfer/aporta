@@ -1,6 +1,6 @@
 import type { OwnerListingShowResponse } from '@aporta/shared'
 
-import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
+import { WireDate } from '#core/response'
 import ListingSharedPresenter from '#features/_shared.listing.presenter'
 import type { ListingRecord } from '#repositories/listing/listing.repository'
 
@@ -24,12 +24,18 @@ export default class ListingPresenter {
     return {
       ...ListingSharedPresenter.fields(record),
       status: listing.status,
-      photos: listing.photos.map((photo) => ({
-        id: photo.id,
-        environment: photo.environment,
-        storageId: photo.storageId,
-        url: ListingPhotoUrls.of(urls, photo.storageId),
-      })),
+      review: ListingPresenter.review(record),
+      photos: ListingSharedPresenter.keyedPhotos(record, urls),
     }
+  }
+
+  /** The staff's last decision as the owner reads it: the reason and when, never who decided. */
+  private static review(
+    record: ListingRecord,
+  ): OwnerListingShowResponse['review'] {
+    const { review } = record.listing.snapshot()
+    if (!review) return null
+
+    return { note: review.note, reviewedAt: WireDate.iso(review.at) }
   }
 }

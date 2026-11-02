@@ -1,6 +1,13 @@
 {
   "GET /account": "autenticada",
   "PUT /account": "autenticada",
+  "GET /administrator/listings": "ADMINISTRATOR, MODERATOR",
+  "GET /administrator/listings/{id}": "ADMINISTRATOR, MODERATOR",
+  "DELETE /administrator/listings/{id}": "ADMINISTRATOR, MODERATOR",
+  "PUT /administrator/listings/{id}/review": "ADMINISTRATOR, MODERATOR",
+  "PUT /administrator/owners/{id}/verification": "ADMINISTRATOR, MODERATOR",
+  "GET /administrator/reports": "ADMINISTRATOR, MODERATOR",
+  "PUT /administrator/reports/{id}/resolution": "ADMINISTRATOR, MODERATOR",
   "POST /authentication/refresh": "anonima",
   "POST /authentication/sign-in": "anonima",
   "POST /authentication/sign-out": "autenticada",
@@ -21,5 +28,6 @@
   "GET /storefront/listings": "anonima",
   "GET /storefront/listings/{slug}": "anonima",
   "GET /storefront/neighborhoods": "anonima",
-  "GET /storefront/places": "anonima"
+  "GET /storefront/places": "anonima",
+  "POST /storefront/reports": "anonima"
 }

@@ -71,6 +71,9 @@ export default class ListingSeeder extends BaseSeeder {
       {
         ownerId,
         status: LISTING_STATUS.PUBLISHED,
+        // On the air since the day it was last touched: the sample catalog never went through the
+        // review, and "since when" must not be empty for an ad that is published.
+        publishedAt: day,
         type: listing.type,
         title: listing.title,
         description: listing.description,

@@ -1,12 +1,13 @@
 import { randomUUID } from 'node:crypto'
 
-import { LISTING_STATUS } from '@aporta/shared'
+import { LISTING_STATUS, USER_ROLE } from '@aporta/shared'
 import { test } from '@japa/runner'
 
 import OwnerListingUpdateUseCase from './update.use-case.ts'
 
 import ListingMemoryRepository from '#repositories/listing/listing.memory.repository'
 import NeighborhoodMemoryRepository from '#repositories/neighborhood/neighborhood.memory.repository'
+import UserMemoryRepository from '#repositories/user/user.memory.repository'
 import StorageFake from '#services/storage/storage.fake'
 import {
   FailingListingRepository,
@@ -14,6 +15,7 @@ import {
   centroIn,
 } from '#tests/listing-fixtures'
 import { neighborhoodDraft } from '#tests/neighborhood-fixtures'
+import { userDraft } from '#tests/user-fixtures'
 
 /** The two memory repositories, agreeing on one neighborhood (`centro`). */
 function fresh() {
@@ -36,13 +38,15 @@ function subject() {
     },
   })
   world.listings.put(entity)
+  const users = new UserMemoryRepository()
   const useCase = new OwnerListingUpdateUseCase(
     world.listings,
     world.neighborhoods,
+    users,
     new StorageFake(),
   )
 
-  return { ...world, entity, useCase }
+  return { ...world, entity, users, useCase }
 }
 
 test.group('owner > listings > update (unit)', () => {
@@ -180,6 +184,7 @@ test.group('owner > listings > update (unit)', () => {
     const useCase = new OwnerListingUpdateUseCase(
       new FailingListingRepository(),
       neighborhoods,
+      new UserMemoryRepository(),
       new StorageFake(),
     )
 
@@ -189,5 +194,92 @@ test.group('owner > listings > update (unit)', () => {
       status: 500,
       code: 'OWNER_LISTING_UPDATE_ERROR',
     })
+  })
+
+  test('when the staff sent the ad back, editing it hands it to the queue again and clears the reason', async ({
+    assert,
+  }) => {
+    const world = fresh()
+    const entity = listingIn(LISTING_STATUS.PENDING, {
+      slug: 'devolvida',
+      neighborhoodId: world.centro.id,
+    })
+    entity.refuse('Faltam fotos.', 'staff-1', new Date('2026-11-01T12:00:00Z'))
+    world.listings.put(entity)
+    const useCase = new OwnerListingUpdateUseCase(
+      world.listings,
+      world.neighborhoods,
+      new UserMemoryRepository(),
+      new StorageFake(),
+    )
+
+    const result = await useCase.execute({
+      id: entity.id,
+      title: 'Kitnet com fotos novas',
+    })
+
+    if (result.isLeft()) return assert.fail('update failed')
+
+    assert.equal(result.value.status, LISTING_STATUS.PENDING)
+    assert.isNull(result.value.review)
+  })
+
+  test('when the ad is published or pending, editing never moves the status', async ({
+    assert,
+  }) => {
+    for (const status of [LISTING_STATUS.PUBLISHED, LISTING_STATUS.PENDING]) {
+      const world = fresh()
+      const entity = listingIn(status, {
+        slug: 'fica',
+        neighborhoodId: world.centro.id,
+      })
+      world.listings.put(entity)
+      const useCase = new OwnerListingUpdateUseCase(
+        world.listings,
+        world.neighborhoods,
+        new UserMemoryRepository(),
+        new StorageFake(),
+      )
+
+      const result = await useCase.execute({
+        id: entity.id,
+        title: 'Titulo novo do anuncio',
+      })
+
+      if (result.isLeft()) return assert.fail('update failed')
+
+      assert.equal(result.value.status, status)
+    }
+  })
+
+  test('when the contact changes on an ad of a verified account, the account loses the seal; when only the title changes, it keeps it', async ({
+    assert,
+  }) => {
+    const world = fresh()
+    const users = new UserMemoryRepository()
+    const account = userDraft({ role: USER_ROLE.OWNER })
+    account.verify(new Date('2026-10-01T12:00:00Z'))
+    await users.save(account)
+    const entity = listingIn(LISTING_STATUS.PUBLISHED, {
+      slug: 'conta-verificada',
+      neighborhoodId: world.centro.id,
+      ownerId: account.id,
+    })
+    world.listings.put(entity)
+    const useCase = new OwnerListingUpdateUseCase(
+      world.listings,
+      world.neighborhoods,
+      users,
+      new StorageFake(),
+    )
+
+    await useCase.execute({ id: entity.id, title: 'Titulo novo do anuncio' })
+    const kept = (await users.findById(account.id))?.snapshot().verifiedAt
+
+    await useCase.execute({ id: entity.id, whatsapp: '5597999990099' })
+    const lost = (await users.findById(account.id))?.snapshot().verifiedAt
+
+    assert.instanceOf(kept, Date)
+    assert.isNull(lost)
   })
 })

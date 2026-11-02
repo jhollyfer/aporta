@@ -15,7 +15,7 @@ import {
 
 import RepositoryFailure from '#core/repository-failure'
 import type { UniqueConflict } from '#core/unique-conflict'
-import Listing from '#domain/listing/listing.entity'
+import Listing, { type ListingProps } from '#domain/listing/listing.entity'
 import ListingModel from '#models/listing'
 import ListingPhotoModel from '#models/listing-photo'
 import NeighborhoodModel from '#models/neighborhood'
@@ -23,6 +23,7 @@ import ListingRepository, {
   type ListingOwnedCriteria,
   type ListingPublishedCriteria,
   type ListingRecord,
+  type ListingReviewCriteria,
 } from '#repositories/listing/listing.repository'
 import LucidMapping from '#repositories/shared/lucid-mapping'
 
@@ -75,6 +76,52 @@ export default class ListingLucidRepository extends ListingRepository {
 
     if (!row) return null
     return this.toRecord(row)
+  }
+
+  async findAnyById(id: string): Promise<Listing | null> {
+    const row = await this.withRelations(ListingModel.query())
+      .where('id', id)
+      .first()
+
+    if (!row) return null
+    return this.toEntity(row)
+  }
+
+  async findAnyRecordById(id: string): Promise<ListingRecord | null> {
+    const row = await this.withRelations(ListingModel.query())
+      .where('id', id)
+      .first()
+
+    if (!row) return null
+    return this.toRecord(row)
+  }
+
+  async paginateForReview(
+    criteria: ListingReviewCriteria,
+  ): Promise<Paginated<ListingRecord>> {
+    const query = this.withRelations(ListingModel.query())
+
+    if (criteria.status) query.where('status', criteria.status)
+
+    if (criteria.search) {
+      const search = `%${criteria.search}%`
+
+      query.where((builder) => {
+        builder.whereILike('title', search).orWhereILike('description', search)
+      })
+    }
+
+    if (criteria.sort === 'price') {
+      query.orderByRaw(
+        `${MONTHLY_EQUIVALENT} ${DIRECTION_SQL[criteria.direction]}`,
+      )
+
+      return LucidMapping.page(query, { ...criteria, sort: 'id' }, (row) =>
+        this.toRecord(row),
+      )
+    }
+
+    return LucidMapping.page(query, criteria, (row) => this.toRecord(row))
   }
 
   async paginateOwned(
@@ -234,6 +281,7 @@ export default class ListingLucidRepository extends ListingRepository {
     return (
       query
         .preload('neighborhood')
+        .preload('owner')
         // The callback only configures the nested preload; the query runs with the parent's, so the
         // builder it returns is not a promise anyone awaits.
         .preload('photos', (photos) => {
@@ -249,10 +297,31 @@ export default class ListingLucidRepository extends ListingRepository {
         slug: row.neighborhood.slug,
         name: row.neighborhood.name,
       },
+      account: this.accountOf(row),
+      ownerVerifiedAt: this.sealOf(row),
       files: this.filesOf(row),
       createdAt: row.createdAt.toJSDate(),
       updatedAt: row.updatedAt.toJSDate(),
     }
+  }
+
+  /** The account behind the ad, when there is one. `owner` is preloaded, and null for `owner_id` null. */
+  private accountOf(row: ListingModel): ListingRecord['account'] {
+    if (!row.owner) return null
+
+    return {
+      id: row.owner.id,
+      name: row.owner.name,
+      email: row.owner.email,
+      verifiedAt: LucidMapping.date(row.owner.verifiedAt),
+    }
+  }
+
+  /** The account's seal when the ad has an account, the ad's own column only when it has none. */
+  private sealOf(row: ListingModel): Date | null {
+    if (row.owner) return LucidMapping.date(row.owner.verifiedAt)
+
+    return LucidMapping.date(row.ownerVerifiedAt)
   }
 
   /**
@@ -283,6 +352,10 @@ export default class ListingLucidRepository extends ListingRepository {
       slug: snapshot.slug,
       ownerId: snapshot.ownerId,
       status: snapshot.status,
+      publishedAt: LucidMapping.dateTime(snapshot.publishedAt),
+      reviewNote: snapshot.review?.note ?? null,
+      reviewedAt: LucidMapping.dateTime(snapshot.review?.at ?? null),
+      reviewedBy: snapshot.review?.by ?? null,
       type: snapshot.type,
       title: snapshot.title,
       description: snapshot.description,
@@ -349,7 +422,17 @@ export default class ListingLucidRepository extends ListingRepository {
           environment: photo.environment,
           storageId: photo.storageId,
         })),
+      publishedAt: LucidMapping.date(row.publishedAt),
+      review: this.reviewOf(row),
       deletedAt: LucidMapping.date(row.deletedAt),
     })
+  }
+
+  /** The decision, or none: `reviewed_at` is what says a review happened (note and author may be null). */
+  private reviewOf(row: ListingModel): ListingProps['review'] {
+    const at = LucidMapping.date(row.reviewedAt)
+    if (!at) return null
+
+    return { note: row.reviewNote, at, by: row.reviewedBy }
   }
 }

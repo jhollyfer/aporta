@@ -13,5 +13,7 @@
   "LISTING_PERIODS_EMPTY": "Seleccione al menos un período",
   "LISTING_PHOTOS_LIMIT": "Demasiadas fotos en el anuncio",
   "LISTING_PHOTO_DUPLICATED": "Ese archivo ya está en las fotos del anuncio",
-  "NEIGHBORHOOD_NOT_FOUND": "Barrio no encontrado"
+  "NEIGHBORHOOD_NOT_FOUND": "Barrio no encontrado",
+  "LISTING_REVIEW_NOTE_INVALID": "Escriba el motivo, de 3 a 500 caracteres",
+  "REPORT_NOTE_INVALID": "Escriba la nota, de 3 a 500 caracteres"
 }

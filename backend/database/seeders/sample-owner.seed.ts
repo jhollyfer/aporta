@@ -1,5 +1,6 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { ACTIVE_STATUS, USER_ROLE } from '@aporta/shared'
+import { DateTime } from 'luxon'
 
 import User from '#models/user'
 import env from '#start/env'
@@ -48,6 +49,10 @@ export default class SampleOwnerSeeder extends BaseSeeder {
         password,
         role: USER_ROLE.OWNER,
         status: ACTIVE_STATUS.ACTIVE,
+        // The "verified owner" seal is the account's now, and the twelve sample ads share this
+        // account, so they all carry it. The mixed seals the catalog used to have (`owner_verified_at`
+        // per ad) cannot be told apart through one account; the column stays for ads with no account.
+        verifiedAt: DateTime.now(),
         deletedAt: null,
       },
     )

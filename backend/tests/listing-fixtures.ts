@@ -88,6 +88,18 @@ export class FailingListingRepository extends ListingRepository {
     throw new Error('database down')
   }
 
+  findAnyById(): never {
+    throw new Error('database down')
+  }
+
+  findAnyRecordById(): never {
+    throw new Error('database down')
+  }
+
+  paginateForReview(): never {
+    throw new Error('database down')
+  }
+
   paginateOwned(): never {
     throw new Error('database down')
   }

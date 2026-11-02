@@ -246,4 +246,92 @@ test.group('domain > listing', () => {
       code: 'LISTING_ALREADY_ARCHIVED',
     })
   })
+
+  test('when approved from the queue, it is PUBLISHED with the instant and the author, and the storefront sees it', ({
+    assert,
+  }) => {
+    const at = new Date('2026-11-01T12:00:00.000Z')
+    const listing = listingIn(LISTING_STATUS.PENDING)
+
+    assert.isTrue(listing.approve('staff-1', at).isRight())
+
+    const snapshot = listing.snapshot()
+    assert.equal(snapshot.status, LISTING_STATUS.PUBLISHED)
+    assert.equal(snapshot.publishedAt, at)
+    assert.deepEqual(snapshot.review, { note: null, at, by: 'staff-1' })
+    assert.isTrue(listing.isPublished())
+  })
+
+  test('when refused from the queue, it goes back to DRAFT with the reason trimmed', ({
+    assert,
+  }) => {
+    const at = new Date('2026-11-01T12:00:00.000Z')
+    const listing = listingIn(LISTING_STATUS.PENDING)
+
+    const result = listing.refuse(
+      '  Faltam fotos do banheiro.  ',
+      'staff-1',
+      at,
+    )
+
+    assert.isTrue(result.isRight())
+    assert.equal(listing.snapshot().status, LISTING_STATUS.DRAFT)
+    assert.isNull(listing.snapshot().publishedAt)
+    assert.deepEqual(listing.snapshot().review, {
+      note: 'Faltam fotos do banheiro.',
+      at,
+      by: 'staff-1',
+    })
+  })
+
+  test('when the reason is too short, blank or past 500 characters, the refusal is refused and nothing changes', ({
+    assert,
+  }) => {
+    const at = new Date('2026-11-01T12:00:00.000Z')
+
+    for (const note of ['', '  ab  ', 'x'.repeat(501)]) {
+      const listing = listingIn(LISTING_STATUS.PENDING)
+
+      assert.deepEqual(listing.refuse(note, 'staff-1', at).value, {
+        code: 'LISTING_REVIEW_NOTE_INVALID',
+      })
+      assert.equal(listing.snapshot().status, LISTING_STATUS.PENDING)
+      assert.isNull(listing.snapshot().review)
+    }
+  })
+
+  test('when the ad is not in the queue, neither approving nor refusing works', ({
+    assert,
+  }) => {
+    const at = new Date('2026-11-01T12:00:00.000Z')
+
+    for (const status of [
+      LISTING_STATUS.DRAFT,
+      LISTING_STATUS.PUBLISHED,
+      LISTING_STATUS.ARCHIVED,
+    ]) {
+      const listing = listingIn(status)
+
+      assert.deepEqual(listing.approve('staff-1', at).value, {
+        code: 'LISTING_NOT_PENDING',
+      })
+      assert.deepEqual(listing.refuse('Motivo claro', 'staff-1', at).value, {
+        code: 'LISTING_NOT_PENDING',
+      })
+      assert.equal(listing.snapshot().status, status)
+    }
+  })
+
+  test('when a refused ad is submitted again, it is PENDING and the old reason is gone', ({
+    assert,
+  }) => {
+    const at = new Date('2026-11-01T12:00:00.000Z')
+    const listing = listingIn(LISTING_STATUS.PENDING)
+    listing.refuse('Faltam fotos.', 'staff-1', at)
+
+    listing.submit()
+
+    assert.equal(listing.snapshot().status, LISTING_STATUS.PENDING)
+    assert.isNull(listing.snapshot().review)
+  })
 })

@@ -99,6 +99,31 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.deepEqual(found?.snapshot(), snapshot)
     })
 
+    test('when the seal is given and taken, the save keeps it and the sessions stay open', async ({
+      assert,
+    }) => {
+      const { repository, openSession, sessions } = await make()
+      const user = userDraft({ role: USER_ROLE.OWNER })
+      await repository.save(user)
+      await openSession(user.id)
+      const at = new Date('2026-11-01T12:00:00.000Z')
+
+      recorded(user.verify(at))
+      const given = recorded(await repository.save(user))
+
+      assert.equal(given.user.snapshot().verifiedAt?.getTime(), at.getTime())
+      assert.equal(
+        (await repository.findById(user.id))?.snapshot().verifiedAt?.getTime(),
+        at.getTime(),
+      )
+
+      user.unverify()
+      const taken = recorded(await repository.save(user))
+
+      assert.isNull(taken.user.snapshot().verifiedAt)
+      assert.equal(await sessions(user.id), 1)
+    })
+
     test('when saving without change, updatedAt does not change', async ({
       assert,
     }) => {

@@ -20,6 +20,7 @@ import {
 } from '#/components/common/listing-fields'
 import { PhotoPicker } from '#/components/common/photo-picker'
 import { PillButton } from '#/components/common/pill-button'
+import { ReviewNote } from '#/components/common/review-note'
 import { StatusChip } from '#/components/common/status-chip'
 import { usePhotoDrafts } from '#/hooks/use-photo-drafts'
 import { useSendPhotos } from '#/hooks/use-send-photos'
@@ -29,7 +30,13 @@ import { ownerListingQueryOptions } from '#/integrations/tanstack-query/queries/
 import { applyOwnerFailure } from '#/lib/apply-owner-failure'
 import { PHOTO_ENVIRONMENT_LABELS } from '#/lib/labels'
 import { OWNER_LISTING_FIELDS, listingToForm } from '#/lib/owner-listing-form'
+import { returnedReview } from '#/lib/returned-review'
 import { m } from '#/paraglide/messages'
+
+const SAVED_MESSAGES = {
+  saved: () => m.owner_edit_saved(),
+  resubmitted: () => m.owner_edit_resubmitted(),
+} as const
 
 /** Um bloco do formulário com título: a edição é uma página só, e o título é o que separa os assuntos. */
 function Section({
@@ -63,7 +70,10 @@ function Section({
 export function EditForm({ id }: { id: string }): React.JSX.Element {
   const { data: listing } = useSuspenseQuery(ownerListingQueryOptions(id))
   const invalidate = useInvalidate()
-  const [saved, setSaved] = React.useState(false)
+  const [saved, setSaved] = React.useState<'saved' | 'resubmitted' | undefined>(
+    undefined,
+  )
+  const returned = returnedReview(listing)
   const [photoMessage, setPhotoMessage] = React.useState('')
 
   const form = useForm<OwnerListingCreate>({
@@ -80,8 +90,10 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
   const photos = useSendPhotos(drafts)
 
   function onSubmit(payload: OwnerListingCreate): void {
-    setSaved(false)
+    setSaved(undefined)
     form.clearErrors('root')
+    // O que o servidor fará com um `DRAFT` salvo: reenviá-lo à análise.
+    const wasDraft = listing.status === 'DRAFT'
     update.mutate(
       { id, ...payload },
       {
@@ -93,7 +105,11 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
             invalidate('owner.listings'),
             invalidate('storefront.listings'),
           ])
-          setSaved(true)
+          // Editar um anúncio devolvido o reenvia para a análise: a tela diz isso, porque
+          // "alterações salvas" sozinho deixaria o dono esperando uma decisão que não vem.
+          let message: 'saved' | 'resubmitted' = 'saved'
+          if (wasDraft) message = 'resubmitted'
+          setSaved(message)
         },
         onError: (error) => {
           applyOwnerFailure(form, error, OWNER_LISTING_FIELDS)
@@ -123,7 +139,11 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
         <PillButton to="/owner/listings" tone="outline" className="self-start">
           {m.owner_listings_back_to_list()}
         </PillButton>
-        <StatusChip status={listing.status} className="self-start" />
+        <StatusChip
+          status={listing.status}
+          needsAdjustment={returned !== undefined}
+          className="self-start"
+        />
         <h1 className="text-3xl leading-tight font-extrabold tracking-tight break-words text-ink sm:text-4xl">
           {m.owner_edit_title()}
         </h1>
@@ -137,6 +157,14 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
           </Link>
         )}
       </header>
+
+      {returned !== undefined && (
+        <ReviewNote note={returned.note} reviewedAt={returned.reviewedAt}>
+          <p className="text-sm text-ink-soft">
+            {m.review_note_resubmit_edit()}
+          </p>
+        </ReviewNote>
+      )}
 
       <form
         noValidate
@@ -160,12 +188,12 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
           <ContactStep control={form.control} />
         </Section>
         <FormNotice>{form.formState.errors.root?.message}</FormNotice>
-        {saved && (
+        {saved !== undefined && (
           <p
             role="status"
             className="rounded-xl bg-moss-wash px-4 py-3 text-sm font-bold text-moss-deep"
           >
-            {m.owner_edit_saved()}
+            {SAVED_MESSAGES[saved]()}
           </p>
         )}
         <ActionButton

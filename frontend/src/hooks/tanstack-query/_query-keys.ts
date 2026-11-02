@@ -1,4 +1,6 @@
 import type {
+  AdministratorListingPaginatePayload,
+  AdministratorReportPaginatePayload,
   OwnerListingPaginatePayload,
   StorefrontListingPaginatePayload,
   StorefrontNeighborhoodPaginatePayload,
@@ -37,6 +39,21 @@ export const queryKeys = {
     profile: {
       all: ['account', 'profile'] as const,
     },
+  },
+  /**
+   * O lado da equipe na moderação (`/administrator/*`): a fila de anúncios e as denúncias.
+   * Família à parte da do dono, porque a equipe lê **todos** os anúncios, em qualquer
+   * estado, e um cache não serve ao outro. O `detail` do anúncio é pelo **id**.
+   */
+  administrator: {
+    listings: resource<AdministratorListingPaginatePayload>()(
+      'administrator',
+      'listings',
+    ),
+    reports: resource<AdministratorReportPaginatePayload>()(
+      'administrator',
+      'reports',
+    ),
   },
   /**
    * Os anúncios do dono logado (`/owner/listings`). Família à parte da vitrine: o dono vê

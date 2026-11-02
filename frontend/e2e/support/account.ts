@@ -1,11 +1,51 @@
-import type { APIRequestContext, BrowserContextOptions } from '@playwright/test'
+import type {
+  APIRequestContext,
+  APIResponse,
+  BrowserContextOptions,
+} from '@playwright/test'
 
 import { E2eEnv } from './env'
+
+/** Uma conta que já entrou: o e-mail e o estado do navegador autenticado. */
+export type E2eSession = {
+  email: string
+  storageState: Exclude<
+    BrowserContextOptions['storageState'],
+    string | undefined
+  >
+}
 
 /**
  * Conta de dono para o E2E. Cada teste cria a própria, com e-mail único: o banco do E2E
  * não é limpo entre execuções, e um e-mail fixo daria `USER_ALREADY_EXISTS` na segunda.
  */
+/**
+ * Quando a janela de um limite de entrada ou de cadastro (5 por minuto por IP) esgota. A API
+ * devolve `x-ratelimit-remaining` em cada resposta, e o que está acima de zero é livre; no
+ * zero, a próxima chamada seria a sexta e **bloquearia por 10 minutos**, derrubando a rodada
+ * inteira. Esperar o minuto virar custa 60 s uma vez; errar custa a rodada.
+ */
+const WINDOW_MS = 60_500
+const windows = new Map<string, { remaining: number; at: number }>()
+
+async function pace(path: string): Promise<void> {
+  const last = windows.get(path)
+
+  if (last === undefined || last.remaining > 0) return
+
+  const wait = WINDOW_MS - (Date.now() - last.at)
+
+  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait))
+}
+
+function note(path: string, response: APIResponse): void {
+  const remaining = Number(response.headers()['x-ratelimit-remaining'])
+
+  if (Number.isFinite(remaining)) {
+    windows.set(path, { remaining, at: Date.now() })
+  }
+}
+
 export class E2eAccount {
   /** Atende a política de senha (`Rule.password()`: 8 a 32, maiúscula, minúscula, número e símbolo). */
   static readonly password = 'Senha@12345'
@@ -26,6 +66,7 @@ export class E2eAccount {
   static async create(request: APIRequestContext): Promise<string> {
     const email = E2eAccount.email()
 
+    await pace('sign-up')
     const response = await request.post(
       `${E2eEnv.apiUrl}/authentication/sign-up`,
       {
@@ -37,6 +78,8 @@ export class E2eAccount {
         },
       },
     )
+
+    note('sign-up', response)
 
     if (response.status() !== 201) {
       throw new Error(
@@ -56,23 +99,41 @@ export class E2eAccount {
    * minutos: um spec que entrasse pela tela a cada teste esgotaria o orçamento. Entra uma vez
    * por worker e cada teste abre o navegador com este estado.
    */
-  static async session(request: APIRequestContext): Promise<{
-    email: string
-    storageState: Exclude<
-      BrowserContextOptions['storageState'],
-      string | undefined
-    >
-  }> {
+  static async session(request: APIRequestContext): Promise<E2eSession> {
     const email = await E2eAccount.create(request)
 
+    return E2eAccount.signIn(request, email, E2eAccount.password)
+  }
+
+  /**
+   * Entra na conta da equipe que o seeder criou (a moderadora de exemplo). Não se cria
+   * conta de equipe pela API: o cadastro público só faz `OWNER`, e a equipe nasce do seeder
+   * ou do administrador. Mesmo orçamento de entrada de `session`: uma vez por worker.
+   */
+  static async staffSession(request: APIRequestContext): Promise<E2eSession> {
+    return E2eAccount.signIn(
+      request,
+      E2eEnv.moderatorEmail,
+      E2eEnv.ownerPassword(),
+    )
+  }
+
+  private static async signIn(
+    request: APIRequestContext,
+    email: string,
+    password: string,
+  ): Promise<E2eSession> {
+    await pace('sign-in')
     const response = await request.post(
       `${E2eEnv.apiUrl}/authentication/sign-in`,
-      { data: { email, password: E2eAccount.password } },
+      { data: { email, password } },
     )
+
+    note('sign-in', response)
 
     if (response.status() !== 204) {
       throw new Error(
-        `a entrada da conta do E2E respondeu ${response.status()}: ${await response.text()}`,
+        `a entrada da conta ${email} no E2E respondeu ${response.status()}: ${await response.text()}`,
       )
     }
 

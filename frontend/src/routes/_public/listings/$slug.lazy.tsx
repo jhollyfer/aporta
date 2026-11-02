@@ -11,7 +11,9 @@ import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 import { getLocale } from '#/paraglide/runtime'
 
-import { Costs } from './-components/costs'
+import { ReportListing } from './-components/report-listing'
+
+import { Costs } from '#/components/common/costs'
 
 export const Route = createLazyFileRoute('/_public/listings/$slug')({
   component: RouteComponent,
@@ -52,7 +54,7 @@ function RouteComponent(): React.JSX.Element {
         <p className="text-sm font-bold text-moss">
           {LISTING_TYPE_LABELS[listing.type]()} · {listing.neighborhood.name}
         </p>
-        <h1 className="max-w-4xl text-[clamp(2rem,4.6vw,4.25rem)] leading-[1.04] font-extrabold tracking-tight text-ink">
+        <h1 className="max-w-4xl text-[clamp(2rem,4.6vw,4.25rem)] leading-[1.04] font-extrabold tracking-tight break-words text-ink">
           {listing.title}
         </h1>
       </header>
@@ -154,6 +156,8 @@ function RouteComponent(): React.JSX.Element {
           ))}
         </ul>
       </section>
+
+      <ReportListing slug={listing.slug} title={listing.title} />
 
       {/* A barra do celular: última filha do contêiner, para o `sticky` parar acima do rodapé do site. */}
       <div className={STICKY_BAR}>

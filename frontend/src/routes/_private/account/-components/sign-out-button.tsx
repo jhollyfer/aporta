@@ -9,7 +9,7 @@ import { clearSessionHint } from '#/lib/session-hint'
 import { m } from '#/paraglide/messages'
 
 /**
- * Sair: encerra a sessão no servidor, apaga a dica e a sessão do cache, e volta para a
+ * Sair: encerra a sessão no servidor, apaga a dica, a sessão e os anúncios do dono do cache, e volta para a
  * home.
  *
  * `onSettled` e não `onSuccess`: se o token de acesso já venceu, o endpoint responde 401
@@ -30,6 +30,9 @@ export function SignOutButton(): React.JSX.Element {
       clearSessionHint()
       await router.navigate({ to: '/' })
       queryClient.removeQueries({ queryKey: queryKeys.account.profile.all })
+      // Os anúncios são da conta que saiu: quem entrar depois neste navegador não pode
+      // ver a lista dela por até um minuto de cache.
+      queryClient.removeQueries({ queryKey: queryKeys.owner.listings.all })
     },
   })
 

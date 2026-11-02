@@ -16,6 +16,7 @@ import { cn } from '#/lib/cn'
  *   moss     a ação principal da área
  *   sun      a ação de contato (WhatsApp, anunciar): o acento quente, no máximo um por tela
  *   outline  a secundária, com o contorno no tom da tinta
+ *   danger   a ação que não se desfaz (arquivar), só dentro da confirmação
  */
 export const pillVariants = cva(
   'inline-flex items-center justify-center gap-2 rounded-full font-extrabold transition-[color,background-color,transform] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100',
@@ -24,6 +25,7 @@ export const pillVariants = cva(
       tone: {
         moss: 'bg-moss text-paper hover:bg-moss-deep',
         sun: 'bg-sun text-on-sun hover:bg-sun-deep',
+        danger: 'bg-danger text-paper hover:brightness-90',
         outline: 'border-2 border-ink text-ink hover:bg-ink hover:text-paper',
       },
       scale: {

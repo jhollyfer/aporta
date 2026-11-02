@@ -10,6 +10,8 @@ import { queryKeys } from '#/hooks/tanstack-query/_query-keys'
  */
 const FAMILIES = {
   'account.profile': queryKeys.account.profile.all,
+  'owner.listings': queryKeys.owner.listings.all,
+  'storefront.listings': queryKeys.storefront.listings.all,
 } as const satisfies Record<string, QueryKey>
 
 /** O que uma tela pode pedir para invalidar: o nome de uma família de `FAMILIES`. */

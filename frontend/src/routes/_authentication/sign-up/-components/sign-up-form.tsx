@@ -12,7 +12,7 @@ import { m } from '#/paraglide/messages'
 
 import { applyAuthFailure } from '../../-components/apply-auth-failure'
 import { AuthCard } from '../../-components/auth-card'
-import { FormNotice } from '../../-components/form-notice'
+import { FormNotice } from '#/components/common/form-notice'
 import { TextField } from '../../-components/text-field'
 import { useEnterSession } from '../../-components/use-enter-session'
 

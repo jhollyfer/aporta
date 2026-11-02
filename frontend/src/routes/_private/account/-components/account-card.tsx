@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
+import { USER_ROLE } from '@aporta/shared'
+
 import { PillButton } from '#/components/common/pill-button'
 import { accountOptions } from '#/integrations/tanstack-query/queries/account'
 import { USER_ROLE_LABELS } from '#/lib/labels'
@@ -48,6 +50,11 @@ export function AccountCard(): React.JSX.Element {
         </div>
       </dl>
       <div className="flex flex-wrap gap-3">
+        {account.role === USER_ROLE.OWNER && (
+          <PillButton to="/owner/listings" scale="lg">
+            {m.nav_my_listings()}
+          </PillButton>
+        )}
         <PillButton to="/list-your-place" tone="sun" scale="lg">
           {m.account_list_cta()}
         </PillButton>

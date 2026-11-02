@@ -15,6 +15,7 @@ import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
 import { Route as HealthCheckRouteImport } from './routes/health-check'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PrivateOwnerLayoutRouteImport } from './routes/_private/owner/layout'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/sign-in/index'
@@ -24,6 +25,8 @@ import { Route as PublicGuideIndexRouteImport } from './routes/_public/guide/ind
 import { Route as PublicListYourPlaceIndexRouteImport } from './routes/_public/list-your-place/index'
 import { Route as PublicListingsIndexRouteImport } from './routes/_public/listings/index'
 import { Route as PublicListingsSlugRouteImport } from './routes/_public/listings/$slug'
+import { Route as PrivateOwnerListingsIndexRouteImport } from './routes/_private/owner/listings/index'
+import { Route as PrivateOwnerListingsIdIndexRouteImport } from './routes/_private/owner/listings/$id/index'
 
 const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
   id: '/_authentication',
@@ -51,6 +54,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PrivateOwnerLayoutRoute = PrivateOwnerLayoutRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => PrivateLayoutRoute,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
@@ -114,12 +122,31 @@ const PublicListingsSlugRoute = PublicListingsSlugRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_public/listings/$slug.lazy').then((d) => d.Route),
 )
+const PrivateOwnerListingsIndexRoute =
+  PrivateOwnerListingsIndexRouteImport.update({
+    id: '/listings/',
+    path: '/listings/',
+    getParentRoute: () => PrivateOwnerLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/owner/listings/index.lazy').then((d) => d.Route),
+  )
+const PrivateOwnerListingsIdIndexRoute =
+  PrivateOwnerListingsIdIndexRouteImport.update({
+    id: '/listings/$id/',
+    path: '/listings/$id/',
+    getParentRoute: () => PrivateOwnerLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/owner/listings/$id/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/health-check': typeof HealthCheckRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/owner': typeof PrivateOwnerLayoutRouteWithChildren
   '/$': typeof PublicSplatRoute
   '/listings/$slug': typeof PublicListingsSlugRoute
   '/sign-in/': typeof AuthenticationSignInIndexRoute
@@ -128,12 +155,15 @@ export interface FileRoutesByFullPath {
   '/guide/': typeof PublicGuideIndexRoute
   '/list-your-place/': typeof PublicListYourPlaceIndexRoute
   '/listings/': typeof PublicListingsIndexRoute
+  '/owner/listings/': typeof PrivateOwnerListingsIndexRoute
+  '/owner/listings/$id/': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/health-check': typeof HealthCheckRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/owner': typeof PrivateOwnerLayoutRouteWithChildren
   '/$': typeof PublicSplatRoute
   '/listings/$slug': typeof PublicListingsSlugRoute
   '/sign-in': typeof AuthenticationSignInIndexRoute
@@ -142,6 +172,8 @@ export interface FileRoutesByTo {
   '/guide': typeof PublicGuideIndexRoute
   '/list-your-place': typeof PublicListYourPlaceIndexRoute
   '/listings': typeof PublicListingsIndexRoute
+  '/owner/listings': typeof PrivateOwnerListingsIndexRoute
+  '/owner/listings/$id': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,6 +183,7 @@ export interface FileRoutesById {
   '/health-check': typeof HealthCheckRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_private/owner': typeof PrivateOwnerLayoutRouteWithChildren
   '/_public/$': typeof PublicSplatRoute
   '/_public/': typeof PublicIndexRoute
   '/_public/listings/$slug': typeof PublicListingsSlugRoute
@@ -160,6 +193,8 @@ export interface FileRoutesById {
   '/_public/guide/': typeof PublicGuideIndexRoute
   '/_public/list-your-place/': typeof PublicListYourPlaceIndexRoute
   '/_public/listings/': typeof PublicListingsIndexRoute
+  '/_private/owner/listings/': typeof PrivateOwnerListingsIndexRoute
+  '/_private/owner/listings/$id/': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -168,6 +203,7 @@ export interface FileRouteTypes {
     | '/health-check'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/owner'
     | '/$'
     | '/listings/$slug'
     | '/sign-in/'
@@ -176,12 +212,15 @@ export interface FileRouteTypes {
     | '/guide/'
     | '/list-your-place/'
     | '/listings/'
+    | '/owner/listings/'
+    | '/owner/listings/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/health-check'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/owner'
     | '/$'
     | '/listings/$slug'
     | '/sign-in'
@@ -190,6 +229,8 @@ export interface FileRouteTypes {
     | '/guide'
     | '/list-your-place'
     | '/listings'
+    | '/owner/listings'
+    | '/owner/listings/$id'
   id:
     | '__root__'
     | '/_authentication'
@@ -198,6 +239,7 @@ export interface FileRouteTypes {
     | '/health-check'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/_private/owner'
     | '/_public/$'
     | '/_public/'
     | '/_public/listings/$slug'
@@ -207,6 +249,8 @@ export interface FileRouteTypes {
     | '/_public/guide/'
     | '/_public/list-your-place/'
     | '/_public/listings/'
+    | '/_private/owner/listings/'
+    | '/_private/owner/listings/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,6 +305,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_private/owner': {
+      id: '/_private/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof PrivateOwnerLayoutRouteImport
+      parentRoute: typeof PrivateLayoutRoute
     }
     '/_public/': {
       id: '/_public/'
@@ -325,6 +376,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicListingsSlugRouteImport
       parentRoute: typeof PublicLayoutRoute
     }
+    '/_private/owner/listings/': {
+      id: '/_private/owner/listings/'
+      path: '/listings'
+      fullPath: '/owner/listings/'
+      preLoaderRoute: typeof PrivateOwnerListingsIndexRouteImport
+      parentRoute: typeof PrivateOwnerLayoutRoute
+    }
+    '/_private/owner/listings/$id/': {
+      id: '/_private/owner/listings/$id/'
+      path: '/listings/$id'
+      fullPath: '/owner/listings/$id/'
+      preLoaderRoute: typeof PrivateOwnerListingsIdIndexRouteImport
+      parentRoute: typeof PrivateOwnerLayoutRoute
+    }
   }
 }
 
@@ -341,11 +406,26 @@ const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
 const AuthenticationLayoutRouteWithChildren =
   AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren)
 
+interface PrivateOwnerLayoutRouteChildren {
+  PrivateOwnerListingsIndexRoute: typeof PrivateOwnerListingsIndexRoute
+  PrivateOwnerListingsIdIndexRoute: typeof PrivateOwnerListingsIdIndexRoute
+}
+
+const PrivateOwnerLayoutRouteChildren: PrivateOwnerLayoutRouteChildren = {
+  PrivateOwnerListingsIndexRoute: PrivateOwnerListingsIndexRoute,
+  PrivateOwnerListingsIdIndexRoute: PrivateOwnerListingsIdIndexRoute,
+}
+
+const PrivateOwnerLayoutRouteWithChildren =
+  PrivateOwnerLayoutRoute._addFileChildren(PrivateOwnerLayoutRouteChildren)
+
 interface PrivateLayoutRouteChildren {
+  PrivateOwnerLayoutRoute: typeof PrivateOwnerLayoutRouteWithChildren
   PrivateAccountIndexRoute: typeof PrivateAccountIndexRoute
 }
 
 const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
+  PrivateOwnerLayoutRoute: PrivateOwnerLayoutRouteWithChildren,
   PrivateAccountIndexRoute: PrivateAccountIndexRoute,
 }
 

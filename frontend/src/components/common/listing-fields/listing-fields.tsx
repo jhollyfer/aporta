@@ -2,20 +2,12 @@ import * as React from 'react'
 import { Controller } from 'react-hook-form'
 import type { Control } from 'react-hook-form'
 
-import {
-  LISTING_PERIODS,
-  LISTING_TYPES,
-  PHOTO_ENVIRONMENTS,
-} from '@aporta/shared'
+import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
 
 import { CONTROL, Field, invalidProps } from '#/components/common/field'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
-import {
-  LISTING_PERIOD_LABELS,
-  LISTING_TYPE_LABELS,
-  PHOTO_ENVIRONMENT_LABELS,
-} from '#/lib/labels'
+import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
 type StepProps = { control: Control<OwnerListingCreate> }
@@ -147,7 +139,7 @@ function NumberInput({
   label,
   hint,
 }: StepProps & {
-  name: 'monthly' | 'daily' | 'minimumStayMonths'
+  name: 'monthly' | 'daily' | 'minimumStayMonths' | 'bedrooms' | 'bathrooms'
   label: string
   hint?: string
 }): React.JSX.Element {
@@ -273,31 +265,6 @@ export function ValuesStep({ control }: StepProps): React.JSX.Element {
   )
 }
 
-/**
- * O passo de fotos pede cada ambiente por nome. As fotos ficam no aparelho (o
- * `localStorage` não guarda arquivo, e o envio de verdade entra com a API), então
- * este passo orienta e confere a lista; não é um upload.
- */
-export function PhotosStep(): React.JSX.Element {
-  return (
-    <ul className="flex flex-col gap-3">
-      {PHOTO_ENVIRONMENTS.map((environment) => (
-        <li key={environment}>
-          <label className="flex flex-col gap-1.5 text-sm font-bold text-ink">
-            {PHOTO_ENVIRONMENT_LABELS[environment]()}
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="text-base font-normal text-ink-soft"
-            />
-          </label>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
 export function RulesStep({ control }: StepProps): React.JSX.Element {
   return (
     <>
@@ -408,6 +375,27 @@ export function ContactStep({ control }: StepProps): React.JSX.Element {
             />
           </Field>
         )}
+      />
+    </>
+  )
+}
+
+/**
+ * Quartos e banheiros: só a edição pede. O cadastro em etapas não os tem (o servidor
+ * assume um de cada), e o dono corrige aqui o que for diferente.
+ */
+export function RoomsFields({ control }: StepProps): React.JSX.Element {
+  return (
+    <>
+      <NumberInput
+        control={control}
+        name="bedrooms"
+        label={m.field_bedrooms()}
+      />
+      <NumberInput
+        control={control}
+        name="bathrooms"
+        label={m.field_bathrooms()}
       />
     </>
   )

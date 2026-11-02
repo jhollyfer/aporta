@@ -1,4 +1,5 @@
 import type {
+  OwnerListingPaginatePayload,
   StorefrontListingPaginatePayload,
   StorefrontNeighborhoodPaginatePayload,
   StorefrontPlacePaginatePayload,
@@ -36,6 +37,14 @@ export const queryKeys = {
     profile: {
       all: ['account', 'profile'] as const,
     },
+  },
+  /**
+   * Os anúncios do dono logado (`/owner/listings`). Família à parte da vitrine: o dono vê
+   * o que ainda não está no ar (em análise) e a vitrine nunca, então um cache não serve ao
+   * outro. O `detail` é pelo **id**, que é o que as rotas do dono carregam.
+   */
+  owner: {
+    listings: resource<OwnerListingPaginatePayload>()('owner', 'listings'),
   },
   /**
    * A vitrine pública. O `detail` do anúncio é pelo **slug**, que é o que o endereço

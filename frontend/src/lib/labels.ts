@@ -2,6 +2,7 @@ import { m } from '#/paraglide/messages'
 
 import type {
   ListingPeriod,
+  ListingStatus,
   ListingType,
   PhotoEnvironment,
   PlaceCategory,
@@ -51,4 +52,11 @@ export const USER_ROLE_LABELS: Record<UserRole, () => string> = {
   OWNER: () => m.label_role_owner(),
   MODERATOR: () => m.label_role_moderator(),
   ADMINISTRATOR: () => m.label_role_administrator(),
+}
+
+export const LISTING_STATUS_LABELS: Record<ListingStatus, () => string> = {
+  DRAFT: () => m.label_status_draft(),
+  PENDING: () => m.label_status_pending(),
+  PUBLISHED: () => m.label_status_published(),
+  ARCHIVED: () => m.label_status_archived(),
 }

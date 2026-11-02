@@ -39,6 +39,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   APP_SERVER_URL: Env.schema.string({ format: 'url', tld: false }),
 
   /*
+  | The public origin of the web app. Optional because with the app and the API on the same
+  | site it changes nothing: it only decides the session cookie `sameSite`
+  | (`config/session-token.ts`), `none` when it is on a different site from `APP_SERVER_URL`.
+  | Absent falls back to `lax`, never to `none`.
+  */
+  APP_CLIENT_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+
+  /*
   | The reverse proxies whose `X-Forwarded-For` is trusted: addresses, CIDR
   | ranges and the words `loopback`, `linklocal` and `uniquelocal`, separated by
   | comma (the http-server's `trustProxy`, via proxy-addr). Optional because
@@ -114,10 +122,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Seeding
   |----------------------------------------------------------------------------
   |
-  | Read by the first administrator seeder, and optional because the application
-  | boots without them - only whoever seeds needs them. Without the password the seeder stops instead of
-  | creating an account with a known credential.
+  | Each seed is switched on by its key having a value, in any environment, and the application
+  | boots without them - only whoever seeds needs them. Empty skips that seed with one log line,
+  | and never throws: no password lives in the code, and the seeder does not invent one.
+  | `SEED_OWNER_*` is the first administrator (the pair goes together: a password without an
+  | e-mail stops the seeder); `SEED_DEMO_PASSWORD` is the shared password of the demo accounts
+  | and the switch of the sample content.
   */
   SEED_OWNER_EMAIL: Env.schema.string.optional(),
   SEED_OWNER_PASSWORD: Env.schema.string.optional(),
+  SEED_DEMO_PASSWORD: Env.schema.string.optional(),
 })

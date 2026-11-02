@@ -95,14 +95,15 @@ test.group(
     }) => {
       await db.table('rate_limits').insert({
         // `rlflx:` is the rate-limiter-flexible prefix underneath the limiter.
-        key: 'rlflx:signInAccount_signin:administrator@mail.com',
+        key: 'rlflx:signInAccount_signin:administrator@example.com',
         points: 20,
         expire: Date.now() + 60 * 60 * 1000,
       })
 
-      const response = await client
-        .post('/authentication/sign-in')
-        .json({ email: '  Administrator@MAIL.com ', password: 'Errada1234!' })
+      const response = await client.post('/authentication/sign-in').json({
+        email: '  Administrator@EXAMPLE.com ',
+        password: 'Errada1234!',
+      })
 
       response.assertStatus(429)
       assert.isUndefined(response.cookie(COOKIE_TOKEN.ACCESS))

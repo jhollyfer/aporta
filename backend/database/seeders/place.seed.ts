@@ -1,3 +1,4 @@
+import logger from '@adonisjs/core/services/logger'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 
@@ -5,19 +6,26 @@ import { PLACES } from '#database/data/places'
 import NeighborhoodSeeder from '#database/seeders/neighborhood.seed'
 import Neighborhood from '#models/neighborhood'
 import Place from '#models/place'
+import env from '#start/env'
 
 /**
- * The ten sample places of the guide. Development only (`static environment`), for the reason the
- * listing seeder explains: the phones are fictional and the curation is not the city's yet.
+ * The ten sample places of the guide. Part of the demo, switched on by `SEED_DEMO_PASSWORD`
+ * having a value, for the reason the listing seeder explains: the phones are fictional and the
+ * curation is not the city's yet. With the key empty it logs one line and skips.
  *
  * Idempotent by `(category, name)` (`updateOrCreateMany`, _doc-lib/lucid.md#seeders): unlike the
  * neighborhoods and the listings, a place has no `slug`, and the sample never repeats a name inside
  * a category. It runs the neighborhood seeder first, like the listing one.
  */
 export default class PlaceSeeder extends BaseSeeder {
-  static override environment = ['development']
-
   override async run() {
+    if (!env.get('SEED_DEMO_PASSWORD')) {
+      logger.info(
+        'SEED_DEMO_PASSWORD is empty: the sample places seed was skipped',
+      )
+      return
+    }
+
     await NeighborhoodSeeder.ensure()
 
     const neighborhoods = await Neighborhood.query().whereIn(

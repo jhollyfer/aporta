@@ -1,13 +1,16 @@
 import * as React from 'react'
 
-import type { Listing, PhotoEnvironment } from '@aporta/shared'
+import type {
+  PhotoEnvironment,
+  StorefrontListingShowResponse,
+} from '@aporta/shared'
 
 import { cn } from '#/lib/cn'
 
 import { GalleryContext } from './gallery-context'
 
 type GalleryRootProps = {
-  listing: Listing
+  listing: StorefrontListingShowResponse
   className?: string
   children: React.ReactNode
 }

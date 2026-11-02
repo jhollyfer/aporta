@@ -1,18 +1,25 @@
 import * as React from 'react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router'
 
 import { EmptyState } from '#/components/common/empty-state'
 import { FilterBar } from '#/components/common/filter-bar'
 import { ListingCard } from '#/components/common/listing-card'
 import { ListingMap } from '#/components/common/listing-map'
-import { LISTINGS } from '#/lib/data/listings'
-import { EMPTY_FILTERS, filterListings } from '#/lib/filters'
+import { storefrontListingsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
+import { EMPTY_FILTERS } from '#/lib/filters'
 import type { ListingFilters } from '#/lib/filters'
 import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
 
 import { ViewToggle } from './-components/view-toggle'
-import { LISTINGS_VIEW, NEXT_VIEW, toFilters, toSearchPatch } from './-search'
+import {
+  LISTINGS_VIEW,
+  NEXT_VIEW,
+  toFilters,
+  toListingParams,
+  toSearchPatch,
+} from './-search'
 
 export const Route = createLazyFileRoute('/_public/listings/')({
   component: RouteComponent,
@@ -31,7 +38,9 @@ function RouteComponent(): React.JSX.Element {
   const resultsRef = React.useRef<HTMLUListElement>(null)
 
   const filters = toFilters(search)
-  const results = filterListings(LISTINGS, filters)
+  const { data: results, meta } = useSuspenseQuery(
+    storefrontListingsQueryOptions(toListingParams(search)),
+  ).data
   const view = search.view ?? LISTINGS_VIEW.LIST
   const showingMap = view === LISTINGS_VIEW.MAP
 
@@ -76,7 +85,7 @@ function RouteComponent(): React.JSX.Element {
 
       <FilterBar
         filters={filters}
-        count={results.length}
+        count={meta.total}
         onChange={handleChange}
         onClear={handleClear}
         onApply={handleApply}

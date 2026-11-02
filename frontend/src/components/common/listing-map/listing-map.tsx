@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ClientOnly } from '@tanstack/react-router'
 
-import type { Listing } from '@aporta/shared'
+import type { StorefrontListingShowResponse } from '@aporta/shared'
 
 import { cn } from '#/lib/cn'
 
@@ -10,7 +10,7 @@ import { ListingMapContext } from './listing-map-context'
 const ListingMapCanvas = React.lazy(() => import('./listing-map-canvas'))
 
 type ListingMapRootProps = {
-  listings: ReadonlyArray<Listing>
+  listings: ReadonlyArray<StorefrontListingShowResponse>
   activeSlug: string | null
   onSelect: (slug: string | null) => void
   className?: string

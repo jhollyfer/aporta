@@ -1,14 +1,14 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 
-import type { Listing } from '@aporta/shared'
+import type { StorefrontListingShowResponse } from '@aporta/shared'
 
 import { cn } from '#/lib/cn'
 
 import { ListingCardContext } from './listing-card-context'
 
 type ListingCardRootProps = {
-  listing: Listing
+  listing: StorefrontListingShowResponse
   className?: string
   children: React.ReactNode
 }

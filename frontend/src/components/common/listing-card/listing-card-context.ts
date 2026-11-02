@@ -1,9 +1,9 @@
 import { createContext, use } from 'react'
 
-import type { Listing } from '@aporta/shared'
+import type { StorefrontListingShowResponse } from '@aporta/shared'
 
 export type ListingCardContextValue = {
-  listing: Listing
+  listing: StorefrontListingShowResponse
 }
 
 export const ListingCardContext = createContext<ListingCardContextValue | null>(

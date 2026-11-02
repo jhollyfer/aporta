@@ -3,13 +3,27 @@ import L from 'leaflet'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 
 import { formatCurrency } from '#/lib/format'
-import { monthlyEquivalent } from '#/lib/filters'
 import { getLocale } from '#/paraglide/runtime'
 
 import { useListingMap } from './listing-map-context'
 
 /** Centro de Benjamin Constant: o mapa nasce aqui quando não há anúncio para enquadrar. */
 const CITY_CENTER: L.LatLngTuple = [-4.3775, -70.0312]
+
+/** Dias em que a diária equivale ao mês, só para o rótulo do pin de hotel. */
+const DAYS_PER_MONTH = 30
+
+/**
+ * O valor que o pin mostra: o mensal, ou a diária vezes 30 quando o dono só anuncia a
+ * diária (hotel). Sem a conversão, o pin do hotel diria R$ 160 ao lado de kitnets de
+ * R$ 900 e pareceria o imóvel mais barato do mapa. O card mostra o valor na unidade
+ * em que o dono anunciou; esta conta é só do rótulo.
+ */
+function pinPrice(price: { monthly: number | null; daily: number | null }) {
+  if (price.monthly !== null) return price.monthly
+  if (price.daily !== null) return price.daily * DAYS_PER_MONTH
+  return 0
+}
 
 function priceIcon(label: string, active: boolean): L.DivIcon {
   /*
@@ -81,7 +95,7 @@ export default function ListingMapCanvas(): React.JSX.Element {
           key={listing.id}
           position={[listing.lat, listing.lng]}
           icon={priceIcon(
-            formatCurrency(monthlyEquivalent(listing), locale),
+            formatCurrency(pinPrice(listing.price), locale),
             listing.slug === activeSlug,
           )}
           eventHandlers={{ click: () => onSelect(listing.slug) }}

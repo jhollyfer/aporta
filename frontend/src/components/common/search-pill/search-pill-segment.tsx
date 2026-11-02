@@ -1,8 +1,9 @@
 import * as React from 'react'
 
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
+import type { StorefrontNeighborhoodShowResponse } from '@aporta/shared'
 
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
@@ -14,7 +15,10 @@ type Option = { value: string; label: string }
 type FieldSpec = {
   label: () => string
   any: () => string
-  options: () => ReadonlyArray<Option>
+  /** Os bairros vêm da API, então quem desenha os repassa; só o campo de bairro os usa. */
+  options: (
+    neighborhoods: ReadonlyArray<StorefrontNeighborhoodShowResponse>,
+  ) => ReadonlyArray<Option>
 }
 
 const FIELDS: Record<SearchField, FieldSpec> = {
@@ -30,8 +34,8 @@ const FIELDS: Record<SearchField, FieldSpec> = {
   [SEARCH_FIELD.NEIGHBORHOOD]: {
     label: () => m.search_neighborhood_label(),
     any: () => m.search_neighborhood_any(),
-    options: () =>
-      NEIGHBORHOODS.map((item) => ({ value: item.slug, label: item.name })),
+    options: (neighborhoods) =>
+      neighborhoods.map((item) => ({ value: item.slug, label: item.name })),
   },
   [SEARCH_FIELD.PERIOD]: {
     label: () => m.search_period_label(),
@@ -51,6 +55,7 @@ export function SearchPillSegment({
   field: SearchField
 }): React.JSX.Element {
   const { values, setValue } = useSearchPill()
+  const neighborhoods = useNeighborhoods()
   const spec = FIELDS[field]
   const id = React.useId()
 
@@ -66,7 +71,7 @@ export function SearchPillSegment({
         className="w-full bg-transparent text-sm text-ink-soft outline-none"
       >
         <option value="">{spec.any()}</option>
-        {spec.options().map((option) => (
+        {spec.options(neighborhoods).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

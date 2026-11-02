@@ -57,7 +57,7 @@ export function buildSitemap(
   ].join('\n')
 }
 
-/** As páginas fixas do site. Os anúncios entram pela rota, a partir de `lib/data`. */
+/** As páginas fixas do site. Os anúncios entram pela rota, a partir da API. */
 export const STATIC_ENTRIES: ReadonlyArray<SitemapEntry> = [
   { path: '/', priority: 1 },
   { path: '/listings', priority: 0.9 },

@@ -1,9 +1,9 @@
 import { createContext, use } from 'react'
 
-import type { Listing } from '@aporta/shared'
+import type { StorefrontListingShowResponse } from '@aporta/shared'
 
 export type ListingMapContextValue = {
-  listings: ReadonlyArray<Listing>
+  listings: ReadonlyArray<StorefrontListingShowResponse>
   activeSlug: string | null
   onSelect: (slug: string | null) => void
 }

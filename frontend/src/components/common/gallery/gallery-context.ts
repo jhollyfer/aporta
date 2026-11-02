@@ -1,9 +1,12 @@
 import { createContext, use } from 'react'
 
-import type { Listing, PhotoEnvironment } from '@aporta/shared'
+import type {
+  PhotoEnvironment,
+  StorefrontListingShowResponse,
+} from '@aporta/shared'
 
 export type GalleryContextValue = {
-  listing: Listing
+  listing: StorefrontListingShowResponse
   index: number
   setIndex: (index: number) => void
   jumpTo: (environment: PhotoEnvironment) => void

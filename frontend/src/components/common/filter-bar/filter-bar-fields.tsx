@@ -3,7 +3,7 @@ import * as React from 'react'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { ListingPeriod, ListingType } from '@aporta/shared'
 
-import { NEIGHBORHOODS } from '#/lib/data/neighborhoods'
+import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
@@ -37,6 +37,7 @@ function toPeriod(raw: string): ListingPeriod | null {
  */
 export function FilterBarFields(): React.JSX.Element {
   const { filters, onChange } = useFilterBar()
+  const neighborhoods = useNeighborhoods()
 
   return (
     <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
@@ -66,7 +67,7 @@ export function FilterBarFields(): React.JSX.Element {
           }
         >
           <option value="">{m.search_neighborhood_any()}</option>
-          {NEIGHBORHOODS.map((item) => (
+          {neighborhoods.map((item) => (
             <option key={item.slug} value={item.slug}>
               {item.name}
             </option>

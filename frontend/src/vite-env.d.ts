@@ -10,8 +10,8 @@
 interface ImportMetaEnv {
   /** O endereço público do site, sem barra no fim: canônico, sitemap e `og:url`. */
   readonly VITE_SITE_URL?: string
-  /** Base da API AdonisJS. Sem ela o frontend usa os dados de `lib/data`. */
-  readonly VITE_API_URL?: string
+  /** Base da API AdonisJS, sem barra no fim. Obrigatória: o frontend lê tudo dela. */
+  readonly VITE_API_URL: string
 }
 
 interface ImportMeta {

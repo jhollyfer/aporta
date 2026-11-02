@@ -21,7 +21,7 @@ export function ListingCardPhoto({
         listingType={listing.type}
         title={listing.title}
         priority={priority}
-        className="transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+        className="transition-opacity duration-150 group-hover:opacity-90 motion-reduce:transition-none"
       />
     </div>
   )

@@ -21,10 +21,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <PillButton to="/account" tone="outline" className="self-start">
+        <PillButton to="/account" tone="link" className="self-start">
           {m.owner_listings_back()}
         </PillButton>
-        <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-ink sm:text-4xl">
+        <h1 className="text-title font-extrabold tracking-tight text-ink">
           {m.owner_listings_title()}
         </h1>
         <p className="text-lg text-ink-soft">{m.owner_listings_lead()}</p>
@@ -35,7 +35,7 @@ function RouteComponent(): React.JSX.Element {
           title={m.owner_listings_empty_title()}
           description={m.owner_listings_empty_text()}
         >
-          <PillButton to="/list-your-place" tone="sun" scale="lg">
+          <PillButton to="/list-your-place" scale="lg">
             {m.owner_listings_new()}
           </PillButton>
         </EmptyState>
@@ -48,12 +48,7 @@ function RouteComponent(): React.JSX.Element {
               <ListingRow key={listing.id} listing={listing} />
             ))}
           </ul>
-          <PillButton
-            to="/list-your-place"
-            tone="sun"
-            scale="lg"
-            className="self-start"
-          >
+          <PillButton to="/list-your-place" scale="lg" className="self-start">
             {m.owner_listings_new()}
           </PillButton>
         </>

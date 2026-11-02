@@ -136,7 +136,7 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <PillButton to="/owner/listings" tone="outline" className="self-start">
+        <PillButton to="/owner/listings" tone="link" className="self-start">
           {m.owner_listings_back_to_list()}
         </PillButton>
         <StatusChip
@@ -144,7 +144,7 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
           needsAdjustment={returned !== undefined}
           className="self-start"
         />
-        <h1 className="text-3xl leading-tight font-extrabold tracking-tight break-words text-ink sm:text-4xl">
+        <h1 className="text-title font-extrabold tracking-tight break-words text-ink">
           {m.owner_edit_title()}
         </h1>
         {listing.status === 'PUBLISHED' && (

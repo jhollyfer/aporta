@@ -81,6 +81,17 @@
   /* Nada que se leia fica abaixo de 13px: o `text-xs` do Tailwind (12px) é pequeno demais num celular de sol forte. */
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.25rem;
+  /*
+   * Tipografia fluida (DECISIONS.md #265): `clamp(mínimo, base + inclinação·vw, teto)`, com o
+   * tamanho de desktop como teto e o mínimo escolhido pelo que cabe em 320px. Só título encolhe;
+   * corpo (`text-base`), apoio (`text-sm`) e legenda (`text-xs`) ficam fixos.
+   */
+  --text-display: clamp(2.25rem, 1.25rem + 5.1vw, 6rem);
+  --text-display--line-height: 1.02;
+  --text-headline: clamp(2rem, 1.1rem + 4vw, 4.5rem);
+  --text-headline--line-height: 1.04;
+  --text-title: clamp(1.75rem, 1.25rem + 1.6vw, 2.25rem);
+  --text-title--line-height: 1.15;
   --font-sans:
     'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --color-paper: var(--paper);
@@ -177,6 +188,7 @@
   font-weight: 700;
   line-height: 1;
   padding: 0.4rem 0.6rem;
+  position: relative;
   text-align: center;
   white-space: nowrap;
   /* O divIcon tem tamanho zero e o Leaflet ancora o canto: sem isto o pin sai deslocado do ponto. */
@@ -185,46 +197,17 @@
   transform: translate(-50%, -50%);
 }
 
+/* A área de toque do pin chega a 44px sem engordar o desenho: o pill tem 29px de altura. */
+.price-pin::before {
+  content: '';
+  inset: -0.5rem;
+  position: absolute;
+}
+
 .price-pin[data-active='true'] {
   background: var(--moss);
   border-color: var(--moss);
   color: var(--paper);
-}
-
-/*
- * A camada de movimento: só `transform` e `opacity`, e só para quem não pediu menos movimento.
- *
- * `.enter` é a entrada do que aparece na primeira tela, escalonada por `--i` (um passo de 80ms).
- * `.reveal` é a entrada de cada bloco ao entrar na janela, guiada pela rolagem
- * (`animation-timeline: view()`): sem JavaScript e sem observador, o que importa para a internet
- * lenta do Alto Solimões. Onde o navegador não conhece essa propriedade o bloco simplesmente
- * aparece parado, que é o comportamento certo de uma melhoria progressiva.
- */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(1.5rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .enter {
-    animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(var(--i, 0) * 80ms);
-  }
-
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 35%;
-    }
-  }
 }
 
 /*
@@ -236,11 +219,27 @@
   font-size: 0.8125rem;
 }
 
+/* O botão de zoom do Leaflet tem 30px: no toque cresce para 44px. */
+@media (pointer: coarse) {
+  .leaflet-bar a {
+    height: 2.75rem;
+    line-height: 2.75rem;
+    width: 2.75rem;
+  }
+}
+
 .leaflet-control-zoom a,
 .leaflet-control-attribution {
   font-family: inherit;
 }
 
-.leaflet-control-attribution {
+.leaflet-container .leaflet-control-attribution {
   font-size: 0.8125rem;
+  /* O fundo e o link padrão do Leaflet (branco translúcido e #0078a8) reprovam o contraste sobre o mapa. */
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--moss);
 }

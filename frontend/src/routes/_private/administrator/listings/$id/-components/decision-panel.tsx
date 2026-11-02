@@ -195,7 +195,7 @@ export function DecisionPanel({
           <PillButton
             to="/listings/$slug"
             params={{ slug: listing.slug }}
-            tone="outline"
+            tone="link"
           >
             {m.owner_listings_view()}
           </PillButton>

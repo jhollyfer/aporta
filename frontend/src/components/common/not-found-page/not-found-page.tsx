@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Link } from '@tanstack/react-router'
-
+import { ActionButton } from '#/components/common/action-button'
+import { PillButton } from '#/components/common/pill-button'
 import { Scene, SCENE_KIND } from '#/components/common/scene'
 import { m } from '#/paraglide/messages'
 
@@ -31,7 +31,7 @@ export function NotFoundPage({
           {isError && '500'}
           {!isError && '404'}
         </p>
-        <h1 className="text-4xl font-extrabold tracking-tight text-ink">
+        <h1 className="text-title font-extrabold tracking-tight text-ink">
           {isError && m.error_title()}
           {!isError && m.not_found_title()}
         </h1>
@@ -41,20 +41,11 @@ export function NotFoundPage({
         </p>
         <div className="flex gap-3">
           {isError && onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              className="h-11 rounded-full bg-moss px-6 text-sm font-extrabold text-paper hover:bg-moss-deep"
-            >
-              {m.error_retry()}
-            </button>
+            <ActionButton onClick={onRetry}>{m.error_retry()}</ActionButton>
           )}
-          <Link
-            to="/"
-            className="inline-flex h-11 items-center rounded-full border-2 border-ink px-6 text-sm font-extrabold text-ink hover:bg-ink hover:text-paper"
-          >
+          <PillButton to="/" tone="link">
             {m.not_found_home()}
-          </Link>
+          </PillButton>
         </div>
       </div>
       <div className="mt-auto h-[38vh] min-h-56">

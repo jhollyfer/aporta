@@ -29,6 +29,10 @@ function readServerEnv(name: string): string | undefined {
  * nunca entrar no bundle do navegador): o endereço da API visto pelo SSR, pela
  * rede interna. Vem de `process.env`, que o Vite não expõe em `import.meta.env`.
  *
+ * `VITE_UPLOAD_MAX_SIZE` é o espelho do `UPLOAD_MAX_SIZE` da API (`_standards/backend.md` §6.2):
+ * o teto por arquivo, em bytes. Opcional: ausente, o cliente não recusa por tamanho e o `422` do
+ * servidor diz o limite. Entra no bundle em tempo de build, como toda `VITE_*`.
+ *
  * `STORAGE_PUBLIC_URL` também é só do servidor, e opcional: a origem do bucket (o
  * `STORAGE_ENDPOINT` da API), que o `Content-Security-Policy` libera em `img-src` e
  * `connect-src` para a foto abrir e o envio em partes chegar. Ausente, o CSP não menciona o
@@ -40,6 +44,7 @@ export const env = createEnv({
   client: {
     VITE_SITE_URL: z.url().default('http://localhost:3000'),
     VITE_API_URL: z.url(),
+    VITE_UPLOAD_MAX_SIZE: z.coerce.number().int().positive().optional(),
   },
   server: {
     SERVER_API_URL: z.url().optional(),

@@ -51,7 +51,7 @@ export function PlaceCard({
             phone={place.whatsapp}
             message={m.guide_whatsapp_message({ name: place.name })}
             label={m.guide_whatsapp_label()}
-            className="h-10 w-fit px-4 text-sm"
+            className="h-11 w-fit px-4 text-sm"
           />
         )}
       </div>

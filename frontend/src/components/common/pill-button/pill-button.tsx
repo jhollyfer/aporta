@@ -15,7 +15,8 @@ import { cn } from '#/lib/cn'
  *
  *   moss     a ação principal da área
  *   sun      a ação de contato (WhatsApp, anunciar): o acento quente, no máximo um por tela
- *   outline  a secundária, com o contorno no tom da tinta
+ *   outline  a secundária de formulário (botão), com o contorno no tom da tinta
+ *   link     a ação que não é a principal da tela: texto sublinhado, sem pílula (`frontend.md` §10.8)
  *   danger   a ação que não se desfaz (arquivar), só dentro da confirmação
  */
 export const pillVariants = cva(
@@ -27,12 +28,17 @@ export const pillVariants = cva(
         sun: 'bg-sun text-on-sun hover:bg-sun-deep',
         danger: 'bg-danger text-paper hover:brightness-90',
         outline: 'border-2 border-ink text-ink hover:bg-ink hover:text-paper',
+        link: 'text-moss underline underline-offset-4 hover:text-moss-deep',
       },
       scale: {
         md: 'h-11 px-5 text-sm',
         lg: 'h-14 px-8 text-base',
       },
     },
+    compoundVariants: [
+      // O link não tem pílula: sem raio nem preenchimento lateral, mantendo a altura de 44px do alvo de toque.
+      { tone: 'link', class: 'rounded-md px-1' },
+    ],
     defaultVariants: { tone: 'moss', scale: 'md' },
   },
 )

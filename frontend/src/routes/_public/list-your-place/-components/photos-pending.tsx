@@ -29,7 +29,7 @@ export function PhotosPending({
 }: PhotosPendingProps): React.JSX.Element {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 pt-12 pb-8">
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+      <h1 className="text-title font-extrabold tracking-tight text-ink">
         {m.owner_photos_title()}
       </h1>
       <p className="text-lg text-ink-soft" role="status">
@@ -47,7 +47,7 @@ export function PhotosPending({
         >
           {m.owner_photos_retry()}
         </ActionButton>
-        <PillButton to="/owner/listings" tone="outline" scale="lg">
+        <PillButton to="/owner/listings" tone="link">
           {m.owner_ready_listings()}
         </PillButton>
       </div>

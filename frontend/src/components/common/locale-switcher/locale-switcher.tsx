@@ -26,7 +26,7 @@ export function LocaleSwitcher(): React.JSX.Element {
           onClick={() => void setLocale(locale)}
           aria-pressed={locale === current}
           className={cn(
-            'rounded-full px-2.5 py-1.5 text-xs font-extrabold text-moss-deep',
+            'h-11 min-w-11 rounded-full px-2.5 text-xs font-extrabold text-moss-deep sm:h-8 sm:min-w-0',
             locale === current && 'bg-moss text-paper',
           )}
         >

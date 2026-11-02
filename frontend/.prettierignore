@@ -27,3 +27,6 @@ src/routeTree.gen.ts
 # Saída do Playwright, regenerada a cada execução.
 playwright-report/
 test-results/
+
+# Sessões que o projeto setup do Playwright grava; ignoradas pelo git e regeneradas a cada execução.
+playwright/.auth/

@@ -36,8 +36,7 @@ export function ListingFacts({
 }): React.JSX.Element {
   const locale = getLocale()
   const { monthly, daily } = listing.price
-  let minimum = m.detail_minimum_value({ count: listing.minimumStayMonths })
-  if (listing.minimumStayMonths === 1) minimum = m.detail_minimum_one()
+  const minimum = m.detail_minimum_value({ count: listing.minimumStayMonths })
 
   return (
     <div className="flex flex-col gap-6">
@@ -76,8 +75,8 @@ export function ListingFacts({
         </Fact>
         <Fact label={m.staff_fact_rooms()}>
           {m.staff_fact_rooms_value({
-            bedrooms: listing.bedrooms,
-            bathrooms: listing.bathrooms,
+            bedrooms: m.card_bedrooms({ count: listing.bedrooms }),
+            bathrooms: m.count_bathrooms({ count: listing.bathrooms }),
           })}
         </Fact>
         <Fact label={m.staff_fact_sent()}>

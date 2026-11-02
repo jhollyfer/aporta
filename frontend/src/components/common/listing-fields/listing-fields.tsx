@@ -63,7 +63,7 @@ export function TypeStep({ control }: StepProps): React.JSX.Element {
         control={control}
         name="furnished"
         render={({ field }) => (
-          <label className="flex items-center gap-3 text-base font-bold text-ink">
+          <label className="flex min-h-11 items-center gap-3 text-base font-bold text-ink">
             <input
               type="checkbox"
               checked={field.value}
@@ -210,7 +210,7 @@ export function ValuesStep({ control }: StepProps): React.JSX.Element {
             control={control}
             name={name}
             render={({ field }) => (
-              <label className="flex items-center gap-3 text-base text-ink">
+              <label className="flex min-h-11 items-center gap-3 text-base text-ink">
                 <input
                   type="checkbox"
                   checked={field.value}
@@ -234,7 +234,7 @@ export function ValuesStep({ control }: StepProps): React.JSX.Element {
             {LISTING_PERIODS.map((period) => (
               <label
                 key={period}
-                className="flex items-center gap-3 text-base text-ink"
+                className="flex min-h-11 items-center gap-3 text-base text-ink"
               >
                 <input
                   type="checkbox"

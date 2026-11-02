@@ -9,7 +9,7 @@ import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
 
 const LINK =
-  'rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-moss-wash [&.active]:bg-moss-wash'
+  'inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-sm font-bold text-ink hover:bg-moss-wash [&.active]:bg-moss-wash'
 
 /**
  * O link da conta: "Entrar" para quem não tem sessão, "Minha conta" para quem tem.
@@ -98,7 +98,7 @@ export function SiteHeader(): React.JSX.Element {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
         <Link
           to="/"
-          className="text-xl font-extrabold tracking-tight text-moss"
+          className="inline-flex min-h-11 items-center text-xl font-extrabold tracking-tight text-moss"
         >
           {m.brand_name()}
         </Link>
@@ -117,7 +117,7 @@ export function SiteHeader(): React.JSX.Element {
           <AccountLink />
           <Link
             to="/list-your-place"
-            className="ml-1 hidden rounded-full bg-sun px-4 py-2 text-sm font-extrabold text-on-sun hover:bg-sun-deep sm:inline-flex"
+            className={cn(LINK, 'hidden min-h-11 items-center sm:inline-flex')}
           >
             {m.nav_list_your_place()}
           </Link>

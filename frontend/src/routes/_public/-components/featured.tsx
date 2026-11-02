@@ -25,17 +25,17 @@ export function Featured(): React.JSX.Element | null {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2
           id="featured-title"
-          className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl"
+          className="text-title font-extrabold tracking-tight text-ink"
         >
           {m.featured_title()}
         </h2>
-        <PillButton to="/listings" tone="outline">
+        <PillButton to="/listings" tone="link">
           {m.featured_all()}
         </PillButton>
       </div>
       <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((listing, index) => (
-          <li key={listing.id} className="reveal">
+          <li key={listing.id}>
             <ListingCard listing={listing}>
               <ListingCard.Photo priority={index === 0} />
               <ListingCard.Badge />

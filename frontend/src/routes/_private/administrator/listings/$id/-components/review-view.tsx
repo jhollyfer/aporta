@@ -48,7 +48,7 @@ export function ReviewView({ id }: { id: string }): React.JSX.Element {
       <header className="flex flex-col gap-3">
         <PillButton
           to="/administrator/listings"
-          tone="outline"
+          tone="link"
           className="self-start"
         >
           {m.staff_detail_back()}
@@ -58,7 +58,7 @@ export function ReviewView({ id }: { id: string }): React.JSX.Element {
           needsAdjustment={typeof listing.review?.note === 'string'}
           className="self-start"
         />
-        <h1 className="text-3xl leading-tight font-extrabold tracking-tight break-words text-ink sm:text-4xl">
+        <h1 className="text-title font-extrabold tracking-tight break-words text-ink">
           {listing.title}
         </h1>
         <p className="text-base text-ink-soft">

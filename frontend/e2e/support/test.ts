@@ -2,10 +2,10 @@ import AxeBuilder from '@axe-core/playwright'
 import { test as base, expect } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
-import { E2eAccount } from './account'
 import type { E2eSession } from './account'
 import { E2eEnv } from './env'
 import { E2eListing } from './listing'
+import { E2eSessionFiles } from './session-files'
 
 type UnexpectedErrors = {
   /** Declara como esperado um erro de console que o teste provoca de propósito. */
@@ -64,23 +64,11 @@ export const test = base.extend<Fixtures>({
 
   expectNoBlockingViolations: async ({ page }, provide) => {
     await provide(async () => {
-      // A entrada `.enter` anima `opacity` por 0,7s mais o atraso escalonado: o axe lê a cor já
-      // misturada com a opacidade do quadro em que a página estava, e acusa contraste em texto
-      // que, parado, passa. Espera só as animações do relógio do documento; as do `view()`
-      // andam com a rolagem e nunca terminam.
-      await page.evaluate(() =>
-        Promise.all(
-          document
-            .getAnimations()
-            .filter(
-              (animation) => animation.timeline instanceof DocumentTimeline,
-            )
-            .map((animation) => animation.finished),
-        ),
-      )
-
+      // O interior de iframe de terceiro (vídeo, player) tem marcação que não é nossa: fica de
+      // fora, e o próprio `<iframe>` (título, tamanho) continua checado (DECISIONS #268).
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .exclude({ fromFrames: ['iframe', 'body'] })
         .analyze()
       const blocking = results.violations.filter(
         (violation) =>
@@ -118,49 +106,24 @@ export const test = base.extend<Fixtures>({
 type Sessions = { owner: E2eSession; staff: E2eSession }
 
 /**
- * As duas contas do worker, criadas sob demanda e **uma vez por worker**, não por teste,
- * para não gastar o limite de entrada da API (5 por minuto por IP): o dono é cadastrado e
- * entra, a equipe é a moderadora do seeder.
+ * As duas contas, lidas dos arquivos que o projeto `setup` gravou (`auth.setup.ts`): o login
+ * acontece uma vez por execução, e não por worker nem por projeto de viewport, para não gastar
+ * o limite de entrada da API (5 por minuto por IP).
  */
-/**
- * Guardadas no módulo (que existe uma vez por processo de worker) e não só no fixture: o
- * Playwright monta de novo os fixtures de worker quando o teste seguinte vem de outro
- * `test` (`ownerTest`, `staffTest`, `test`), e cada montagem seria uma entrada a mais no
- * limite de 5 por minuto por IP.
- */
-const sessions: { owner?: Promise<E2eSession>; staff?: Promise<E2eSession> } =
-  {}
-
 const withSessions = test.extend<object, Sessions>({
   owner: [
-    async ({ playwright }, provide) => {
-      sessions.owner ??= (async () => {
-        const request = await playwright.request.newContext()
-        const session = await E2eAccount.session(request)
-
-        await request.dispose()
-
-        return session
-      })()
-
-      await provide(await sessions.owner)
+    // eslint-disable-next-line no-empty-pattern -- o Playwright exige desestruturação no 1º argumento do fixture
+    async ({}, provide) => {
+      await provide(await E2eSessionFiles.read(E2eSessionFiles.owner))
     },
-    { scope: 'worker', timeout: 120_000 },
+    { scope: 'worker' },
   ],
   staff: [
-    async ({ playwright }, provide) => {
-      sessions.staff ??= (async () => {
-        const request = await playwright.request.newContext()
-        const session = await E2eAccount.staffSession(request)
-
-        await request.dispose()
-
-        return session
-      })()
-
-      await provide(await sessions.staff)
+    // eslint-disable-next-line no-empty-pattern -- o Playwright exige desestruturação no 1º argumento do fixture
+    async ({}, provide) => {
+      await provide(await E2eSessionFiles.read(E2eSessionFiles.staff))
     },
-    { scope: 'worker', timeout: 120_000 },
+    { scope: 'worker' },
   ],
 })
 

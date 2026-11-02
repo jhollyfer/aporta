@@ -23,7 +23,6 @@
   "http_invalid_response": "O servidor respondeu em um formato que não esperávamos. Tente de novo em instantes.",
   "hero_title": "Ache onde morar em Benjamin Constant",
   "hero_lead": "Casas, kitnets, quartos e hotéis, direto com o dono pelo WhatsApp. Para quem chega para estudar, trabalhar ou conhecer a cidade.",
-  "hero_cta_search": "Procuro onde morar",
   "hero_cta_owner": "Tenho imóvel pra anunciar",
   "hero_scene_label": "Casas de madeira sobre o rio, vistas da margem",
   "search_type_label": "Tipo",
@@ -68,8 +67,36 @@
   "owner_band_title": "Se formou e deixou um imóvel vazio?",
   "owner_band_text": "Anuncie a casa ou a kitnet em poucos minutos e fale com quem procura, sem depender de grupo de WhatsApp.",
   "owner_band_cta": "Anunciar meu imóvel",
-  "card_bedrooms": "{count} quartos",
-  "card_bedroom_one": "1 quarto",
+  "card_bedrooms": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhum quarto",
+        "countExact=*, countPlural=one": "1 quarto",
+        "countExact=*, countPlural=*": "{count} quartos"
+      }
+    }
+  ],
+  "count_bathrooms": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhum banheiro",
+        "countExact=*, countPlural=one": "1 banheiro",
+        "countExact=*, countPlural=*": "{count} banheiros"
+      }
+    }
+  ],
   "price_per_month": "/mês",
   "price_per_day": "/dia",
   "cost_water": "água",
@@ -80,9 +107,21 @@
   "available_from": "Disponível a partir de {date}",
   "owner_verified": "Dono verificado",
   "owner_label": "Proprietário",
-  "updated_today": "Atualizado hoje",
-  "updated_one_day": "Atualizado há 1 dia",
-  "updated_days": "Atualizado há {count} dias",
+  "updated_days": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Atualizado hoje",
+        "countExact=*, countPlural=one": "Atualizado há 1 dia",
+        "countExact=*, countPlural=*": "Atualizado há {count} dias"
+      }
+    }
+  ],
   "listings_page_title": "Imóveis em Benjamin Constant",
   "listings_page_description": "Filtre por preço, bairro e período e fale direto com o dono.",
   "listings_title": "Imóveis em Benjamin Constant",
@@ -91,7 +130,21 @@
   "filter_price_min": "Preço mínimo",
   "filter_price_max": "Preço máximo",
   "filter_clear": "Limpar",
-  "filter_show": "Mostrar {count} imóveis",
+  "filter_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhum imóvel para mostrar",
+        "countExact=*, countPlural=one": "Mostrar 1 imóvel",
+        "countExact=*, countPlural=*": "Mostrar {count} imóveis"
+      }
+    }
+  ],
   "chips_label": "Filtros aplicados",
   "chip_price": "R$ {min} a {max}",
   "chip_remove": "Remover filtro {label}",
@@ -100,8 +153,21 @@
   "detail_price_title": "Valor",
   "detail_available": "Disponível a partir de",
   "detail_minimum": "Período mínimo",
-  "detail_minimum_value": "{count} meses",
-  "detail_minimum_one": "1 mês",
+  "detail_minimum_value": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Sem período mínimo",
+        "countExact=*, countPlural=one": "1 mês",
+        "countExact=*, countPlural=*": "{count} meses"
+      }
+    }
+  ],
   "detail_periods": "Períodos",
   "detail_address": "Endereço",
   "detail_about_title": "Sobre o imóvel",
@@ -218,7 +284,22 @@
   "photos_step_unsaved": "As fotos não ficam salvas neste aparelho como o resto do cadastro: se sair da página, escolha de novo.",
   "photos_choose": "Escolher fotos",
   "photos_choose_more": "Adicionar mais fotos",
-  "photos_count": "{count} de {max} fotos escolhidas",
+  "photos_count": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhuma foto escolhida (até {max})",
+        "countExact=*, countPlural=one": "1 foto escolhida (até {max})",
+        "countExact=*, countPlural=*": "{count} de {max} fotos escolhidas"
+      }
+    }
+  ],
   "photos_empty": "Nenhuma foto escolhida. Dá para anunciar sem foto, mas quem procura quer ver o imóvel.",
   "photos_environment": "O que a foto mostra",
   "photos_remove": "Remover {name}",
@@ -280,7 +361,22 @@
   "owner_edit_save": "Salvar alterações",
   "owner_edit_saved": "Alterações salvas.",
   "owner_edit_section_text": "Título, descrição e regras",
-  "owner_edit_photos_note": "O anúncio tem {count} de {max} fotos. Por enquanto só dá para adicionar: as fotos já enviadas ficam no anúncio.",
+  "owner_edit_photos_note": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "O anúncio ainda não tem fotos (até {max}). Por enquanto só dá para adicionar: as fotos já enviadas ficam no anúncio.",
+        "countExact=*, countPlural=one": "O anúncio tem 1 foto (até {max}). Por enquanto só dá para adicionar: as fotos já enviadas ficam no anúncio.",
+        "countExact=*, countPlural=*": "O anúncio tem {count} de {max} fotos. Por enquanto só dá para adicionar: as fotos já enviadas ficam no anúncio."
+      }
+    }
+  ],
   "owner_edit_photos_send": "Enviar fotos",
   "label_status_adjust": "Precisa de ajuste",
   "label_reason_scam": "Parece golpe",
@@ -292,7 +388,22 @@
   "label_report_resolved": "Resolvidas",
   "nav_panel": "Painel",
   "note_cancel": "Cancelar",
-  "note_counter": "{count} de {max} caracteres",
+  "note_counter": [
+    {
+      "declarations": [
+        "input count",
+        "input max",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhum caractere (até {max})",
+        "countExact=*, countPlural=one": "1 caractere (até {max})",
+        "countExact=*, countPlural=*": "{count} de {max} caracteres"
+      }
+    }
+  ],
   "pagination_label": "Paginação",
   "pagination_previous": "Anterior",
   "pagination_next": "Próxima",
@@ -329,7 +440,21 @@
   "staff_filter_draft": "Devolvidos ao dono",
   "staff_filter_published": "No ar",
   "staff_filter_archived": "Arquivados",
-  "staff_listings_count": "Anúncios nesta fila: {count}",
+  "staff_listings_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhum anúncio nesta fila",
+        "countExact=*, countPlural=one": "1 anúncio nesta fila",
+        "countExact=*, countPlural=*": "{count} anúncios nesta fila"
+      }
+    }
+  ],
   "staff_column_listing": "Anúncio",
   "staff_column_owner": "Dono",
   "staff_column_updated": "Atualizado",
@@ -354,7 +479,7 @@
   "staff_fact_type": "Tipo",
   "staff_fact_whatsapp": "WhatsApp do anúncio",
   "staff_fact_rooms": "Cômodos",
-  "staff_fact_rooms_value": "{bedrooms} quartos, {bathrooms} banheiros",
+  "staff_fact_rooms_value": "{bedrooms}, {bathrooms}",
   "staff_fact_sent": "Enviado em",
   "staff_fact_includes": "O que está incluso",
   "staff_state_pending": "Este anúncio espera a decisão da equipe.",
@@ -384,7 +509,21 @@
   "staff_reports_title": "Denúncias",
   "staff_reports_lead": "Abra o anúncio denunciado, confira e registre o que a equipe decidiu.",
   "staff_reports_filter_label": "Estado da denúncia",
-  "staff_reports_count": "Denúncias nesta lista: {count}",
+  "staff_reports_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countExact = count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countExact", "countPlural"],
+      "match": {
+        "countExact=0, countPlural=*": "Nenhuma denúncia nesta lista",
+        "countExact=*, countPlural=one": "1 denúncia nesta lista",
+        "countExact=*, countPlural=*": "{count} denúncias nesta lista"
+      }
+    }
+  ],
   "staff_reports_origin": "origem {origin}",
   "staff_reports_open_listing": "(abrir o anúncio)",
   "staff_reports_no_details": "O visitante não escreveu detalhes.",
@@ -413,11 +552,42 @@
   "staff_search_clear": "Limpar busca",
   "staff_search_empty_title": "Nenhum anúncio com esse texto",
   "staff_search_empty_text": "Nada em \"{q}\" neste estado. Tente outro trecho do título, ou outro estado da fila.",
-  "listings_range": "Mostrando {from} a {to} de {total} imóveis",
+  "listings_range": [
+    {
+      "declarations": [
+        "input total",
+        "input from",
+        "input to",
+        "local totalExact = total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": ["totalExact", "totalPlural"],
+      "match": {
+        "totalExact=0, totalPlural=*": "Nenhum imóvel",
+        "totalExact=*, totalPlural=one": "Mostrando 1 imóvel",
+        "totalExact=*, totalPlural=*": "Mostrando {from} a {to} de {total} imóveis"
+      }
+    }
+  ],
   "listings_page_missing_title": "Esta página não existe",
   "listings_page_missing_description": "A busca tem menos páginas que esta. Volte para o começo da lista.",
   "listings_page_first": "Ir para a primeira página",
-  "map_pins_limit": "O mapa mostra {shown} de {total} imóveis desta área. Aproxime para ver todos.",
+  "map_pins_limit": [
+    {
+      "declarations": [
+        "input total",
+        "input shown",
+        "local totalExact = total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": ["totalExact", "totalPlural"],
+      "match": {
+        "totalExact=0, totalPlural=*": "Nenhum imóvel nesta área. Mova o mapa ou afaste para ver mais.",
+        "totalExact=*, totalPlural=one": "O mapa mostra o único imóvel desta área.",
+        "totalExact=*, totalPlural=*": "O mapa mostra {shown} de {total} imóveis desta área. Aproxime para ver todos."
+      }
+    }
+  ],
   "map_pins_empty": "Nenhum imóvel nesta área. Mova o mapa ou afaste para ver mais.",
   "map_pins_error": "Não deu para carregar os imóveis do mapa.",
   "map_pins_retry": "Tentar de novo",

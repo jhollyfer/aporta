@@ -119,7 +119,9 @@ test.describe('cadastro do imóvel', () => {
     })
 
     await expect(page.getByRole('alert')).toContainText('Só imagens')
-    await expect(page.getByText('0 de 12 fotos escolhidas')).toBeVisible()
+    await expect(
+      page.getByText('Nenhuma foto escolhida (até 12)'),
+    ).toBeVisible()
 
     // Uma imagem de verdade entra com prévia e o ambiente sugerido (a fachada vem primeiro).
     await page.getByLabel('Escolher fotos').setInputFiles({
@@ -131,9 +133,11 @@ test.describe('cadastro do imóvel', () => {
       ),
     })
 
-    await expect(page.getByText('1 de 12 fotos escolhidas')).toBeVisible()
+    await expect(page.getByText('1 foto escolhida (até 12)')).toBeVisible()
     await expect(page.getByLabel('O que a foto mostra')).toHaveValue('FACADE')
     await page.getByRole('button', { name: 'Remover fachada.png' }).click()
-    await expect(page.getByText('0 de 12 fotos escolhidas')).toBeVisible()
+    await expect(
+      page.getByText('Nenhuma foto escolhida (até 12)'),
+    ).toBeVisible()
   })
 })

@@ -2,6 +2,7 @@ import type { APIRequestContext } from '@playwright/test'
 
 import { E2eListing } from './support/listing'
 import { E2eMap } from './support/map'
+import { E2eScreens } from './support/screens'
 import { expect, ownerTest, staffTest, test } from './support/test'
 
 /**
@@ -9,53 +10,18 @@ import { expect, ownerTest, staffTest, test } from './support/test'
  * acessibilidade, nos dois temas (`_standards/frontend.md` §11.2). O tema vem da preferência do
  * sistema (`prefers-color-scheme`), por isso o teste troca o `colorScheme` do contexto.
  */
-const PAGES = [
-  '/',
-  '/listings',
-  '/listings?view=map',
-  '/listings/kitnet-centro-porto',
-  '/guide',
-  '/list-your-place',
-  '/sign-in',
-  '/sign-up',
-] as const
-
-/** `:id` vira o anúncio criado para o teste; as outras entram como estão. */
-const OWNER_PAGES = [
-  '/account',
-  '/owner/listings',
-  '/owner/listings/:id',
-] as const
-
-/** As telas da equipe; `:id` vira um anúncio criado pelo dono, que a equipe abre. */
-const STAFF_PAGES = [
-  '/administrator/listings',
-  '/administrator/reports',
-  '/administrator/listings/:id',
-] as const
+const PAGES = E2eScreens.visitor
+const OWNER_PAGES = E2eScreens.owner
+const STAFF_PAGES = E2eScreens.staff
 
 const SCHEMES = ['light', 'dark'] as const
 
-async function staffPath(
-  request: APIRequestContext,
-  path: (typeof STAFF_PAGES)[number],
-): Promise<string> {
-  if (!path.includes(':id')) return path
-
-  const id = await E2eListing.create(request, 'Kitnet para a revisão')
-
-  return path.replace(':id', id)
+function staffPath(request: APIRequestContext, path: string): Promise<string> {
+  return E2eScreens.resolve(request, path, 'Kitnet para a revisão')
 }
 
-async function ownerPath(
-  request: APIRequestContext,
-  path: (typeof OWNER_PAGES)[number],
-): Promise<string> {
-  if (!path.includes(':id')) return path
-
-  const id = await E2eListing.create(request, 'Kitnet para a acessibilidade')
-
-  return path.replace(':id', id)
+function ownerPath(request: APIRequestContext, path: string): Promise<string> {
+  return E2eScreens.resolve(request, path, 'Kitnet para a acessibilidade')
 }
 
 for (const scheme of SCHEMES) {
@@ -147,7 +113,7 @@ for (const scheme of SCHEMES) {
     staffTest(
       'quando o visitante toca num pin, o resumo sobre o mapa não tem violação séria',
       async ({ page, expectHydrated, expectNoBlockingViolations }) => {
-        await page.goto('/listings')
+        await page.goto('/listings?view=map')
 
         const pin = E2eMap.firstPin(page)
 

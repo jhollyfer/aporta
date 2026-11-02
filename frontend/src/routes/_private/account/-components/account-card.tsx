@@ -20,7 +20,7 @@ export function AccountCard(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6">
-      <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-ink sm:text-4xl">
+      <h1 className="text-title font-extrabold tracking-tight text-ink">
         {m.account_title()}
       </h1>
       <dl className="flex flex-col gap-4 rounded-card bg-surface p-5 sm:p-8">
@@ -60,7 +60,7 @@ export function AccountCard(): React.JSX.Element {
             {m.nav_panel()}
           </PillButton>
         )}
-        <PillButton to="/list-your-place" tone="sun" scale="lg">
+        <PillButton to="/list-your-place" tone="link">
           {m.account_list_cta()}
         </PillButton>
         <SignOutButton />

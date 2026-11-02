@@ -13,7 +13,9 @@ export class E2eMap {
    * hidratação. Os botões de zoom são do Leaflet e nunca ganham as marcas do React.
    */
   static applyButton(page: Page): Locator {
-    return page.getByRole('button', { name: /^Mostrar \d+ imóveis$/ })
+    return page.getByRole('button', {
+      name: /^(Mostrar \d+ imóveis?|Nenhum imóvel para mostrar)$/,
+    })
   }
 
   static firstPin(page: Page): Locator {

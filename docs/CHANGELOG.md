@@ -50,6 +50,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Alterado
 
+- O rodapé do site mostra só o crédito "Desenvolvido por Maiyu" (com a logo e o link para maiyu.com.br), nos três idiomas, no lugar da frase "Feito em Benjamin Constant".
 - Variáveis de ambiente padronizadas no catálogo da casa. Quem opera passa a poder definir
   `APP_CLIENT_URL` (o endereço do app, que decide o `sameSite` do cookie), `SEED_DEMO_PASSWORD` (liga a
   demonstração) e `SITE_ENV` (só `production` deixa os buscadores indexarem; staging e preview

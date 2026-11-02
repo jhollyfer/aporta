@@ -137,7 +137,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 9.7 | Provisionar o PostgreSQL e o bucket de produção | Alta | A fazer | |
 | 9.8 | Conferir os domínios e o smoke test do deploy | Média | A fazer | `aporta.maiyu.com.br` e `api-aporta.maiyu.com.br` |
 | 9.9 | Conferir a colisão de nome e de domínio dos cookies de sessão com os outros projetos de `maiyu.com.br` e decidir a correção | Alta | Bloqueada | decisão do dono: `DECISIONS.md` #9, `SECURITY.md` TM-014 |
-| 9.10 | Chaves de ambiente no catálogo da régua (`DECISIONS.md` #276 da régua): `.env.example` iguais ao modelo (`APP_CLIENT_URL`, `SEED_DEMO_PASSWORD`, `SITE_ENV`, `E2E_DEMO_PASSWORD`, `E2E_CHROMIUM_PATH`), seed ligado pela chave, deploy com os nomes do #272 | Alta | Feita | `DECISIONS.md` #17; upstream jhollyfer/maiyu-pattern#16. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do backend (42 de storage sem MinIO); **o E2E de navegador não rodou** |
+| 9.10 | Chaves de ambiente no catálogo da régua (`DECISIONS.md` #276 da régua): `.env.example` iguais ao modelo (`APP_CLIENT_URL`, `SEED_DEMO_PASSWORD`, `SITE_ENV`, `E2E_DEMO_PASSWORD`, `E2E_CHROMIUM_PATH`), seed ligado pela chave, deploy com os nomes do #272; rodapé com `<MaiyuCredit />` (`DECISIONS.md` #277 da régua) | Alta | Feita | `DECISIONS.md` #17; upstream jhollyfer/maiyu-pattern#16. Verificado: `sync --check`, lint, typecheck, `pattern:check`, 365 unitários, E2E do backend (42 de storage sem MinIO); **o E2E de navegador não rodou** |
 
 ## Fase 10 · Ideias (fora do escopo atual)
 

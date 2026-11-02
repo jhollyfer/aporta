@@ -11,7 +11,6 @@
   "locale_switcher_label": "Idioma",
   "footer_tagline": "Onde morar e o que fazer em Benjamin Constant, direto com quem tem o imóvel.",
   "footer_nav_label": "Rodapé",
-  "footer_credit": "Feito em Benjamin Constant, no Alto Solimões.",
   "not_found_title": "Esta página não existe",
   "not_found_description": "O endereço mudou ou foi digitado errado. Volte ao início e procure por lá.",
   "not_found_home": "Voltar ao início",
@@ -595,5 +594,6 @@
   "map_pins_rate_limited_wait": "Muitos pedidos ao mapa. Tente de novo em {seconds} s.",
   "map_pin_open": "Ver anúncio: {type}",
   "meta_og_image_alt": "Aporta, moradia e guia de Benjamin Constant",
-  "map_selected_label": "Imóvel selecionado no mapa"
+  "map_selected_label": "Imóvel selecionado no mapa",
+  "common_maiyu_credit": "Desenvolvido por {#link}Maiyu{/link}"
 }

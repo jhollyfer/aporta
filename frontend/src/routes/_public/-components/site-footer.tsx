@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 
+import { MaiyuCredit } from '#/components/common/maiyu-credit'
 import { m } from '#/paraglide/messages'
 
 /**
@@ -47,7 +48,7 @@ export function SiteFooter(): React.JSX.Element {
             </li>
           </ul>
         </nav>
-        <p className="text-sm text-on-stage/80">{m.footer_credit()}</p>
+        <MaiyuCredit className="text-sm text-on-stage/80" />
       </div>
     </footer>
   )

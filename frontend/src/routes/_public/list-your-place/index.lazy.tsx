@@ -93,7 +93,12 @@ function RouteComponent(): React.JSX.Element {
    */
   function handleSubmit() {
     void form.handleSubmit(
-      (data) => setReady(data.title),
+      (data) => {
+        // Grava na hora: o salvamento comum espera 400 ms parado, e quem finaliza logo depois de
+        // digitar perderia o último campo do rascunho.
+        draft.save({ ...EMPTY_LISTING_DRAFT, ...data })
+        setReady(data.title)
+      },
       (errors) => {
         const first = STEPS.findIndex((spec) =>
           spec.fields.some((field) => field in errors),

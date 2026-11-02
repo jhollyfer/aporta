@@ -10,7 +10,7 @@ import {
 
 import Translation from '#core/translation'
 import HTTPException from '#exceptions/http.exception'
-import ProfilePresenter from '#features/account/profile/profile.presenter'
+import ProfilePresenter from '#features/_shared.profile.presenter'
 import UserRepository from '#repositories/user/user.repository'
 import StorageContract from '#services/storage/storage.contract'
 

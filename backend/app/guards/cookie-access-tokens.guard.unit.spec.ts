@@ -50,6 +50,19 @@ test.group('guards > cookie-access-tokens > cookies (unit)', () => {
     for (const cookie of cookies) assert.include(cookie, 'HttpOnly')
   })
 
+  test('when it issues the session, the cookie names carry the `aporta-` prefix', ({
+    assert,
+  }) => {
+    const { context, guard } = subject()
+
+    guard.issueCookies({ accessToken: 'acesso', refreshToken: 'renovacao' })
+
+    // Literal names, not `COOKIE_TOKEN`: the prefix is what keeps this app from overwriting the
+    // session cookie of another one that shares the production cookie domain.
+    const names = setCookies(context).map((cookie) => cookie.split('=')[0])
+    assert.sameMembers(names, ['aporta-access-token', 'aporta-refresh-token'])
+  })
+
   test('when it clears the session, expires both cookies with the same path', ({
     assert,
   }) => {

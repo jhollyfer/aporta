@@ -11,8 +11,8 @@ import {
 
 import Translation from '#core/translation'
 import HTTPException from '#exceptions/http.exception'
+import ProfilePresenter from '#features/_shared.profile.presenter'
 import ProfileRefusal from '#features/account/profile/_shared.profile-refusal'
-import ProfilePresenter from '#features/account/profile/profile.presenter'
 import StorageRepository from '#repositories/storage/storage.repository'
 import UserRepository from '#repositories/user/user.repository'
 import StorageContract from '#services/storage/storage.contract'

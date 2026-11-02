@@ -65,7 +65,10 @@ const corsConfig = defineConfig({
    * API sending the header, and even in development. It is how the
    * file download finds out the name to save.
    */
-  exposeHeaders: ['content-disposition'],
+  // `retry-after` precisa estar na lista: numa requisição entre origens o navegador só entrega
+  // ao JavaScript os cabeçalhos expostos, e sem ele a tela de entrada não sabe quanto tempo o
+  // 429 do limite pede de espera (e cai no texto genérico "tente em alguns minutos").
+  exposeHeaders: ['content-disposition', 'retry-after'],
 
   /**
    * Allow cookies/authorization headers on cross-origin requests.

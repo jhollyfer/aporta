@@ -4,6 +4,7 @@
   "POST /authentication/refresh": "anonima",
   "POST /authentication/sign-in": "anonima",
   "POST /authentication/sign-out": "autenticada",
+  "POST /authentication/sign-up": "anonima",
   "GET /storages": "ADMINISTRATOR, MODERATOR",
   "POST /storages": "ADMINISTRATOR, MODERATOR",
   "GET /storages/{id}": "ADMINISTRATOR, MODERATOR",

@@ -25,6 +25,9 @@ export const controllers = {
       signOut: {
         SignOut: () => import('#features/authentication/session/sign-out/sign-out.controller'),
       },
+      signUp: {
+        SignUp: () => import('#features/authentication/session/sign-up/sign-up.controller'),
+      },
     },
   },
   documentation: {

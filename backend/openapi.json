@@ -3,7 +3,7 @@
   "info": {
     "title": "API Aporta",
     "version": "1.0.0",
-    "description": "API da plataforma de moradia e guia da cidade de Benjamin Constant (AM): anúncios de imóveis com contato direto com o dono, lugares e eventos.\n\nToda rota, exceto a leitura pública, exige o cookie `httpOnly` `access-token`, emitido por `POST /authentication/sign-in` e renovado por `POST /authentication/refresh`.\n\nToda falha devolve o mesmo corpo: `{ message, status, code, errors? }`, onde `code` é o identificador de máquina e `errors` mapeia campo para mensagem quando a falha é por campo."
+    "description": "API da plataforma de moradia e guia da cidade de Benjamin Constant (AM): anúncios de imóveis com contato direto com o dono, lugares e eventos.\n\nToda rota, exceto a leitura pública, exige o cookie `httpOnly` `aporta-access-token`, emitido por `POST /authentication/sign-in` e renovado por `POST /authentication/refresh`.\n\nToda falha devolve o mesmo corpo: `{ message, status, code, errors? }`, onde `code` é o identificador de máquina e `errors` mapeia campo para mensagem quando a falha é por campo."
   },
   "servers": [
     {
@@ -19,7 +19,7 @@
   "tags": [
     {
       "name": "Autenticação",
-      "description": "Entrada, saída e renovação de sessão. O par de tokens viaja em cookie `httpOnly` e não no corpo, então estas rotas respondem `204` sem corpo - o que importa é o `Set-Cookie`."
+      "description": "Cadastro, entrada, saída e renovação de sessão. O par de tokens viaja em cookie `httpOnly` e não no corpo, então entrada, saída e renovação respondem `204` sem corpo - o que importa é o `Set-Cookie`. O cadastro responde `201` com o perfil e não abre sessão."
     },
     {
       "name": "Conta",
@@ -348,6 +348,83 @@
             "$ref": "#/components/parameters/AcceptLanguage"
           }
         ]
+      }
+    },
+    "/authentication/sign-up": {
+      "post": {
+        "operationId": "authenticationSignUp",
+        "summary": "POST /authentication",
+        "tags": [
+          "Autenticação"
+        ],
+        "responses": {
+          "201": {
+            "description": "Recurso criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationSignUpResponse201"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Usuário já existe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409UserAlreadyExists"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AuthenticationSessionSignUpErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Cria a conta de um dono de imóvel que se cadastra sozinho. Responde `201` com o perfil da conta, no mesmo formato de `GET /account`.\n\nO papel nasce sempre `OWNER` e **não** vem do cliente: quem escolhesse o papel escolheria ser administrador. A conta nasce ativa.\n\nNão abre sessão: o cliente chama `POST /authentication/sign-in` em seguida, para que o par de cookies tenha uma porta só.\n\nE-mail já usado, inclusive o de uma conta arquivada, devolve `409`.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticationSignUpBody"
+              }
+            }
+          }
+        }
       }
     },
     "/storages": {
@@ -1523,7 +1600,7 @@
       "cookieAuth": {
         "type": "apiKey",
         "in": "cookie",
-        "name": "access-token"
+        "name": "aporta-access-token"
       }
     },
     "parameters": {
@@ -1581,6 +1658,231 @@
           "email",
           "password",
           "passwordConfirmation"
+        ],
+        "additionalProperties": false
+      },
+      "AuthenticationSignUpBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 32,
+            "description": "Exige ao menos uma minúscula, uma maiúscula, um dígito e um caractere especial.",
+            "allOf": [
+              {
+                "pattern": "[a-z]"
+              },
+              {
+                "pattern": "[A-Z]"
+              },
+              {
+                "pattern": "[0-9]"
+              },
+              {
+                "pattern": "[^a-zA-Z0-9]"
+              }
+            ]
+          },
+          "passwordConfirmation": {
+            "type": "string",
+            "description": "Repetição exata de `password`."
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password",
+          "passwordConfirmation"
+        ],
+        "additionalProperties": false
+      },
+      "AuthenticationSignUpResponse201": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRATOR",
+              "MODERATOR",
+              "OWNER"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "avatarId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  },
+                  "originalName": {
+                    "type": "string"
+                  },
+                  "mimetype": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "PENDING",
+                      "UPLOADED"
+                    ]
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "partSize": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "uploadId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "createdAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "updatedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "deletedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "filename",
+                  "originalName",
+                  "mimetype",
+                  "size",
+                  "path",
+                  "status",
+                  "partSize",
+                  "uploadId",
+                  "createdAt",
+                  "updatedAt",
+                  "deletedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "status",
+          "avatarId",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
         ],
         "additionalProperties": false
       },
@@ -2161,6 +2463,41 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "AUTHENTICATION_SESSION_SIGN_OUT_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AuthenticationSessionSignUpErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "AUTHENTICATION_SESSION_SIGN_UP_ERROR",
               "SERVER_ERROR"
             ]
           },

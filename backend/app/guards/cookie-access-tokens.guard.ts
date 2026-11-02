@@ -33,7 +33,7 @@ export type SessionUser = {
 /**
  * Reuses Adonis's native opaque access token machinery - hash,
  * expiration and persistence by `DbAccessTokensProvider` - and swaps only the
- * transport: the token is read from the `access-token` cookie.
+ * transport: the token is read from the `COOKIE_TOKEN.ACCESS` cookie.
  *
  * **No fallback to the `Authorization` header.** The cookie is `httpOnly`
  * precisely so the page JavaScript cannot reach the token; accepting

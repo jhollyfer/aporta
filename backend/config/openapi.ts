@@ -14,7 +14,7 @@ import { COOKIE_TOKEN } from '#config/session-token'
  * Name of the security scheme referenced by every authenticated operation.
  *
  * It is `apiKey` in a cookie, not `bearer`: the application guard reads the token from
- * `request.cookie('access-token')` and has no fallback to the `Authorization`
+ * `request.cookie(COOKIE_TOKEN.ACCESS)` and has no fallback to the `Authorization`
  * header (`app/guards/cookie-access-tokens.guard.ts`). Documenting
  * bearer here would make Scalar's "Test Request" always fail.
  */
@@ -52,8 +52,9 @@ const tags: TagRule[] = [
     prefix: '/authentication',
     name: 'Autenticação',
     description:
-      'Entrada, saída e renovação de sessão. O par de tokens viaja em cookie `httpOnly` ' +
-      'e não no corpo, então estas rotas respondem `204` sem corpo - o que importa é o `Set-Cookie`.',
+      'Cadastro, entrada, saída e renovação de sessão. O par de tokens viaja em cookie `httpOnly` ' +
+      'e não no corpo, então entrada, saída e renovação respondem `204` sem corpo - o que importa é o ' +
+      '`Set-Cookie`. O cadastro responde `201` com o perfil e não abre sessão.',
     singular: 'sessão',
     plural: 'sessões',
   },
@@ -115,7 +116,7 @@ const openapi = {
       'API da plataforma de moradia e guia da cidade de Benjamin Constant (AM): anúncios de ' +
       'imóveis com contato direto com o dono, lugares e eventos.\n\n' +
       'Toda rota, exceto a leitura pública, exige o cookie `httpOnly` ' +
-      '`access-token`, emitido por `POST /authentication/sign-in` e renovado por ' +
+      '`aporta-access-token`, emitido por `POST /authentication/sign-in` e renovado por ' +
       '`POST /authentication/refresh`.\n\n' +
       'Toda falha devolve o mesmo corpo: `{ message, status, code, errors? }`, onde `code` é o ' +
       'identificador de máquina e `errors` mapeia campo para mensagem quando a falha é por ' +

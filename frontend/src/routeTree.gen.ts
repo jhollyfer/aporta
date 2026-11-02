@@ -9,17 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
+import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as PublicLayoutRouteImport } from './routes/_public/layout'
 import { Route as HealthCheckRouteImport } from './routes/health-check'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
+import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/sign-in/index'
+import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index'
+import { Route as PrivateAccountIndexRouteImport } from './routes/_private/account/index'
 import { Route as PublicGuideIndexRouteImport } from './routes/_public/guide/index'
 import { Route as PublicListYourPlaceIndexRouteImport } from './routes/_public/list-your-place/index'
 import { Route as PublicListingsIndexRouteImport } from './routes/_public/listings/index'
 import { Route as PublicListingsSlugRouteImport } from './routes/_public/listings/$slug'
 
+const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
+  id: '/_authentication',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
+  id: '/_private',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicLayoutRoute = PublicLayoutRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
@@ -49,6 +62,29 @@ const PublicSplatRoute = PublicSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => PublicLayoutRoute,
 } as any)
+const AuthenticationSignInIndexRoute =
+  AuthenticationSignInIndexRouteImport.update({
+    id: '/sign-in/',
+    path: '/sign-in/',
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/sign-in/index.lazy').then((d) => d.Route),
+  )
+const AuthenticationSignUpIndexRoute =
+  AuthenticationSignUpIndexRouteImport.update({
+    id: '/sign-up/',
+    path: '/sign-up/',
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/sign-up/index.lazy').then((d) => d.Route),
+  )
+const PrivateAccountIndexRoute = PrivateAccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_private/account/index.lazy').then((d) => d.Route),
+)
 const PublicGuideIndexRoute = PublicGuideIndexRouteImport.update({
   id: '/guide/',
   path: '/guide/',
@@ -86,23 +122,31 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$': typeof PublicSplatRoute
   '/listings/$slug': typeof PublicListingsSlugRoute
+  '/sign-in/': typeof AuthenticationSignInIndexRoute
+  '/sign-up/': typeof AuthenticationSignUpIndexRoute
+  '/account/': typeof PrivateAccountIndexRoute
   '/guide/': typeof PublicGuideIndexRoute
   '/list-your-place/': typeof PublicListYourPlaceIndexRoute
   '/listings/': typeof PublicListingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof PublicIndexRoute
   '/health-check': typeof HealthCheckRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/$': typeof PublicSplatRoute
-  '/': typeof PublicIndexRoute
   '/listings/$slug': typeof PublicListingsSlugRoute
+  '/sign-in': typeof AuthenticationSignInIndexRoute
+  '/sign-up': typeof AuthenticationSignUpIndexRoute
+  '/account': typeof PrivateAccountIndexRoute
   '/guide': typeof PublicGuideIndexRoute
   '/list-your-place': typeof PublicListYourPlaceIndexRoute
   '/listings': typeof PublicListingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authentication': typeof AuthenticationLayoutRouteWithChildren
+  '/_private': typeof PrivateLayoutRouteWithChildren
   '/_public': typeof PublicLayoutRouteWithChildren
   '/health-check': typeof HealthCheckRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -110,6 +154,9 @@ export interface FileRoutesById {
   '/_public/$': typeof PublicSplatRoute
   '/_public/': typeof PublicIndexRoute
   '/_public/listings/$slug': typeof PublicListingsSlugRoute
+  '/_authentication/sign-in/': typeof AuthenticationSignInIndexRoute
+  '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
+  '/_private/account/': typeof PrivateAccountIndexRoute
   '/_public/guide/': typeof PublicGuideIndexRoute
   '/_public/list-your-place/': typeof PublicListYourPlaceIndexRoute
   '/_public/listings/': typeof PublicListingsIndexRoute
@@ -123,22 +170,30 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/$'
     | '/listings/$slug'
+    | '/sign-in/'
+    | '/sign-up/'
+    | '/account/'
     | '/guide/'
     | '/list-your-place/'
     | '/listings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/health-check'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/$'
-    | '/'
     | '/listings/$slug'
+    | '/sign-in'
+    | '/sign-up'
+    | '/account'
     | '/guide'
     | '/list-your-place'
     | '/listings'
   id:
     | '__root__'
+    | '/_authentication'
+    | '/_private'
     | '/_public'
     | '/health-check'
     | '/robots.txt'
@@ -146,12 +201,17 @@ export interface FileRouteTypes {
     | '/_public/$'
     | '/_public/'
     | '/_public/listings/$slug'
+    | '/_authentication/sign-in/'
+    | '/_authentication/sign-up/'
+    | '/_private/account/'
     | '/_public/guide/'
     | '/_public/list-your-place/'
     | '/_public/listings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
+  PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
   PublicLayoutRoute: typeof PublicLayoutRouteWithChildren
   HealthCheckRoute: typeof HealthCheckRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -160,6 +220,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_authentication': {
+      id: '/_authentication'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticationLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_private': {
+      id: '/_private'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivateLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_public': {
       id: '/_public'
       path: ''
@@ -202,6 +276,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicSplatRouteImport
       parentRoute: typeof PublicLayoutRoute
     }
+    '/_authentication/sign-in/': {
+      id: '/_authentication/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in/'
+      preLoaderRoute: typeof AuthenticationSignInIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
+    '/_authentication/sign-up/': {
+      id: '/_authentication/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up/'
+      preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
+    '/_private/account/': {
+      id: '/_private/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof PrivateAccountIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_public/guide/': {
       id: '/_public/guide/'
       path: '/guide'
@@ -233,6 +328,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticationLayoutRouteChildren {
+  AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
+  AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
+}
+
+const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
+  AuthenticationSignInIndexRoute: AuthenticationSignInIndexRoute,
+  AuthenticationSignUpIndexRoute: AuthenticationSignUpIndexRoute,
+}
+
+const AuthenticationLayoutRouteWithChildren =
+  AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren)
+
+interface PrivateLayoutRouteChildren {
+  PrivateAccountIndexRoute: typeof PrivateAccountIndexRoute
+}
+
+const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
+  PrivateAccountIndexRoute: PrivateAccountIndexRoute,
+}
+
+const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
+  PrivateLayoutRouteChildren,
+)
+
 interface PublicLayoutRouteChildren {
   PublicSplatRoute: typeof PublicSplatRoute
   PublicIndexRoute: typeof PublicIndexRoute
@@ -256,6 +376,8 @@ const PublicLayoutRouteWithChildren = PublicLayoutRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
+  PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
   PublicLayoutRoute: PublicLayoutRouteWithChildren,
   HealthCheckRoute: HealthCheckRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,

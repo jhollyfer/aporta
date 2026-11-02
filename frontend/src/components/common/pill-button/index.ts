@@ -1,1 +1,1 @@
-export { PillButton } from './pill-button'
+export { PillButton, pillVariants } from './pill-button'

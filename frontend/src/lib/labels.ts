@@ -5,6 +5,7 @@ import type {
   ListingType,
   PhotoEnvironment,
   PlaceCategory,
+  UserRole,
 } from '@aporta/shared'
 
 /**
@@ -45,3 +46,9 @@ export const PHOTO_ENVIRONMENT_LABELS: Record<PhotoEnvironment, () => string> =
     KITCHEN: () => m.label_env_kitchen(),
     LIVING: () => m.label_env_living(),
   }
+
+export const USER_ROLE_LABELS: Record<UserRole, () => string> = {
+  OWNER: () => m.label_role_owner(),
+  MODERATOR: () => m.label_role_moderator(),
+  ADMINISTRATOR: () => m.label_role_administrator(),
+}

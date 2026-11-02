@@ -1,14 +1,50 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 
-import { LocaleSwitcher } from './locale-switcher'
+import { LocaleSwitcher } from '#/components/common/locale-switcher'
+import { useSession } from '#/hooks/use-session'
+import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
 
 const LINK =
   'rounded-full px-3 py-2 text-sm font-bold text-ink hover:bg-moss-wash [&.active]:bg-moss-wash'
 
 /**
- * O cabeçalho: nome, três links, idioma e uma ação. Sem barra flutuante nem
+ * O link da conta: "Entrar" para quem não tem sessão, "Minha conta" para quem tem.
+ *
+ * A sessão só é conhecida no navegador, depois da hidratação (`useSession`): no
+ * servidor e no primeiro quadro aparece "Entrar", e a troca vem quando a consulta
+ * responde. Os dois textos ficam empilhados na mesma célula da grade e o que não vale
+ * é só `invisible`, então o link tem sempre a largura do maior (o idioma muda os
+ * textos) e a troca não empurra o resto da barra. `invisible` tira o texto da árvore
+ * de acessibilidade, e o nome do link é só o que se vê.
+ */
+function AccountLink(): React.JSX.Element {
+  const { account } = useSession()
+  const signedIn = account !== undefined
+  let target: '/account' | '/sign-in' = '/sign-in'
+  if (signedIn) target = '/account'
+
+  return (
+    <Link
+      to={target}
+      className={cn(
+        LINK,
+        'inline-grid min-h-11 items-center justify-items-center',
+      )}
+    >
+      <span className={cn('col-start-1 row-start-1', signedIn && 'invisible')}>
+        {m.nav_sign_in()}
+      </span>
+      <span className={cn('col-start-1 row-start-1', !signedIn && 'invisible')}>
+        {m.nav_account()}
+      </span>
+    </Link>
+  )
+}
+
+/**
+ * O cabeçalho: nome, links, conta, idioma e uma ação. Sem barra flutuante nem
  * vidro: no celular de 360px cada pixel de altura é conteúdo a menos.
  */
 export function SiteHeader(): React.JSX.Element {
@@ -31,6 +67,7 @@ export function SiteHeader(): React.JSX.Element {
           <Link to="/guide" className={LINK}>
             {m.nav_guide()}
           </Link>
+          <AccountLink />
           <Link
             to="/list-your-place"
             className="ml-1 hidden rounded-full bg-sun px-4 py-2 text-sm font-extrabold text-on-sun hover:bg-sun-deep sm:inline-flex"

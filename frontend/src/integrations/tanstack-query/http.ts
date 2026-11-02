@@ -12,6 +12,7 @@ import type {
   DataTag,
   QueryKey,
   UnusedSkipTokenOptions,
+  UseMutationOptions,
 } from '@tanstack/react-query'
 import type { Merge, z } from '@aporta/shared'
 import { createIsomorphicFn } from '@tanstack/react-start'
@@ -34,7 +35,12 @@ const ERROR_BODY = ErrorEnvelope.partial()
 export const HTTP_STATUS = {
   /** Não houve resposta: DNS, CORS, backend fora do ar, pedido abortado. */
   NETWORK: 0,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
   NOT_FOUND: 404,
+  CONFLICT: 409,
+  UNPROCESSABLE_ENTITY: 422,
+  TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
 } as const
 
@@ -43,6 +49,18 @@ export const HTTP_STATUS = {
  * a mensagem é texto de interface, no idioma de quem pediu, e muda.
  */
 export const HTTP_ERROR_CODE = {
+  /** 401 do `POST /authentication/sign-in`: e-mail ou senha errados. Não merece `refresh`. */
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  /**
+   * 401 de sessão ausente ou vencida, vindo do guard da API. É o único 401 que merece
+   * `refresh`: o `INVALID_CREDENTIALS` do sign-in também é 401, e renovar token por
+   * causa de senha errada seria um pedido a mais, e gasto do limite do `refresh`.
+   */
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  /** 409 do `POST /authentication/sign-up`: já existe conta com esse e-mail. */
+  USER_ALREADY_EXISTS: 'USER_ALREADY_EXISTS',
+  /** 429 de qualquer rota com limite de tentativas; `Retry-After` diz quando voltar. */
+  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
   /** 404 de `GET /storefront/listings/:slug`: nenhum anúncio publicado com esse endereço. */
   LISTING_NOT_FOUND: 'LISTING_NOT_FOUND',
   /** Local, não vem do servidor: falha de rede normalizada. */
@@ -59,12 +77,18 @@ export const HTTP_ERROR_CODE = {
 export class HTTPError extends Error {
   readonly status: number
   readonly code: string
+  /** Campo → mensagem, no idioma do pedido. Só vem em 422. */
+  readonly errors?: Record<string, string>
+  /** Segundos até poder tentar de novo, do `Retry-After` de um 429. */
+  readonly retryAfter?: number
 
-  constructor(body: ErrorEnvelope) {
+  constructor(body: ErrorEnvelope, retryAfter?: number) {
     super(body.message)
     this.name = 'HTTPError'
     this.status = body.status
     this.code = body.code
+    this.errors = body.errors
+    this.retryAfter = retryAfter
   }
 
   /** A culpa do servidor ou da rede: 5xx e o status sintético 0. */
@@ -90,6 +114,19 @@ declare module '@tanstack/react-query' {
     defaultError: HTTPError
   }
 }
+
+/**
+ * As opções que todo hook de `mutations/` aceita: o contrato do TanStack Query sem o
+ * `mutationFn`, que é o que o hook guarda. `onSuccess`, `onError` e `onSettled` são
+ * decisão da tela.
+ *
+ * Os genéricos vêm preenchidos: com `strictFunctionTypes` o parâmetro dos callbacks é
+ * contravariante, e sem eles a função resultante não aceita o payload.
+ */
+export type MutationProps<TData, TPayload> = Omit<
+  UseMutationOptions<TData, HTTPError, TPayload>,
+  'mutationFn'
+>
 
 /**
  * O que `queryOptions` devolve para uma leitura da API: as opções do `useQuery` com a
@@ -152,14 +189,78 @@ function deadline(signal?: AbortSignal | null): AbortSignal {
 }
 
 /**
- * `fetch` com uma garantia a mais: resposta de erro vira exceção. Todo caminho de
- * falha (rede, corpo ilegível, erro da API) sai daqui como `HTTPError` com `status`
- * preenchido, então quem trata nunca precisa de `instanceof`.
+ * O `init` das rotas autenticadas (sign-in, sign-up, sign-out, refresh e `/account`).
  *
- * Sem cookie e sem credencial: a leitura pública não tem sessão, e o navegador não
- * manda cookie entre origens por padrão, que é o que se quer.
+ * `credentials: 'include'` é opt-in, por chamada: a vitrine pública continua sem cookie,
+ * e o navegador não manda cookie entre origens por padrão, que é o que se quer ali. Aqui
+ * o cookie `httpOnly` da sessão vai e volta; o JavaScript da página nunca o lê.
+ *
+ * Também é a marca que `send` usa para decidir se um 401 merece `refresh`.
  */
-async function send(path: string, init?: RequestInit): Promise<Response> {
+export const WITH_SESSION = {
+  credentials: 'include',
+} as const satisfies RequestInit
+
+/**
+ * Uma renovação por vez. O backend rotaciona o refresh token: duas consultas que
+ * levam 401 juntas (o cabeçalho e o portão do `_private`, por exemplo) e disparam dois
+ * `refresh` gastariam o mesmo token duas vezes, e a segunda derrubaria a sessão.
+ *
+ * Variável de módulo é segura aqui porque só o navegador renova: no SSR não há cookie
+ * da pessoa, então `send` nunca renova lá (ver `canRenew`).
+ */
+let pendingRenewal: Promise<void> | null = null
+
+async function renew(): Promise<void> {
+  // `renewed = true`: o próprio `refresh` não renova. Sem isso o 401 dele chamaria
+  // `renew()` de novo, que esperaria a promessa pendente dele mesmo, e o pedido
+  // ficaria pendurado até o prazo de 15 s.
+  pendingRenewal ??= send(
+    '/authentication/refresh',
+    { method: 'POST', ...WITH_SESSION },
+    true,
+  ).then(() => undefined)
+
+  try {
+    await pendingRenewal
+  } finally {
+    pendingRenewal = null
+  }
+}
+
+/**
+ * Só renova quem usa cookie, no navegador, e uma vez: o replay marca `renewed` para não
+ * entrar em laço. No servidor de SSR o cookie da pessoa não chega (a API é outro
+ * endereço), então um 401 ali é "sem sessão", não "sessão vencida".
+ */
+function canRenew(init: RequestInit | undefined, renewed: boolean): boolean {
+  if (import.meta.env.SSR) return false
+
+  return init?.credentials === WITH_SESSION.credentials && !renewed
+}
+
+/** `Retry-After` em segundos; ausente ou ilegível (data HTTP, cabeçalho não exposto) é `undefined`. */
+function retryAfterSeconds(response: Response): number | undefined {
+  const seconds = Number(response.headers.get('Retry-After'))
+
+  if (!Number.isFinite(seconds) || seconds <= 0) return undefined
+
+  return seconds
+}
+
+/**
+ * `fetch` com duas garantias a mais: resposta de erro vira exceção, e sessão vencida é
+ * renovada uma vez sem a tela notar. Todo caminho de falha (rede, corpo ilegível, erro
+ * da API) sai daqui como `HTTPError` com `status` preenchido, então quem trata nunca
+ * precisa de `instanceof`.
+ *
+ * Sem cookie por padrão: só quem passa `WITH_SESSION` envia credencial.
+ */
+async function send(
+  path: string,
+  init?: RequestInit,
+  renewed = false,
+): Promise<Response> {
   let response: Response
 
   try {
@@ -172,6 +273,9 @@ async function send(path: string, init?: RequestInit): Promise<Response> {
         // A API responde a mensagem de erro no idioma da tela. Cabeçalho seguro para
         // CORS: não custa preflight.
         'Accept-Language': getLocale(),
+        // Sem corpo não há tipo a declarar, e um `Content-Type` num GET tira a
+        // requisição do grupo das "simples" do CORS e custa um preflight.
+        ...jsonHeader(init),
         ...init?.headers,
       },
     })
@@ -197,14 +301,37 @@ async function send(path: string, init?: RequestInit): Promise<Response> {
 
     const body = ERROR_BODY.safeParse(raw).data
 
-    throw new HTTPError({
-      message: body?.message ?? m.http_unexpected_error(),
-      status: body?.status ?? response.status,
-      code: body?.code ?? HTTP_ERROR_CODE.UNKNOWN_ERROR,
-    })
+    if (
+      response.status === HTTP_STATUS.UNAUTHORIZED &&
+      body?.code === HTTP_ERROR_CODE.UNAUTHORIZED &&
+      canRenew(init, renewed)
+    ) {
+      // Se o `refresh` também falhar, o `HTTPError` dele sobe daqui e o portão da
+      // rota trata como "sem sessão", que é o que é.
+      await renew()
+
+      return send(path, init, true)
+    }
+
+    throw new HTTPError(
+      {
+        message: body?.message ?? m.http_unexpected_error(),
+        status: body?.status ?? response.status,
+        code: body?.code ?? HTTP_ERROR_CODE.UNKNOWN_ERROR,
+        errors: body?.errors,
+      },
+      retryAfterSeconds(response),
+    )
   }
 
   return response
+}
+
+/** `application/json` só quando há corpo. */
+function jsonHeader(init?: RequestInit): Record<string, string> {
+  if (!init?.body) return {}
+
+  return { 'Content-Type': 'application/json' }
 }
 
 /**
@@ -241,4 +368,16 @@ export async function request<TSchema extends z.ZodType>(
     status: response.status,
     code: HTTP_ERROR_CODE.INVALID_RESPONSE,
   })
+}
+
+/**
+ * A chamada que responde `204` (sign-in, sign-out). Função à parte e não
+ * `request<void>`: `.json()` estoura em corpo vazio, e fingir um `T` vazio pediria
+ * asserção. Aqui o tipo é o que a resposta é.
+ */
+export async function requestVoid(
+  path: string,
+  init?: RequestInit,
+): Promise<void> {
+  await send(path, init)
 }

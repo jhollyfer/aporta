@@ -9,6 +9,7 @@ import {
 } from '@aporta/shared'
 import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
 
+import { CONTROL, Field, invalidProps } from '#/components/common/field'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import {
   LISTING_PERIOD_LABELS,
@@ -16,8 +17,6 @@ import {
   PHOTO_ENVIRONMENT_LABELS,
 } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
-
-import { CONTROL, Field, invalidProps } from './field'
 
 type StepProps = { control: Control<OwnerListingCreate> }
 

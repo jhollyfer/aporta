@@ -28,6 +28,16 @@ function resource<TParams>() {
 
 export const queryKeys = {
   /**
+   * A sessão. `profile` é `GET /account`, lido pelo portão do `_private`, pelo guard
+   * inverso do `_authentication` e pelo cabeçalho, todos pela mesma chave: é o que faz o
+   * segundo consumidor aproveitar o cache do primeiro em vez de repetir o pedido.
+   */
+  account: {
+    profile: {
+      all: ['account', 'profile'] as const,
+    },
+  },
+  /**
    * A vitrine pública. O `detail` do anúncio é pelo **slug**, que é o que o endereço
    * público carrega.
    *

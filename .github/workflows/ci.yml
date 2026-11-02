@@ -12,12 +12,51 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # A PR that only touches text does not run the suite (`_standards/tooling.md` §7,
+  # `DECISIONS.md` #273): the files of the PR are listed in shell, no third-party filter, and
+  # backend and frontend are called only when some file is NOT text. A skipped job shows as
+  # skipped, which satisfies the required check (GitHub's page not checked).
+  # `repository` below always runs.
+  changes:
+    name: Mudanças - Código ou só texto
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Arquivos do PR
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          code=false
+          while IFS= read -r file; do
+            case "$file" in
+              '') ;;
+              *.md | docs/* | _standards/* | _doc-lib/* | .claude/* | _templates/*) ;;
+              *)
+                echo "código: $file"
+                code=true
+                ;;
+            esac
+          done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
   # The same reusables that the push to main uses, so the PR does not go through a
   # different standard from the deploy's (`_standards/tooling.md` §8.1).
   backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.code == 'true' }}
     uses: ./.github/workflows/main-check-backend.yml
 
   frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.code == 'true' }}
     uses: ./.github/workflows/main-check-frontend.yml
 
   repository:

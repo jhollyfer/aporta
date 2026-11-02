@@ -237,8 +237,8 @@ abandonado é limpo pelo comando `node ace storages:prune` (`ARCHITECTURE.md` §
 | Ambiente | URL | Onde roda | Banco | Deploy |
 |---|---|---|---|---|
 | Desenvolvimento | `http://localhost:3000` (app), `http://localhost:3333` (API) | máquina local, `pnpm dev` | Postgres em container na porta 5435; MinIO nas portas 9006 e 9007 | não se aplica |
-| Teste (CI) | efêmero | GitHub Actions | Postgres e MinIO de serviço do job | a cada pull request para `main` |
-| Produção | `https://aporta.maiyu.com.br` (app), `https://api-aporta.maiyu.com.br` (API) | Coolify, duas aplicações, imagens `aporta-api` e `aporta-app` | PostgreSQL de produção: Não confirmado no código; a confirmar com o dono (`MEMORY.md`) | push na `main` dispara o workflow `main.yml` |
+| Teste (CI) | efêmero | GitHub Actions | Postgres e MinIO de serviço do job; o E2E tem um job e um banco por projeto de viewport | a cada pull request para `main`; PR só de texto pula backend e frontend (job `changes`); o Playwright roda só no PR |
+| Produção | `https://aporta.maiyu.com.br` (app), `https://api-aporta.maiyu.com.br` (API) | Coolify, duas aplicações, imagens `aporta-api` e `aporta-app` | PostgreSQL de produção: Não confirmado no código; a confirmar com o dono (`MEMORY.md`) | push na `main` dispara o workflow `main.yml` (sem Playwright: o PR já o provou) |
 
 Preview ou homologação: Não se aplica, não há.
 
@@ -262,8 +262,8 @@ quebra sem erro no log.
 | CORS do bucket com `PUT`, `GET`, `HEAD` e `ETag` exposto, para a origem do app | provedor do storage, a partir de `backend/infra/r2-cors.json` | sem o `ETag` exposto o navegador não confirma as partes e o upload multipart não fecha; o arquivo não é aplicado pelo deploy. Conferir a origem: o arquivo lista `https://aporta.com.br`, e o app é `https://aporta.maiyu.com.br` |
 | Bucket privado, leitura só por URL assinada curta | provedor do storage | nada é servido por URL pública |
 | Varredura de uploads abandonados: agendar `node ace storages:prune` | cron do host ou tarefa agendada do Coolify | a aplicação não tem agendador; sem isso, partes de upload abandonado ficam no bucket e continuam cobradas |
-| Primeira conta de administrador em produção | quem opera, por fora do seeder | o seeder roda só em desenvolvimento e teste, para não criar credencial conhecida em produção; como criar a primeira conta em produção ainda não está definido |
-| Variáveis do repositório `COOLIFY_URL`, `COOLIFY_UUID_API`, `COOLIFY_UUID_APP` e segredos `COOLIFY_TOKEN`, `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | configurações do repositório no GitHub | o workflow de deploy lê só desses valores; os valores das `vars` ainda não foram fornecidos pelo dono |
+| Primeira conta de administrador em produção | quem opera, por `node ace staff:create` no terminal da API | o seeder roda só em desenvolvimento e teste, para não criar credencial conhecida em produção; o comando não lê variável de ambiente e pede a senha por prompt oculto, duas vezes (`ENV.md` §8) |
+| Secrets do repositório `COOLIFY_URL`, `COOLIFY_TOKEN`, `COOLIFY_API_UUID`, `COOLIFY_APP_UUID`, `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN` | configurações do repositório no GitHub (Actions, Secrets) | o workflow de deploy lê só desses valores (`tooling.md` §8.3), com esses nomes fixos; `COOLIFY_URL` é a base do painel, sem caminho; os valores de URL e UUIDs ainda não foram fornecidos pelo dono |
 | Segundo serviço com worker de fila | Não se aplica hoje | não há fila; passa a valer quando o e-mail entrar |
 
 ## 10. Escala e limites conhecidos

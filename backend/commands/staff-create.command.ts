@@ -5,7 +5,6 @@ import { USER_ROLE, z } from '@aporta/shared'
 import TerminalText from '#core/terminal-text'
 import { errors } from '#core/validator'
 import type { StaffRole } from '#features/administrator/staff/create/create.use-case'
-import env from '#start/env'
 
 /** What `--role` accepts. A lookup and not a chain of `if`: a third staff role is one line. */
 const STAFF_ROLES = {
@@ -22,9 +21,10 @@ const STAFF_ROLES = {
  * terminal, once.
  *
  * Where each input comes from, so a secret never has to sit in the shell history or in `ps`:
- * `--email` and `--name` are flags (or `STAFF_EMAIL` / `STAFF_NAME`, or a prompt); the password
- * has **no flag**: it comes from `STAFF_PASSWORD` or from a hidden prompt, asked twice. There is
- * no default for any of them, and the password is never printed, not even on failure.
+ * `--email` and `--name` are flags (or a prompt); the password has **no flag and no environment
+ * variable**: it always comes from a hidden prompt, asked twice. There is no default for any of
+ * them, and the password is never printed, not even on failure. The catalog of environment keys
+ * has no `STAFF_*` (`_standards/backend.md` §6.2, `DECISIONS.md` #271), so this command reads none.
  *
  * It reuses the sign-up validator, so the password policy is the project's single one, and the
  * `AdministratorStaffCreateUseCase`, so the Lucid model is not touched from here. An email that
@@ -38,12 +38,12 @@ export default class StaffCreate extends BaseCommand {
   static override options: CommandOptions = { startApp: true }
 
   @flags.string({
-    description: 'Email of the new account (or STAFF_EMAIL; asked if missing)',
+    description: 'Email of the new account (asked if missing)',
   })
   declare email: string
 
   @flags.string({
-    description: 'Name of the new account (or STAFF_NAME; asked if missing)',
+    description: 'Name of the new account (asked if missing)',
   })
   declare name: string
 
@@ -63,12 +63,9 @@ export default class StaffCreate extends BaseCommand {
       return
     }
 
-    const email =
-      this.filled(this.email, env.get('STAFF_EMAIL')) ?? (await this.askEmail())
-    const name =
-      this.filled(this.name, env.get('STAFF_NAME')) ?? (await this.askName())
-    const password =
-      this.filled(env.get('STAFF_PASSWORD')) ?? (await this.askPassword())
+    const email = this.filled(this.email) ?? (await this.askEmail())
+    const name = this.filled(this.name) ?? (await this.askName())
+    const password = await this.askPassword()
 
     if (!password) {
       this.logger.error('A password is required.')
@@ -99,12 +96,11 @@ export default class StaffCreate extends BaseCommand {
     )
   }
 
-  /**
-   * The first value that is not blank. A variable left empty (`STAFF_EMAIL=` in an `.env` copied
-   * from the example) counts as missing, so the command asks instead of trying an empty account.
-   */
-  private filled(...values: Array<string | undefined>): string | undefined {
-    return values.find((value) => value !== undefined && value.trim() !== '')
+  /** The flag value, unless blank: `--email=` counts as missing, so the command asks instead of trying an empty account. */
+  private filled(value: string | undefined): string | undefined {
+    if (value === undefined || value.trim() === '') return undefined
+
+    return value
   }
 
   private roleOf(): StaffRole | undefined {
@@ -115,7 +111,7 @@ export default class StaffCreate extends BaseCommand {
 
   /**
    * The sign-up validator, with the confirmation the operator already gave (the prompt asks it
-   * twice; the variable has nothing to confirm against). It prints the rule that failed, never
+   * twice and refuses a mismatch). It prints the rule that failed, never
    * the value: a rejected password would otherwise end up in the terminal scrollback.
    */
   private async validated(input: {

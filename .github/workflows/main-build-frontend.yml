@@ -5,6 +5,11 @@ name: Build Frontend
 # §8.1). Calling the same reusable keeps a single standard.
 on:
   workflow_call:
+    inputs:
+      e2e:
+        description: roda o Playwright; a main passa false, o PR já provou o mesmo código
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -14,3 +19,4 @@ jobs:
     uses: ./.github/workflows/main-check-frontend.yml
     with:
       publish: true
+      e2e: ${{ inputs.e2e }}

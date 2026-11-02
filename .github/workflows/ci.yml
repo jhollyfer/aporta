@@ -96,8 +96,9 @@ jobs:
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
           "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml --log-opts=--all --redact --no-banner .
 
-      # Workflow without injection (`tooling.md` §9): no `pull_request_target`, and
-      # `${{ github.event.* }}` never inside `run:`, only through `env:`.
+      # Workflow without injection (`tooling.md` §9): no `pull_request_target`, and no
+      # interpolation of event data inside `run:`, only through `env:`. The awk below also
+      # scans comments that follow a `run:`, so this text cannot spell the expression out.
       - name: Workflows sem injeção
         run: |
           # Only the trigger key (`pull_request_target:`); this check's own

@@ -23,6 +23,7 @@ boot quando falta, conforme o schema.
 | `LOG_LEVEL` | api | sim | não | nível de log | `info` |
 | `APP_KEY` | api | sim | **sim** | chave de cifra da aplicação, sem default | defina com `node ace generate:key` |
 | `APP_SERVER_URL` | api | sim | não | endereço público da API | `http://localhost:3333` |
+| `APP_CLIENT_URL` | api | só com app e API em sites diferentes | não | origem pública do app. Decide o `sameSite` do cookie de sessão em produção (`config/session-token.ts`): `none` só quando está em outro site que `APP_SERVER_URL`; ausente cai em `lax`, nunca em `none` | `https://aporta.maiyu.com.br` |
 | `TRUSTED_PROXIES` | api | não no schema; **obrigatória em produção atrás do Coolify** | não | proxies em quem `request.ip()` acredita ao ler `X-Forwarded-For` (endereços, CIDR, `loopback`, `linklocal`, `uniquelocal`). Ausente vale só `loopback`: atrás do Traefik todo limite por IP viraria um balde só. Nunca `true` | `uniquelocal` |
 | `COOKIE_DOMAIN` | api | não no schema; **obrigatória em produção** (app e API em hosts diferentes) | não | `Domain` dos cookies de sessão. Vazia em desenvolvimento, porque cookie ignora porta. Sem ela em produção o SSR do app nunca recebe o cookie e todo F5 em rota privada desloga | `.maiyu.com.br` |
 | `CORS_ORIGINS` | api | não no schema; **obrigatória em produção** | não | origens do navegador autorizadas, separadas por vírgula. Em desenvolvimento a API aceita qualquer origem; fora dele, ausente é lista vazia e recusa toda chamada de outra origem. Nunca `*`: a API usa cookie. A barreira de `Origin` das escritas usa a mesma lista | `https://aporta.maiyu.com.br` |
@@ -34,9 +35,9 @@ boot quando falta, conforme o schema.
 | `STORAGE_BUCKET` | api | sim | não | nome do bucket, privado | `aporta` |
 | `STORAGE_ENDPOINT` | api | sim | não | endereço da API S3: MinIO local, ou S3, R2 ou Spaces em produção | `http://localhost:9006` |
 | `STORAGE_FORCE_PATH_STYLE` | api | não | não | `true` para MinIO, que só serve `endpoint/bucket/chave`; em produção (R2, S3, Spaces), remover | `true` |
-| `SEED_OWNER_EMAIL` | api | não | não | e-mail do primeiro administrador criado pelo seeder; "owner" aqui é o dono da plataforma, não o papel `OWNER` | `administrator@mail.com` |
-| `E2E_OWNER_PASSWORD` | e2e | não | **sim** | a mesma senha do seed: o E2E entra com ela como administrador, como dono de exemplo e como a moderadora semeada (`moderador.exemplo@aporta.example`). No CI nasce por rodada, mascarada | a mesma de `SEED_OWNER_PASSWORD` |
-| `SEED_OWNER_PASSWORD` | api | não (o seeder, rodado à mão, exige) | **sim** | senha do primeiro administrador. Sem default: sem ela o seeder para, para não criar conta com credencial conhecida. O seeder roda só em desenvolvimento e teste | defina um valor forte |
+| `SEED_OWNER_EMAIL` | api | junto com a senha | não | e-mail do primeiro administrador criado pelo seeder; senha sem e-mail faz o seeder parar. "owner" aqui é o dono da plataforma, não o papel `OWNER` | `administrator@example.com` |
+| `SEED_OWNER_PASSWORD` | api | não | **sim** | **liga** o seed do administrador, em qualquer ambiente: com valor, a conta é criada; vazia, o seed é pulado com uma linha de log e o resto do `db:seed` segue. Sem default | defina um valor forte |
+| `SEED_DEMO_PASSWORD` | api | não | **sim** | **liga** a demonstração, em qualquer ambiente: senha comum das contas `moderator@example.com` (papel `MODERATOR`) e `owner@example.com` (papel `OWNER`, dono dos anúncios de exemplo) e o conteúdo de exemplo (12 anúncios, 53 fotos, 10 lugares; os 6 bairros vêm junto). Vazia, a demonstração é pulada com uma linha de log. Nunca reaproveita `SEED_OWNER_PASSWORD` | defina um valor forte |
 
 ### Só do `docker compose` local (`backend/docker-compose.yml`)
 
@@ -54,15 +55,18 @@ boot quando falta, conforme o schema.
 |---|---|---|---|---|---|
 | `VITE_SITE_URL` | web | não (tem default local) | não | endereço público do site, sem barra no fim; vira canônico, sitemap e `og:url`. Entra no bundle em tempo de build | `http://localhost:3000` |
 | `VITE_API_URL` | web | **sim** (`z.url()`, sem default) | não | base da API AdonisJS, sem barra no fim. O navegador chama a API direto a partir dela, e o SSR a usa quando `SERVER_API_URL` não existe. Sem ela o frontend não sobe: não há mais dado de exemplo para cair. Entra no bundle em tempo de build | `http://localhost:3333` |
+| `SITE_ENV` | web | não | não | onde o site roda, lida pelo servidor de SSR em tempo de execução (sem `VITE_`, a mesma imagem serve staging e produção). Só `production` deixa indexar; qualquer outro valor, ou ausente, responde `X-Robots-Tag: noindex, nofollow` e `robots.txt` com `Disallow: /` (`frontend.md` §9.7) | `production` |
 | `STORAGE_PUBLIC_URL` | web | não | não | origem pública do bucket (esquema e host, sem barra), só do servidor de SSR. Entra em `img-src` e `connect-src` do CSP: as fotos assinadas e o envio em partes vão direto ao bucket. Sem ela o navegador bloqueia a foto real | `https://<conta>.r2.cloudflarestorage.com` |
 | `SERVER_API_URL` | web | não | não | endereço da API visto só pelo servidor de SSR, pela rede interna do Coolify, para o pedido não sair para a internet e voltar. Sem o prefixo `VITE_` de propósito: nunca entra no bundle. Ausente, o servidor usa `VITE_API_URL`. Lida de `process.env` em tempo de execução. O sitemap também a usa | `http://api:3333` |
 | `VITE_UPLOAD_MAX_SIZE` | web | não | não | espelho do `UPLOAD_MAX_SIZE` da API (mesmo valor, em bytes). Ausente, o cliente não recusa por tamanho e o `422` do servidor diz o limite. Entra no bundle em tempo de build | `1073741824` |
 | `PORT` | web | não | não | porta do servidor Nitro; o `Dockerfile-production` fixa `3000` | `3000` |
 | `E2E_BASE_URL` | e2e | sim, para rodar o E2E | não | o app sob teste; sem default, `e2e/support/env.ts` para dizendo qual falta | `http://localhost:3000` |
 | `E2E_API_URL` | e2e | sim, para rodar o E2E | não | a API sob teste, cujo `/health-check` o E2E confere | `http://localhost:3333` |
-| `E2E_OWNER_EMAIL` | e2e | sim, para rodar o E2E | não | a conta do `auth.setup.ts`: a do seeder (`SEED_OWNER_EMAIL`) | `administrator@mail.com` |
+| `E2E_OWNER_EMAIL` | e2e | não, hoje sem leitor | não | a conta do administrador do seeder (`SEED_OWNER_EMAIL`); os specs de hoje não entram como administrador, então fica comentada no `.env.example` | `administrator@example.com` |
+| `E2E_OWNER_PASSWORD` | e2e | não, hoje sem leitor | **sim** | a senha dessa conta (`SEED_OWNER_PASSWORD`); comentada no `.env.example` | a mesma de `SEED_OWNER_PASSWORD` |
+| `E2E_DEMO_PASSWORD` | e2e | sim, para rodar o E2E | **sim** | a `SEED_DEMO_PASSWORD` do backend sob teste. O E2E entra com ela como `moderator@example.com`; o dono é cadastrado a cada rodada. No CI nasce por rodada, mascarada | a mesma de `SEED_DEMO_PASSWORD` |
 | `E2E_SHOTS_DIR` | e2e | não | não | pasta fora do repositório onde o spec responsivo grava uma captura de página inteira por tela e viewport; ausente, não grava | `/tmp/shots` |
-| `E2E_CHROMIUM_PATH` | e2e | não | não | caminho de um Chromium já instalado, para quem não usa o do `playwright install`; no CI fica vazia | `/opt/pw-browsers/chromium` |
+| `E2E_CHROMIUM_PATH` | e2e | não | não | caminho de um Chromium já instalado, para quem não usa o do `playwright install`; o `scripts/generate-icons.mjs` lê a mesma chave; no CI fica vazia | `/opt/pw-browsers/chromium` |
 
 Regras (detalhe em `backend.md` §6):
 
@@ -89,6 +93,7 @@ TZ=UTC
 LOG_LEVEL=info
 APP_KEY=
 APP_SERVER_URL=http://${HOST}:${PORT}
+# APP_CLIENT_URL=https://app.example.com
 # TRUSTED_PROXIES=uniquelocal
 
 # Session
@@ -110,17 +115,23 @@ STORAGE_ENDPOINT=http://localhost:9006
 STORAGE_FORCE_PATH_STYLE=true
 
 # Seeding
-SEED_OWNER_EMAIL=administrator@mail.com
+SEED_OWNER_EMAIL=administrator@example.com
 SEED_OWNER_PASSWORD=
+SEED_DEMO_PASSWORD=
 
-# --- optional: compose-minio ---   (MINIO_ROOT_USER, MINIO_ROOT_PASSWORD)
-# --- optional: compose-ports ---   (DB_PORT=5435, STORAGE_PORT=9006, STORAGE_CONSOLE_PORT=9007)
+# Docker Compose
+MINIO_ROOT_USER=aporta-root
+MINIO_ROOT_PASSWORD=aporta-root-secret
+DB_PORT=5435
+STORAGE_PORT=9006
+STORAGE_CONSOLE_PORT=9007
 ```
 
 O arquivo segue o modelo único da casa (`_templates/backend/.env.example`, `backend.md` §6): mesmas
 chaves, ordem, blocos e comentários em todo projeto; só o valor de exemplo é do Aporta. Os blocos
-opcionais `client-url`, `mail`, `queue` e `jwt` ficam de fora inteiros, porque o projeto não tem
-esses recursos; `compose-minio` e `compose-ports` entram inteiros. O `sync-to-project.mjs --check`
+opcionais `mail`, `queue` e `jwt` ficam de fora inteiros, porque o projeto não tem esses recursos
+(e-mail entra na fase 6); o resto é obrigatório e a chave sem uso fica comentada no lugar
+(`DECISIONS.md` #276 da régua). O `sync-to-project.mjs --check`
 reprova chave a mais, a menos ou fora de ordem (`DECISIONS.md` #271 da régua).
 
 `frontend/.env.example`:
@@ -128,10 +139,12 @@ reprova chave a mais, a menos ou fora de ordem (`DECISIONS.md` #271 da régua).
 ```dotenv
 VITE_API_URL=http://localhost:3333
 # SERVER_API_URL=http://api:3333
-# STORAGE_PUBLIC_URL=http://localhost:9006
 VITE_SITE_URL=http://localhost:3000
+SITE_ENV=development
+# STORAGE_PUBLIC_URL=http://localhost:9006
 VITE_UPLOAD_MAX_SIZE=1073741824
-# E2E_BASE_URL, E2E_API_URL, E2E_OWNER_EMAIL, E2E_OWNER_PASSWORD, E2E_SHOTS_DIR (comentadas)
+# E2E_BASE_URL, E2E_API_URL, E2E_OWNER_EMAIL, E2E_OWNER_PASSWORD, E2E_DEMO_PASSWORD,
+# E2E_SHOTS_DIR, E2E_CHROMIUM_PATH (comentadas)
 ```
 
 ## 3. Segredo fora do Git
@@ -161,7 +174,7 @@ só com container local e senha de banco de teste (banco separado `aporta_test` 
 ## 5. Primeira configuração
 
 - [ ] `cp backend/.env.example backend/.env` e `cp frontend/.env.example frontend/.env`.
-- [ ] Gerar `APP_KEY` com `node ace generate:key` (dentro de `backend/`) e definir `SEED_OWNER_PASSWORD`.
+- [ ] Gerar `APP_KEY` com `node ace generate:key` (dentro de `backend/`) e, para ver dado de exemplo, definir `SEED_OWNER_PASSWORD` e `SEED_DEMO_PASSWORD`.
 - [ ] Subir os serviços locais: `docker compose up -d` em `backend/` (Postgres na 5435, MinIO na 9006 e 9007).
 - [ ] Criar o banco de teste uma vez: `docker compose exec database createdb -U aporta aporta_test`.
 - [ ] Rodar `node ace migration:fresh --seed` para criar as tabelas e o primeiro administrador.
@@ -229,7 +242,7 @@ Nada abaixo pode ser feito pelo repositório. O estado de cada item está em `TA
 - [ ] API: `DATABASE_URL`, bucket (`STORAGE_*`), `APP_KEY` nova, `CORS_ORIGINS=https://aporta.maiyu.com.br`,
       `COOKIE_DOMAIN=.maiyu.com.br`, `TRUSTED_PROXIES` cobrindo o Traefik **e a rede do app**.
 - [ ] API: comando pós-deploy `node ace migration:run --force`.
-- [ ] App: `SERVER_API_URL` (rede interna) e `STORAGE_PUBLIC_URL` (origem do bucket).
+- [ ] App: `SERVER_API_URL` (rede interna), `STORAGE_PUBLIC_URL` (origem do bucket) e `SITE_ENV=production` (sem ela o site responde `noindex`).
 - [ ] Healthcheck das duas aplicações em `/health-check`.
 - [ ] Bucket: aplicar `backend/infra/r2-cors.json` e expor o cabeçalho `ETag`.
 - [ ] Agendar `node ace storages:prune`.

@@ -146,8 +146,8 @@ anúncio, nome e descrição do lugar, e nome do bairro, sem diferenciar maiúsc
 
 **Dado de exemplo.** Os seeders `neighborhood`, `listing` e `place` (`environment = ['development']`)
 leem `backend/database/data/` e são idempotentes: bairros e anúncios por `slug`, lugares por categoria
-e nome. Entram 6 bairros, 12 anúncios, 53 fotos e 10 lugares. Não rodam no ambiente `test`
-(`DECISIONS.md` #11). O seeder de usuário continua exigindo `SEED_OWNER_PASSWORD`.
+e nome. Entram 6 bairros, 12 anúncios, 53 fotos e 10 lugares. São a demonstração, ligada por `SEED_DEMO_PASSWORD` em qualquer ambiente, e não rodam sem ela
+(`DECISIONS.md` #17). O seeder de usuário liga por `SEED_OWNER_PASSWORD`.
 
 ## 6. Fluxo de dados
 
@@ -262,7 +262,7 @@ quebra sem erro no log.
 | CORS do bucket com `PUT`, `GET`, `HEAD` e `ETag` exposto, para a origem do app | provedor do storage, a partir de `backend/infra/r2-cors.json` | sem o `ETag` exposto o navegador não confirma as partes e o upload multipart não fecha; o arquivo não é aplicado pelo deploy. Conferir a origem: o arquivo lista `https://aporta.com.br`, e o app é `https://aporta.maiyu.com.br` |
 | Bucket privado, leitura só por URL assinada curta | provedor do storage | nada é servido por URL pública |
 | Varredura de uploads abandonados: agendar `node ace storages:prune` | cron do host ou tarefa agendada do Coolify | a aplicação não tem agendador; sem isso, partes de upload abandonado ficam no bucket e continuam cobradas |
-| Primeira conta de administrador em produção | quem opera, por `node ace staff:create` no terminal da API | o seeder roda só em desenvolvimento e teste, para não criar credencial conhecida em produção; o comando não lê variável de ambiente e pede a senha por prompt oculto, duas vezes (`ENV.md` §8) |
+| Primeira conta de administrador em produção | quem opera, por `node ace staff:create` no terminal da API | o seeder do administrador só roda se `SEED_OWNER_PASSWORD` tiver valor, e em produção ela não é definida, para não criar credencial conhecida; o comando não lê variável de ambiente e pede a senha por prompt oculto, duas vezes (`ENV.md` §8) |
 | Secrets do repositório `COOLIFY_URL`, `COOLIFY_TOKEN`, `COOLIFY_API_UUID`, `COOLIFY_APP_UUID`, `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN` | configurações do repositório no GitHub (Actions, Secrets) | o workflow de deploy lê só desses valores (`tooling.md` §8.3), com esses nomes fixos; `COOLIFY_URL` é a base do painel, sem caminho; os valores de URL e UUIDs ainda não foram fornecidos pelo dono |
 | Segundo serviço com worker de fila | Não se aplica hoje | não há fila; passa a valer quando o e-mail entrar |
 

@@ -140,6 +140,56 @@ test.group('storefront > listings > paginate', (group) => {
     )
   })
 
+  test('when the map window is sent, only what falls inside it comes out, and the order and total follow', async ({
+    client,
+    assert,
+  }) => {
+    const centro = await neighborhood({ slug: 'centro', name: 'Centro' })
+    const inside = await listing({
+      slug: 'dentro',
+      neighborhoodId: centro.id,
+      lat: -4.38,
+      lng: -70.03,
+    })
+    await listing({
+      slug: 'fora',
+      neighborhoodId: centro.id,
+      lat: -3.1,
+      lng: -60.2,
+    })
+
+    const response = await client.get('/storefront/listings').qs({
+      minLng: -70.1,
+      minLat: -4.4,
+      maxLng: -70,
+      maxLat: -4.3,
+    })
+
+    response.assertStatus(200)
+    assert.deepEqual(
+      page(response).data.map((item) => item.id),
+      [inside.id],
+    )
+    assert.equal(page(response).meta.total, 1)
+  })
+
+  test('when the map window is incomplete or off the globe, answers 422 pointing at the field', async ({
+    client,
+    assert,
+  }) => {
+    const partial = await client
+      .get('/storefront/listings')
+      .qs({ minLat: -4.4, maxLat: -4.3 })
+    const offGlobe = await client.get(
+      '/storefront/listings?minLng=-70.1&minLat=-91&maxLng=-70&maxLat=-4.3',
+    )
+
+    partial.assertStatus(422)
+    assert.property(errorBody(partial).errors, 'minLng')
+    offGlobe.assertStatus(422)
+    assert.property(errorBody(offGlobe).errors, 'minLat')
+  })
+
   test('when ?sort is outside the closed tuple, answers 422 pointing at the field', async ({
     client,
     assert,

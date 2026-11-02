@@ -4,7 +4,12 @@ import {
   LISTING_TYPES,
 } from '@aporta/shared'
 
-import { paginationFields, sortFields, vine } from '#core/validator'
+import {
+  boundsFields,
+  paginationFields,
+  sortFields,
+  vine,
+} from '#core/validator'
 import type { Infer } from '#core/validator'
 
 /**
@@ -18,12 +23,29 @@ import type { Infer } from '#core/validator'
  */
 export const StorefrontListingPaginateValidator = vine.create({
   ...paginationFields(),
+  ...boundsFields(),
   type: vine.enum(LISTING_TYPES).optional(),
   neighborhood: vine.string().trim().minLength(1).maxLength(60).optional(),
   period: vine.enum(LISTING_PERIODS).optional(),
   minPrice: vine.number().withoutDecimals().min(0).max(100_000).optional(),
   maxPrice: vine.number().withoutDecimals().min(0).max(100_000).optional(),
   ...sortFields(LISTING_SORT_COLUMNS),
+})
+
+/**
+ * What `GET /storefront/listings/pins` accepts: the filters and the map window of the catalog,
+ * and none of `page`, `perPage` and `sort` - the map draws every pin of the window at once, up
+ * to a ceiling of its own. The VineJS pair of `StorefrontListingPinsValidator` in
+ * `@aporta/shared`.
+ */
+export const StorefrontListingPinsValidator = vine.create({
+  search: paginationFields().search,
+  ...boundsFields(),
+  type: vine.enum(LISTING_TYPES).optional(),
+  neighborhood: vine.string().trim().minLength(1).maxLength(60).optional(),
+  period: vine.enum(LISTING_PERIODS).optional(),
+  minPrice: vine.number().withoutDecimals().min(0).max(100_000).optional(),
+  maxPrice: vine.number().withoutDecimals().min(0).max(100_000).optional(),
 })
 
 /**
@@ -37,6 +59,9 @@ export const StorefrontListingShowValidator = vine.create({
 
 export type StorefrontListingPaginatePayload = Infer<
   typeof StorefrontListingPaginateValidator
+>
+export type StorefrontListingPinsPayload = Infer<
+  typeof StorefrontListingPinsValidator
 >
 export type StorefrontListingShowPayload = Infer<
   typeof StorefrontListingShowValidator

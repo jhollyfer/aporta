@@ -215,6 +215,44 @@ export function paginationFields() {
 }
 
 /**
+ * The map window as four numbers, in decimal degrees: `minLng`, `minLat`, `maxLng`, `maxLat`.
+ * The pair of `Rule.boundsFields()` in `@aporta/shared`.
+ *
+ * Four fields and not one `bbox=a,b,c,d` text: each number is validated on its own, and the
+ * `422` points at the one that is wrong. They only mean something together, so each one is
+ * `requiredIfAnyExists` the other three: three corners of a rectangle select nothing sensible,
+ * and ignoring them quietly would draw the whole city on a map the visitor thought was zoomed in.
+ */
+export function boundsFields() {
+  return {
+    minLng: vine
+      .number()
+      .min(-180)
+      .max(180)
+      .optional()
+      .requiredIfAnyExists(['minLat', 'maxLng', 'maxLat']),
+    minLat: vine
+      .number()
+      .min(-90)
+      .max(90)
+      .optional()
+      .requiredIfAnyExists(['minLng', 'maxLng', 'maxLat']),
+    maxLng: vine
+      .number()
+      .min(-180)
+      .max(180)
+      .optional()
+      .requiredIfAnyExists(['minLng', 'minLat', 'maxLat']),
+    maxLat: vine
+      .number()
+      .min(-90)
+      .max(90)
+      .optional()
+      .requiredIfAnyExists(['minLng', 'minLat', 'maxLng']),
+  }
+}
+
+/**
  * The trash cut, for listings that have something to restore.
  *
  * Outside `paginationFields()` on purpose: if it were there, it would also show up

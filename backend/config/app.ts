@@ -32,6 +32,15 @@ export const http = defineConfig({
   trustProxy: env.get('TRUSTED_PROXIES') ?? 'loopback',
 
   /**
+   * `ETag` on every response that has a body, and `304 Not Modified` when the client already holds
+   * it (`If-None-Match`). It pays off on the public reads, whose `Cache-Control` lets a client
+   * come back after `max-age` and ask only "has it changed?" instead of downloading the page
+   * again. On the other routes it only enables revalidation: it grants no freshness, so nothing
+   * private is reused without asking the server.
+   */
+  etag: true,
+
+  /**
    * Allow HTTP method spoofing via the "_method" form/query parameter.
    * This lets HTML forms target PUT/PATCH/DELETE routes while still
    * submitting with POST.

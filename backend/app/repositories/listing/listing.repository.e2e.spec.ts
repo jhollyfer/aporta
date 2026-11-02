@@ -422,6 +422,144 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       )
     })
 
+    test('when filtering by the map window, it keeps what is inside, edges included, and still paginates', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const at = (slug: string, lat: number, lng: number) =>
+        seed(listingDraftPublished({ slug, neighborhoodId: centro, lat, lng }))
+      await at('dentro', -4.38, -70.03)
+      await at('na-borda', -4.4, -70.1)
+      await at('ao-norte', -4.2, -70.03)
+      await at('a-leste', -4.38, -69.5)
+
+      const window = { minLng: -70.1, minLat: -4.4, maxLng: -70, maxLat: -4.3 }
+      const page = await repository.paginatePublished({
+        ...PAGE,
+        sort: 'createdAt',
+        direction: SORT_DIRECTION.ASC,
+        bounds: window,
+      })
+      const first = await repository.paginatePublished({
+        ...PAGE,
+        perPage: 1,
+        bounds: window,
+      })
+
+      assert.sameMembers(
+        page.data.map((record) => record.listing.snapshot().slug),
+        ['dentro', 'na-borda'],
+      )
+      assert.equal(page.meta.total, 2)
+      assert.equal(first.meta.total, 2)
+      assert.lengthOf(first.data, 1)
+    })
+
+    test('when a window has min above max, it selects nothing', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      await seed(listingDraftPublished({ slug: 'a', neighborhoodId: centro }))
+
+      const page = await repository.paginatePublished({
+        ...PAGE,
+        bounds: { minLng: -69, minLat: -4, maxLng: -71, maxLat: -5 },
+      })
+
+      assert.deepEqual(page.data, [])
+    })
+
+    test('when asking for the pins, it brings the light points of the published ones inside the filters and the window, newest first, with the total', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      await seed(
+        listingDraftPublished({
+          slug: 'antigo',
+          neighborhoodId: centro,
+          lat: -4.38,
+          lng: -70.03,
+        }),
+        stamps('2026-01-01', '2026-01-01'),
+      )
+      await seed(
+        listingDraftPublished({
+          slug: 'recente',
+          type: LISTING_TYPE.ROOM,
+          neighborhoodId: centro,
+          priceMonthly: 500,
+          lat: -4.39,
+          lng: -70.04,
+        }),
+        stamps('2026-02-01', '2026-02-01'),
+      )
+      await seed(
+        listingDraftPublished({
+          slug: 'fora',
+          neighborhoodId: centro,
+          lat: -3,
+          lng: -60,
+        }),
+        stamps('2026-03-01', '2026-03-01'),
+      )
+      await seed(
+        listingIn(LISTING_STATUS.DRAFT, {
+          slug: 'rascunho',
+          neighborhoodId: centro,
+          lat: -4.38,
+          lng: -70.03,
+        }),
+      )
+      const bounds = { minLng: -70.1, minLat: -4.4, maxLng: -70, maxLat: -4.3 }
+
+      const all = await repository.findPublishedPins({ limit: 10, bounds })
+      const rooms = await repository.findPublishedPins({
+        limit: 10,
+        bounds,
+        type: LISTING_TYPE.ROOM,
+        maxPrice: 600,
+      })
+      const cut = await repository.findPublishedPins({ limit: 1, bounds })
+
+      assert.deepEqual(
+        all.pins.map((pin) => pin.slug),
+        ['recente', 'antigo'],
+      )
+      assert.equal(all.total, 2)
+      assert.deepEqual(rooms.pins, [
+        {
+          id: all.pins[0]?.id,
+          slug: 'recente',
+          type: LISTING_TYPE.ROOM,
+          lat: -4.39,
+          lng: -70.04,
+          priceMonthly: 500,
+          priceDaily: null,
+        },
+      ])
+      // The cut keeps the newest, and the total still says how many matched in all.
+      assert.deepEqual(
+        cut.pins.map((pin) => pin.slug),
+        ['recente'],
+      )
+      assert.equal(cut.total, 2)
+    })
+
     test('when the page is past the first, it returns the slice and the meta of the paginator', async ({
       assert,
     }) => {

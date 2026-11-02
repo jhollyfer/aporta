@@ -58,21 +58,68 @@ export type ListingRecord = {
 export type ListingSortColumn = (typeof LISTING_SORT_COLUMNS)[number]
 
 /**
+ * The map window, in decimal degrees. A listing is inside it when its point falls between the
+ * corners, edges included. A window with `min` above `max` selects nothing, and that is the honest
+ * answer: the antimeridian does not cross the Alto Solimões, so nothing wraps.
+ */
+export type ListingBounds = {
+  readonly minLng: number
+  readonly minLat: number
+  readonly maxLng: number
+  readonly maxLat: number
+}
+
+/**
+ * What narrows the storefront: type, neighborhood, period, price range, text and the map window.
+ * Shared by the catalog and by the pins so the two always agree on what "the same filters" means.
+ * The price range compares against `Listing.monthlyEquivalent`, so a hotel that quotes the day
+ * still falls in the range the visitor typed in months.
+ */
+export type ListingPublishedFilters = {
+  readonly search?: string
+  readonly type?: ListingType
+  /** The `slug` of a neighborhood. */
+  readonly neighborhood?: string
+  readonly period?: ListingPeriod
+  readonly minPrice?: number
+  readonly maxPrice?: number
+  readonly bounds?: ListingBounds
+}
+
+/**
  * The storefront listing: only what is published and outside the trash, with a search in title
- * and description. The price range compares against `Listing.monthlyEquivalent`, so a hotel that
- * quotes the day still falls in the range the visitor typed in months.
+ * and description.
  */
 export type ListingPublishedCriteria = Merge<
   PageCriteria<ListingSortColumn>,
-  {
-    readonly type?: ListingType
-    /** The `slug` of a neighborhood. */
-    readonly neighborhood?: string
-    readonly period?: ListingPeriod
-    readonly minPrice?: number
-    readonly maxPrice?: number
-  }
+  ListingPublishedFilters
 >
+
+/** The pins of the map: the same cut and filters, up to `limit` points and no page. */
+export type ListingPinsCriteria = Merge<
+  ListingPublishedFilters,
+  { readonly limit: number }
+>
+
+/**
+ * A point on the map, reduced to what a pin needs. Not a `ListingRecord`: no neighborhood, no
+ * photos, no owner, so the read is one narrow query and nothing in it needs a signed URL.
+ */
+export type ListingPin = {
+  readonly id: string
+  readonly slug: string
+  readonly type: ListingType
+  readonly lat: number
+  readonly lng: number
+  readonly priceMonthly: number | null
+  readonly priceDaily: number | null
+}
+
+/** The pins that fit under `limit`, and how many ads match in all (`total >= pins.length`). */
+export type ListingPinsResult = {
+  readonly total: number
+  readonly pins: ReadonlyArray<ListingPin>
+}
 
 /**
  * The owner's own listing: outside the trash, whatever the status, cut to one account. The
@@ -142,4 +189,12 @@ export default abstract class ListingRepository {
   abstract paginatePublished(
     criteria: ListingPublishedCriteria,
   ): Promise<Paginated<ListingRecord>>
+
+  /**
+   * The points of the published ads inside the filters, newest first (so the cut by `limit` drops
+   * the oldest and not an arbitrary few), plus how many match in all.
+   */
+  abstract findPublishedPins(
+    criteria: ListingPinsCriteria,
+  ): Promise<ListingPinsResult>
 }

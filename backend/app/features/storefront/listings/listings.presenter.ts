@@ -1,8 +1,14 @@
-import type { StorefrontListingShowResponse } from '@aporta/shared'
+import type {
+  StorefrontListingPinResponse,
+  StorefrontListingShowResponse,
+} from '@aporta/shared'
 
 import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
 import ListingSharedPresenter from '#features/_shared.listing.presenter'
-import type { ListingRecord } from '#repositories/listing/listing.repository'
+import type {
+  ListingPin,
+  ListingRecord,
+} from '#repositories/listing/listing.repository'
 
 /**
  * The listing as the visitor reads it (`_standards/architecture.md` §10), by allowlist. The fields
@@ -24,6 +30,18 @@ export default class ListingPresenter {
         environment: photo.environment,
         url: ListingPhotoUrls.of(urls, photo.storageId),
       })),
+    }
+  }
+
+  /** A map point by allowlist: the price, the type and where it is, and nothing of the owner. */
+  static pin(pin: ListingPin): StorefrontListingPinResponse {
+    return {
+      id: pin.id,
+      slug: pin.slug,
+      type: pin.type,
+      lat: pin.lat,
+      lng: pin.lng,
+      price: { monthly: pin.priceMonthly, daily: pin.priceDaily },
     }
   }
 }

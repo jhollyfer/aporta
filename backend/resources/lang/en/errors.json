@@ -35,5 +35,10 @@
   "UNAUTHORIZED": "Unauthorized",
   "USER_ALREADY_EXISTS": "User already exists",
   "USER_NOT_FOUND": "User not found",
-  "VALIDATION_ERROR": "Invalid data"
+  "VALIDATION_ERROR": "Invalid data",
+  "LISTING_NOT_FOUND": "Listing not found",
+  "STOREFRONT_LISTING_PAGINATE_ERROR": "Internal server error",
+  "STOREFRONT_LISTING_SHOW_ERROR": "Internal server error",
+  "STOREFRONT_NEIGHBORHOOD_PAGINATE_ERROR": "Internal server error",
+  "STOREFRONT_PLACE_PAGINATE_ERROR": "Internal server error"
 }

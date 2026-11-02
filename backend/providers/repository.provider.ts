@@ -1,6 +1,9 @@
 import type { ApplicationService } from '@adonisjs/core/types'
 
 import TransactionContext from '#core/transaction-context'
+import ListingRepository from '#repositories/listing/listing.repository'
+import NeighborhoodRepository from '#repositories/neighborhood/neighborhood.repository'
+import PlaceRepository from '#repositories/place/place.repository'
 import SessionTokenRepository from '#repositories/session-token/session-token.repository'
 import StorageRepository from '#repositories/storage/storage.repository'
 import UnitOfWork from '#repositories/unit-of-work/unit-of-work'
@@ -33,6 +36,21 @@ export default class RepositoryProvider {
       const { default: UnitOfWorkLucid } =
         await import('#repositories/unit-of-work/unit-of-work.lucid')
       return resolver.make(UnitOfWorkLucid)
+    })
+    this.app.container.bind(ListingRepository, async (resolver) => {
+      const { default: ListingLucidRepository } =
+        await import('#repositories/listing/listing.lucid.repository')
+      return resolver.make(ListingLucidRepository)
+    })
+    this.app.container.bind(NeighborhoodRepository, async (resolver) => {
+      const { default: NeighborhoodLucidRepository } =
+        await import('#repositories/neighborhood/neighborhood.lucid.repository')
+      return resolver.make(NeighborhoodLucidRepository)
+    })
+    this.app.container.bind(PlaceRepository, async (resolver) => {
+      const { default: PlaceLucidRepository } =
+        await import('#repositories/place/place.lucid.repository')
+      return resolver.make(PlaceLucidRepository)
     })
     this.app.container.bind(SessionTokenRepository, async (resolver) => {
       const { default: SessionTokenLucidRepository } =

@@ -32,6 +32,130 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class ListingPhotoSchema extends BaseModel {
+  static $columns = ['environment', 'id', 'listingId', 'position'] as const
+  $columns = ListingPhotoSchema.$columns
+  @column()
+  declare environment: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare listingId: string
+  @column()
+  declare position: number
+}
+
+export class ListingSchema extends BaseModel {
+  static $columns = ['address', 'availableFrom', 'bathrooms', 'bedrooms', 'costElectricity', 'costInternet', 'costWater', 'createdAt', 'deletedAt', 'description', 'furnished', 'id', 'lat', 'lng', 'minimumStayMonths', 'neighborhoodId', 'ownerName', 'ownerVerifiedAt', 'ownerWhatsapp', 'periods', 'priceDaily', 'priceMonthly', 'rules', 'slug', 'status', 'title', 'type', 'updatedAt'] as const
+  $columns = ListingSchema.$columns
+  @column()
+  declare address: string
+  @column.date()
+  declare availableFrom: DateTime
+  @column()
+  declare bathrooms: number
+  @column()
+  declare bedrooms: number
+  @column()
+  declare costElectricity: boolean
+  @column()
+  declare costInternet: boolean
+  @column()
+  declare costWater: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string
+  @column()
+  declare furnished: boolean
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare lat: number
+  @column()
+  declare lng: number
+  @column()
+  declare minimumStayMonths: number
+  @column()
+  declare neighborhoodId: string
+  @column()
+  declare ownerName: string
+  @column.dateTime()
+  declare ownerVerifiedAt: DateTime | null
+  @column()
+  declare ownerWhatsapp: string
+  @column()
+  declare periods: any
+  @column()
+  declare priceDaily: number | null
+  @column()
+  declare priceMonthly: number | null
+  @column()
+  declare rules: any
+  @column()
+  declare slug: string
+  @column()
+  declare status: string
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class NeighborhoodSchema extends BaseModel {
+  static $columns = ['createdAt', 'deletedAt', 'id', 'lat', 'lng', 'name', 'slug', 'updatedAt'] as const
+  $columns = NeighborhoodSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare lat: number
+  @column()
+  declare lng: number
+  @column()
+  declare name: string
+  @column()
+  declare slug: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class PlaceSchema extends BaseModel {
+  static $columns = ['address', 'category', 'createdAt', 'date', 'deletedAt', 'description', 'hours', 'id', 'name', 'neighborhoodId', 'updatedAt', 'whatsapp'] as const
+  $columns = PlaceSchema.$columns
+  @column()
+  declare address: string
+  @column()
+  declare category: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.date()
+  declare date: DateTime | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string
+  @column()
+  declare hours: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare neighborhoodId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare whatsapp: string | null
+}
+
 export class RateLimitSchema extends BaseModel {
   static $columns = ['expire', 'key', 'points'] as const
   $columns = RateLimitSchema.$columns

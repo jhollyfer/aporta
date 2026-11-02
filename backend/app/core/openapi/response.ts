@@ -6,6 +6,10 @@ import {
   StorageFilePaginateResponse,
   StorageFilePartsResponse,
   StorageFileShowResponse,
+  StorefrontListingPaginateResponse,
+  StorefrontListingShowResponse,
+  StorefrontNeighborhoodPaginateResponse,
+  StorefrontPlacePaginateResponse,
 } from '@aporta/shared'
 
 import type { ResponseSchema } from '#core/openapi/types'
@@ -38,4 +42,13 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
   'storage/files/create': StorageFileCreateResponse,
   'storage/files/parts': StorageFilePartsResponse,
   'storage/files/paginate': StorageFilePaginateResponse,
+
+  /**
+   * The public storefront. `paginate` has its own key per resource (the listing would otherwise
+   * come out documented as the raw item); the neighborhoods and the guide have no `show`.
+   */
+  'storefront/listings': StorefrontListingShowResponse,
+  'storefront/listings/paginate': StorefrontListingPaginateResponse,
+  'storefront/neighborhoods/paginate': StorefrontNeighborhoodPaginateResponse,
+  'storefront/places/paginate': StorefrontPlacePaginateResponse,
 }

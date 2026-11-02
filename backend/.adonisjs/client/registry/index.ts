@@ -26,6 +26,30 @@ const routes = {
     tokens: [[0,"documentation"]],
     types: placeholder as Registry['documentation.reference']['types'],
   },
+  'storefront.listings.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/storefront/listings',
+    tokens: [[0,"storefront"],[0,"listings"]],
+    types: placeholder as Registry['storefront.listings.paginate']['types'],
+  },
+  'storefront.listings.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/storefront/listings/:slug',
+    tokens: [[0,"storefront"],[0,"listings"],[1,"slug"]],
+    types: placeholder as Registry['storefront.listings.show']['types'],
+  },
+  'storefront.neighborhoods.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/storefront/neighborhoods',
+    tokens: [[0,"storefront"],[0,"neighborhoods"]],
+    types: placeholder as Registry['storefront.neighborhoods.paginate']['types'],
+  },
+  'storefront.places.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/storefront/places',
+    tokens: [[0,"storefront"],[0,"places"]],
+    types: placeholder as Registry['storefront.places.paginate']['types'],
+  },
   'authentication.sign_in': {
     methods: ["POST"],
     pattern: '/authentication/sign-in',

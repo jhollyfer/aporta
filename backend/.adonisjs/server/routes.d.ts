@@ -7,6 +7,10 @@ export type ScannedRoutes = {
     'health_check': { paramsTuple?: []; params?: {} }
     'documentation.openapi': { paramsTuple?: []; params?: {} }
     'documentation.reference': { paramsTuple?: []; params?: {} }
+    'storefront.listings.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.listings.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'authentication.sign_in': { paramsTuple?: []; params?: {} }
     'authentication.sign_out': { paramsTuple?: []; params?: {} }
     'authentication.refresh': { paramsTuple?: []; params?: {} }
@@ -24,6 +28,10 @@ export type ScannedRoutes = {
     'health_check': { paramsTuple?: []; params?: {} }
     'documentation.openapi': { paramsTuple?: []; params?: {} }
     'documentation.reference': { paramsTuple?: []; params?: {} }
+    'storefront.listings.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.listings.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -34,6 +42,10 @@ export type ScannedRoutes = {
     'health_check': { paramsTuple?: []; params?: {} }
     'documentation.openapi': { paramsTuple?: []; params?: {} }
     'documentation.reference': { paramsTuple?: []; params?: {} }
+    'storefront.listings.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.listings.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'storefront.neighborhoods.paginate': { paramsTuple?: []; params?: {} }
+    'storefront.places.paginate': { paramsTuple?: []; params?: {} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

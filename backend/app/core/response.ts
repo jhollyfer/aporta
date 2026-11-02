@@ -39,6 +39,15 @@ export class WireDate {
     return text
   }
 
+  /**
+   * The calendar day (`YYYY-MM-DD`) of an instant, read in UTC: the same instant is the same day
+   * on every server, whatever the time zone of the process. For what the page shows as "updated
+   * on".
+   */
+  static day(value: Date): string {
+    return value.toISOString().slice(0, 10)
+  }
+
   static isoOrNull(value: Date | null): string | null {
     if (value === null) return null
     return WireDate.iso(value)

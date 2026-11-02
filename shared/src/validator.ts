@@ -199,6 +199,13 @@ const PT_BR_LABELS = {
   minPrice: 'o valor mínimo',
   maxPrice: 'o valor máximo',
   category: 'a categoria',
+  // Moderation and reports
+  decision: 'a decisão',
+  note: 'o motivo',
+  verified: 'a verificação',
+  reason: 'o motivo da denúncia',
+  details: 'os detalhes',
+  website: 'o site',
 } as const
 
 type FieldLabels = Record<keyof typeof PT_BR_LABELS, string>
@@ -252,6 +259,12 @@ export const FIELD_LABELS = {
     minPrice: 'el valor mínimo',
     maxPrice: 'el valor máximo',
     category: 'la categoría',
+    decision: 'la decisión',
+    note: 'el motivo',
+    verified: 'la verificación',
+    reason: 'el motivo de la denuncia',
+    details: 'los detalles',
+    website: 'el sitio',
   },
   en: {
     name: 'the name',
@@ -300,6 +313,12 @@ export const FIELD_LABELS = {
     minPrice: 'the minimum price',
     maxPrice: 'the maximum price',
     category: 'the category',
+    decision: 'the decision',
+    note: 'the reason',
+    verified: 'the verification',
+    reason: 'the report reason',
+    details: 'the details',
+    website: 'the website',
   },
 } as const satisfies Record<Locale, FieldLabels>
 

@@ -5,6 +5,10 @@ import { Controller, useForm } from 'react-hook-form'
 
 import { REPORT_REASONS, StorefrontReportCreateValidator } from '@aporta/shared'
 
+import { Input } from '#/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '#/components/ui/radio-group'
+import { Label } from '#/components/ui/label'
+import { Button } from '#/components/ui/button'
 import { Textarea } from '#/components/ui/textarea'
 import { ActionButton } from '#/components/common/action-button'
 import { Field } from '#/components/common/field'
@@ -102,7 +106,8 @@ export function ReportListing({
       pending={send.isPending}
       onClose={reset}
       renderTrigger={(open) => (
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => {
             reset()
@@ -112,7 +117,7 @@ export function ReportListing({
         >
           <Flag aria-hidden weight="bold" className="size-4" />
           {m.report_open()}
-        </button>
+        </Button>
       )}
     >
       {(close) => (
@@ -156,27 +161,30 @@ export function ReportListing({
                     <legend className="mb-1.5 text-sm font-bold text-ink">
                       {m.report_reason_label()}
                     </legend>
-                    {REPORT_REASONS.map((reason) => (
-                      <label
-                        key={reason}
-                        className={cn(
-                          'flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-4 py-2 text-base text-ink',
-                          field.value === reason && 'border-moss bg-moss-wash',
-                          field.value !== reason && 'border-line bg-surface',
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          name={field.name}
-                          value={reason}
-                          checked={field.value === reason}
-                          onChange={() => field.onChange(reason)}
-                          onBlur={field.onBlur}
-                          className="size-5 shrink-0 accent-moss"
-                        />
-                        {REPORT_REASON_LABELS[reason]()}
-                      </label>
-                    ))}
+                    <RadioGroup
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value)}
+                      onBlur={field.onBlur}
+                    >
+                      {REPORT_REASONS.map((reason) => (
+                        <Label
+                          key={reason}
+                          className={cn(
+                            'flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-4 py-2 text-base text-ink',
+                            field.value === reason &&
+                              'border-moss bg-moss-wash',
+                            field.value !== reason && 'border-line bg-surface',
+                          )}
+                        >
+                          <RadioGroupItem
+                            value={reason}
+                            className="size-5 shrink-0"
+                          />
+                          {REPORT_REASON_LABELS[reason]()}
+                        </Label>
+                      ))}
+                    </RadioGroup>
                     {fieldState.invalid && (
                       <p
                         id="reason-error"
@@ -238,10 +246,10 @@ export function ReportListing({
                   name="website"
                   render={({ field }) => (
                     <>
-                      <label htmlFor="website">
+                      <Label htmlFor="website">
                         {m.report_honeypot_label()}
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         id="website"
                         type="text"
                         tabIndex={-1}
@@ -256,14 +264,15 @@ export function ReportListing({
 
               <FormNotice>{form.formState.errors.root?.message}</FormNotice>
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={close}
                   disabled={send.isPending}
                   className="h-12 rounded-full border-2 border-ink px-6 text-sm font-extrabold text-ink hover:bg-ink hover:text-paper disabled:opacity-60"
                 >
                   {m.note_cancel()}
-                </button>
+                </Button>
                 <ActionButton
                   type="submit"
                   className="h-12"

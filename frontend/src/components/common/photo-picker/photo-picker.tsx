@@ -9,6 +9,10 @@ import {
 
 import { IMAGE_MIMETYPES, PHOTO_ENVIRONMENTS } from '@aporta/shared'
 
+import { Input } from '#/components/ui/input'
+import { Progress } from '#/components/ui/progress'
+import { Label } from '#/components/ui/label'
+import { Button } from '#/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import type { PhotoDraft, PhotoDrafts } from '#/hooks/use-photo-drafts'
 import { cn } from '#/lib/cn'
@@ -82,7 +86,8 @@ function PhotoRow({
           <p className="min-w-0 truncate text-sm font-bold text-ink">
             {item.file.name}
           </p>
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => drafts.remove(item.key)}
             disabled={disabled}
@@ -90,12 +95,12 @@ function PhotoRow({
             className="-mt-2 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-moss-wash disabled:opacity-40"
           >
             <X aria-hidden weight="bold" className="size-5" />
-          </button>
+          </Button>
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor={selectId} className="text-xs font-bold text-ink-soft">
+          <Label htmlFor={selectId} className="text-xs font-bold text-ink-soft">
             {m.photos_environment()}
-          </label>
+          </Label>
           <NativeSelect
             id={selectId}
             value={item.environment}
@@ -122,11 +127,10 @@ function PhotoRow({
               <span role="status">{statusText(item)}</span>
             </p>
             {item.status === 'sending' && (
-              <progress
+              <Progress
                 value={item.progress}
-                max={100}
                 aria-label={item.file.name}
-                className="h-1.5 w-full accent-[var(--moss)]"
+                className="w-full"
               />
             )}
             {item.error !== null && (
@@ -146,7 +150,7 @@ function PhotoRow({
  * foto, remover e o andamento do envio. Só desenha o estado de `usePhotoDrafts`; quem
  * sobe os arquivos é o `useSendPhotos`.
  *
- * O `<input type="file">` fica `sr-only` dentro de um `<label>` desenhado como botão: o
+ * O `<input type="file">` fica `sr-only` dentro de um `<Label>` desenhado como botão: o
  * controle nativo é o que teclado e leitor de tela usam, e `peer-focus-visible` devolve o
  * anel de foco ao botão. O valor é zerado a cada escolha, senão escolher o mesmo arquivo
  * de novo (depois de removê-lo) não dispara `change`.
@@ -163,7 +167,7 @@ export function PhotoPicker({
   return (
     <div data-slot="photo-picker" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <input
+        <Input
           id={inputId}
           type="file"
           accept={IMAGE_MIMETYPES.join(',')}
@@ -173,9 +177,9 @@ export function PhotoPicker({
             drafts.add(Array.from(event.target.files ?? []))
             event.target.value = ''
           }}
-          className="peer sr-only"
+          className="peer sr-only h-px w-px p-0"
         />
-        <label
+        <Label
           htmlFor={inputId}
           className={cn(
             'inline-flex h-12 cursor-pointer items-center gap-2 rounded-full border-2 border-ink px-6 text-sm font-extrabold text-ink transition-colors hover:bg-ink hover:text-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink motion-reduce:transition-none',
@@ -184,7 +188,7 @@ export function PhotoPicker({
         >
           <ImageSquare aria-hidden weight="bold" className="size-5" />
           {label}
-        </label>
+        </Label>
         <p className="text-sm font-bold text-ink-soft tabular-nums">
           {m.photos_count({ count: drafts.items.length, max: drafts.max })}
         </p>

@@ -3,6 +3,7 @@ import * as React from 'react'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { ListingPeriod, ListingType } from '@aporta/shared'
 
+import { Label } from '#/components/ui/label'
 import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import { Input } from '#/components/ui/input'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
@@ -48,7 +49,7 @@ export function FilterBarFields(): React.JSX.Element {
 
   return (
     <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
-      <label className="flex flex-col gap-1 text-xs font-bold">
+      <Label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_type_label()}
         <NativeSelect
           className="[&_select]:h-11 [&_select]:text-sm"
@@ -64,9 +65,9 @@ export function FilterBarFields(): React.JSX.Element {
             </NativeSelectOption>
           ))}
         </NativeSelect>
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-xs font-bold">
+      <Label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_neighborhood_label()}
         <NativeSelect
           className="[&_select]:h-11 [&_select]:text-sm"
@@ -84,9 +85,9 @@ export function FilterBarFields(): React.JSX.Element {
             </NativeSelectOption>
           ))}
         </NativeSelect>
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-xs font-bold">
+      <Label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_period_label()}
         <NativeSelect
           className="[&_select]:h-11 [&_select]:text-sm"
@@ -104,9 +105,9 @@ export function FilterBarFields(): React.JSX.Element {
             </NativeSelectOption>
           ))}
         </NativeSelect>
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-xs font-bold">
+      <Label className="flex flex-col gap-1 text-xs font-bold">
         {m.filter_price_min()}
         <Input
           key={`min-${filters.minPrice}`}
@@ -122,9 +123,9 @@ export function FilterBarFields(): React.JSX.Element {
           }
           className="h-11 text-sm md:text-sm"
         />
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-xs font-bold">
+      <Label className="flex flex-col gap-1 text-xs font-bold">
         {m.filter_price_max()}
         <Input
           key={`max-${filters.maxPrice}`}
@@ -140,7 +141,7 @@ export function FilterBarFields(): React.JSX.Element {
           }
           className="h-11 text-sm md:text-sm"
         />
-      </label>
+      </Label>
 
       {priceInvalid && (
         <p

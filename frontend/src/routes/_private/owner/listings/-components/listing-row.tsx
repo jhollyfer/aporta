@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import type { OwnerListingShowResponse } from '@aporta/shared'
 
+import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/common/confirm-dialog'
 import { ListingPhoto } from '#/components/common/listing-photo'
 import { PillButton } from '#/components/common/pill-button'
@@ -150,7 +151,8 @@ export function ListingRow({
             pending={archive.isPending}
             onConfirm={confirm}
             renderTrigger={(open) => (
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => {
                   setFailure(undefined)
@@ -162,7 +164,7 @@ export function ListingRow({
                 className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-danger underline underline-offset-4 hover:bg-clay-wash"
               >
                 {m.owner_listings_archive()}
-              </button>
+              </Button>
             )}
           />
         </div>

@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { Label } from '#/components/ui/label'
 import { cn } from '#/lib/cn'
 import { errorId, hintId } from '#/lib/form-a11y'
 
@@ -27,9 +28,9 @@ export function Field({
 }: FieldProps): React.JSX.Element {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={htmlFor} className="text-sm font-bold text-ink">
+      <Label htmlFor={htmlFor} className="text-sm font-bold text-ink">
         {label}
-      </label>
+      </Label>
       {hint !== undefined && (
         <p id={hintId(htmlFor)} className="text-sm text-ink-soft">
           {hint}

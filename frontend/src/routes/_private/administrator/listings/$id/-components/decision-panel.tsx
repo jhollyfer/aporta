@@ -4,6 +4,7 @@ import { Check, Prohibit } from '@phosphor-icons/react'
 import { LISTING_REVIEW_DECISION, LISTING_STATUS } from '@aporta/shared'
 import type { AdministratorListingShowResponse } from '@aporta/shared'
 
+import { Button } from '#/components/ui/button'
 import { ActionButton } from '#/components/common/action-button'
 import { ConfirmDialog } from '#/components/common/confirm-dialog'
 import { FormNotice } from '#/components/common/form-notice'
@@ -222,7 +223,8 @@ export function DecisionPanel({
               })
             }}
             renderTrigger={(open) => (
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 disabled={busy}
                 onClick={() => {
@@ -232,7 +234,7 @@ export function DecisionPanel({
                 className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-danger underline underline-offset-4 hover:bg-clay-wash disabled:opacity-60"
               >
                 {m.owner_listings_archive()}
-              </button>
+              </Button>
             )}
           />
         )}

@@ -3,6 +3,7 @@ import { Clock, MapPin } from '@phosphor-icons/react'
 
 import type { StorefrontPlaceShowResponse } from '@aporta/shared'
 
+import { Card } from '#/components/ui/card'
 import { WhatsAppCta } from '#/components/common/whatsapp-cta'
 import { dayOfMonth, shortMonth } from '#/lib/format'
 import { m } from '#/paraglide/messages'
@@ -21,7 +22,7 @@ export function PlaceCard({
   const locale = getLocale()
 
   return (
-    <article className="flex gap-4 rounded-card bg-surface p-4">
+    <Card className="flex-row gap-4 rounded-card bg-surface p-4 ring-0">
       {place.date !== null && (
         <time
           dateTime={place.date}
@@ -55,6 +56,6 @@ export function PlaceCard({
           />
         )}
       </div>
-    </article>
+    </Card>
   )
 }

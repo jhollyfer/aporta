@@ -29,7 +29,7 @@ async function fillListing(page: Page, title: string): Promise<void> {
   await page.getByRole('button', { name: 'Continuar' }).click()
 
   await page.getByLabel('Aluguel por mês, em reais').fill('900')
-  await page.getByLabel('Semestre').check()
+  await page.getByRole('checkbox', { name: 'Semestre' }).check()
   await page.getByLabel('Período mínimo, em meses').fill('4')
   await page.getByRole('button', { name: 'Continuar' }).click()
 

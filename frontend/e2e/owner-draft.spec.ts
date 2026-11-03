@@ -22,7 +22,7 @@ test.describe('cadastro do imóvel', () => {
     await expectHydrated(page.getByRole('button', { name: 'Continuar' }))
 
     await page.getByLabel('Tipo de imóvel').selectOption('ROOM')
-    await page.getByLabel('O imóvel é mobiliado').check()
+    await page.getByRole('checkbox', { name: 'O imóvel é mobiliado' }).check()
 
     // O rascunho grava depois de uma pausa e junta os dois campos: espera os dois no que foi
     // gravado, e não só o primeiro, senão o reload corre na frente do segundo salvamento.
@@ -39,7 +39,9 @@ test.describe('cadastro do imóvel', () => {
     await page.reload()
 
     await expect(page.getByLabel('Tipo de imóvel')).toHaveValue('ROOM')
-    await expect(page.getByLabel('O imóvel é mobiliado')).toBeChecked()
+    await expect(
+      page.getByRole('checkbox', { name: 'O imóvel é mobiliado' }),
+    ).toBeChecked()
   })
 
   test('quando o rascunho guardado está corrompido, o formulário abre vazio', async ({
@@ -68,7 +70,7 @@ test.describe('cadastro do imóvel', () => {
     await page.getByRole('button', { name: 'Continuar' }).click()
 
     await page.getByLabel('Aluguel por mês, em reais').fill('900')
-    await page.getByLabel('Semestre').check()
+    await page.getByRole('checkbox', { name: 'Semestre' }).check()
     await page.getByLabel('Período mínimo, em meses').fill('4')
     await page.getByRole('button', { name: 'Continuar' }).click()
 
@@ -107,7 +109,7 @@ test.describe('cadastro do imóvel', () => {
     await page.getByLabel('Rua e número').fill('Rua do Porto, 120')
     await page.getByRole('button', { name: 'Continuar' }).click()
     await page.getByLabel('Aluguel por mês, em reais').fill('900')
-    await page.getByLabel('Semestre').check()
+    await page.getByRole('checkbox', { name: 'Semestre' }).check()
     await page.getByLabel('Período mínimo, em meses').fill('4')
     await page.getByRole('button', { name: 'Continuar' }).click()
 

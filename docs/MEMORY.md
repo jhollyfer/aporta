@@ -24,6 +24,8 @@
 
 ## Parou em
 
+2026-11-03 (fim do dia): tema (automático, claro, escuro) no cabeçalho público e na casca da conta e do painel; shadcn sobre Base UI em `components/ui` e usado em quase toda tela (7.20, ver `TASKS.md`); site responsivo em todos os tamanhos e sem jeito de aplicativo; 14 bairros oficiais no seed. Faltam o `AlertDialog`, `Skeleton`, `Toast` e `Tooltip` nas telas, o tema por cookie no `loader`, as fotos reais (7.13) e a conferência de coordenadas, telefones e lugares (7.10). Ambiente local: o Postgres do sistema cai sozinho; `pg_ctlcluster 16 main start` e reiniciar o backend (`node ace serve`).
+
 2026-11-03: sync do `maiyu-pattern` (799bd33) trouxe os workflows que leem `secrets.VITE_API_URL` e `secrets.VITE_SITE_URL`. O dono precisa ter esses dois **secrets** (aba Secrets de Actions, não Variables) com `https://aporta.maiyu.com.br` e `https://api-aporta.maiyu.com.br`, sem barra no fim; valores em `docs/ENV.md`. Ainda não conferi o run da `main` no GitHub Actions.
 
 2026-11-03 (segunda sessão da branch `claude/vibrant-ptolemy-c6v9iy`): passada funcional, SEO e desempenho feitos (tarefas 7.17 a 7.19, ver `TASKS.md`). Faltam as fotos reais do dono (7.13) e a conferência de telefones e coordenadas (7.10); o upload ao bucket real continua sem verificação de ponta a ponta. Ambiente que funcionou: pnpm 11.28 (`npm i -g pnpm@11.28.10`), Postgres do sistema, backend em 3333, front de produção (`vite build` + `node .output/server/index.mjs`) em 3000 (o `playwright.config.ts` fixa essas portas), E2E rodado por viewport com pausa de 70 s para o limite de 5/min.

@@ -3,6 +3,7 @@ import * as React from 'react'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { StorefrontNeighborhoodShowResponse } from '@aporta/shared'
 
+import { Label } from '#/components/ui/label'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
@@ -61,12 +62,12 @@ export function SearchPillSegment({
 
   return (
     <div className="relative flex-1 rounded-2xl hover:bg-moss-wash/60 sm:rounded-full">
-      <label
+      <Label
         htmlFor={id}
         className="pointer-events-none absolute top-2 left-4 text-xs font-bold text-ink"
       >
         {spec.label()}
-      </label>
+      </Label>
       <select
         id={id}
         value={values[field]}

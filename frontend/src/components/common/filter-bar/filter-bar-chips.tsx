@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { X } from '@phosphor-icons/react'
 
+import { Button } from '#/components/ui/button'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { formatCurrency } from '#/lib/format'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
@@ -66,7 +67,8 @@ export function FilterBarChips(): React.JSX.Element | null {
     <ul className="flex flex-wrap gap-2" aria-label={m.chips_label()}>
       {chips.map((chip) => (
         <li key={chip.key}>
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={chip.remove}
             className="inline-flex items-center gap-1.5 rounded-full border border-moss bg-moss-wash px-3 py-1.5 text-sm font-semibold text-moss-deep hover:bg-moss/15"
@@ -74,7 +76,7 @@ export function FilterBarChips(): React.JSX.Element | null {
           >
             {chip.label}
             <X aria-hidden weight="bold" className="size-3.5" />
-          </button>
+          </Button>
         </li>
       ))}
     </ul>

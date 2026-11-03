@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { Button } from '#/components/ui/button'
 import { ActionButton } from '#/components/common/action-button'
 import { FormNotice } from '#/components/common/form-notice'
 import { ModalDialog } from '#/components/common/modal-dialog'
@@ -45,14 +46,16 @@ export function ConfirmDialog({
         <>
           <FormNotice>{error}</FormNotice>
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
+            <Button
               type="button"
               onClick={close}
               disabled={pending}
-              className="h-12 rounded-full border-2 border-ink px-6 text-sm font-extrabold text-ink hover:bg-ink hover:text-paper disabled:opacity-60"
+              variant="ink"
+              size="pill-md"
+              className="h-12 px-6 disabled:opacity-60"
             >
               {cancelLabel}
-            </button>
+            </Button>
             <ActionButton
               type="button"
               tone="danger"

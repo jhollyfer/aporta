@@ -5,6 +5,8 @@ import type { Control } from 'react-hook-form'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
 
+import { Label } from '#/components/ui/label'
+import { Checkbox } from '#/components/ui/checkbox'
 import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import { Textarea } from '#/components/ui/textarea'
 import { Input } from '#/components/ui/input'
@@ -68,15 +70,14 @@ export function TypeStep({ control }: StepProps): React.JSX.Element {
         control={control}
         name="furnished"
         render={({ field }) => (
-          <label className="flex min-h-11 items-center gap-3 text-base font-bold text-ink">
-            <input
-              type="checkbox"
+          <Label className="flex min-h-11 items-center gap-3 text-base font-bold text-ink">
+            <Checkbox
               checked={field.value}
-              onChange={(event) => field.onChange(event.target.checked)}
-              className="size-6 accent-[var(--moss)]"
+              onCheckedChange={(checked) => field.onChange(checked)}
+              className="size-6 [&_svg]:size-5"
             />
             {m.field_furnished()}
-          </label>
+          </Label>
         )}
       />
     </>
@@ -214,15 +215,14 @@ export function ValuesStep({ control }: StepProps): React.JSX.Element {
             control={control}
             name={name}
             render={({ field }) => (
-              <label className="flex min-h-11 items-center gap-3 text-base text-ink">
-                <input
-                  type="checkbox"
+              <Label className="flex min-h-11 items-center gap-3 text-base text-ink">
+                <Checkbox
                   checked={field.value}
-                  onChange={(event) => field.onChange(event.target.checked)}
-                  className="size-6 accent-[var(--moss)]"
+                  onCheckedChange={(checked) => field.onChange(checked)}
+                  className="size-6 [&_svg]:size-5"
                 />
                 {COST_LABELS[name]()}
-              </label>
+              </Label>
             )}
           />
         ))}
@@ -236,20 +236,19 @@ export function ValuesStep({ control }: StepProps): React.JSX.Element {
               {m.field_periods()}
             </legend>
             {LISTING_PERIODS.map((period) => (
-              <label
+              <Label
                 key={period}
                 className="flex min-h-11 items-center gap-3 text-base text-ink"
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={field.value.includes(period)}
-                  onChange={() =>
+                  onCheckedChange={() =>
                     field.onChange(togglePeriod(field.value, period))
                   }
-                  className="size-6 accent-[var(--moss)]"
+                  className="size-6 [&_svg]:size-5"
                 />
                 {LISTING_PERIOD_LABELS[period]()}
-              </label>
+              </Label>
             ))}
             {fieldState.error !== undefined && (
               <p role="alert" className="text-sm font-bold text-danger">

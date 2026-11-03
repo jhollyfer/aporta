@@ -228,7 +228,7 @@ test.describe('moderação de anúncios e denúncias', () => {
     await open.click()
 
     const dialog = visitorPage.getByRole('dialog')
-    await dialog.getByLabel('Parece golpe').check()
+    await dialog.getByRole('radio', { name: 'Parece golpe' }).check()
     await dialog.getByRole('button', { name: 'Enviar denúncia' }).click()
 
     await expect(
@@ -250,7 +250,7 @@ test.describe('moderação de anúncios e denúncias', () => {
     await open.click()
 
     const dialog = visitorPage.getByRole('dialog')
-    await dialog.getByLabel('Parece golpe').check()
+    await dialog.getByRole('radio', { name: 'Parece golpe' }).check()
     await dialog.getByLabel('Detalhes (opcional)').fill(REPORT_DETAILS)
     await dialog.getByRole('button', { name: 'Enviar denúncia' }).click()
 

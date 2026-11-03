@@ -24,11 +24,12 @@ function Progress({
   )
 }
 
+// casa: 8px track on the moss wash and a moss bar that moves only on the transform-friendly width
 function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
       className={cn(
-        'relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted',
+        'relative flex h-2 w-full items-center overflow-x-hidden rounded-full bg-moss-wash',
         className,
       )}
       data-slot="progress-track"
@@ -44,7 +45,10 @@ function ProgressIndicator({
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
-      className={cn('h-full bg-primary transition-all', className)}
+      className={cn(
+        'h-full rounded-full bg-moss transition-[width] duration-300 motion-reduce:transition-none',
+        className,
+      )}
       {...props}
     />
   )

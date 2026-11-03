@@ -2,6 +2,7 @@ import * as React from 'react'
 import { ListBullets, MapTrifold } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 
+import { Button } from '#/components/ui/button'
 import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
 
@@ -42,7 +43,8 @@ export function ViewToggle({
       className="flex w-fit rounded-full bg-moss-wash p-0.5 lg:hidden"
     >
       {OPTIONS.map(({ view: option, label, Glyph }) => (
-        <button
+        <Button
+          variant="ghost"
           key={option}
           type="button"
           aria-pressed={option === view}
@@ -51,12 +53,13 @@ export function ViewToggle({
           }}
           className={cn(
             'inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-extrabold text-moss-deep',
-            option === view && 'bg-moss text-paper',
+            option === view &&
+              'bg-moss text-paper hover:bg-moss hover:text-paper',
           )}
         >
           <Glyph aria-hidden weight="bold" className="size-5" />
           {label()}
-        </button>
+        </Button>
       ))}
     </div>
   )

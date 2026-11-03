@@ -2,6 +2,7 @@ import * as React from 'react'
 import { CircleHalf, Moon, Sun } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 
+import { Button } from '#/components/ui/button'
 import { applyTheme, nextTheme, readTheme } from '#/lib/theme'
 import type { Theme } from '#/lib/theme'
 import { m } from '#/paraglide/messages'
@@ -41,13 +42,14 @@ export function ThemeToggle(): React.JSX.Element {
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={cycle}
       aria-label={m.theme_toggle_label({ theme: LABELS[theme]() })}
       className="inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-moss-wash sm:size-9"
     >
       <Glyph aria-hidden className="size-5" weight="bold" />
-    </button>
+    </Button>
   )
 }

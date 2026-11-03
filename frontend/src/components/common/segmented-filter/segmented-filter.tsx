@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { Button } from '#/components/ui/button'
 import { cn } from '#/lib/cn'
 
 type SegmentedFilterProps<TValue extends string> = {
@@ -30,19 +31,22 @@ export function SegmentedFilter<TValue extends string>({
         const active = option.value === value
 
         return (
-          <button
+          <Button
+            variant="ghost"
             key={option.value}
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={cn(
               'inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition-colors motion-reduce:transition-none',
-              active && 'border-moss bg-moss-wash text-moss-deep',
-              !active && 'border-line bg-surface text-ink hover:border-ink',
+              active &&
+                'border-moss bg-moss-wash text-moss-deep hover:bg-moss-wash',
+              !active &&
+                'border-line bg-surface text-ink hover:border-ink hover:bg-surface',
             )}
           >
             {option.label}
-          </button>
+          </Button>
         )
       })}
     </div>

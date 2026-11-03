@@ -2,6 +2,7 @@ import * as React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 
+import { Button } from '#/components/ui/button'
 import { Textarea } from '#/components/ui/textarea'
 import { ActionButton } from '#/components/common/action-button'
 import { Field } from '#/components/common/field'
@@ -145,14 +146,16 @@ export function NoteDialog({
           />
           <FormNotice>{error}</FormNotice>
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
+            <Button
               type="button"
               onClick={close}
               disabled={pending}
-              className="h-12 rounded-full border-2 border-ink px-6 text-sm font-extrabold text-ink hover:bg-ink hover:text-paper disabled:opacity-60"
+              variant="ink"
+              size="pill-md"
+              className="h-12 px-6 disabled:opacity-60"
             >
               {m.note_cancel()}
-            </button>
+            </Button>
             <ActionButton
               type="submit"
               tone={tone}

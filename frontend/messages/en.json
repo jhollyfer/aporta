@@ -599,7 +599,7 @@
   "map_pin_open": "View listing: {type}",
   "meta_og_image_alt": "Aporta, housing and city guide for Benjamin Constant",
   "map_selected_label": "Place selected on the map",
-  "common_maiyu_credit": "Built by {#link}Maiyu{/link}",
+  "common_maiyu_credit": "Developed by {#link}Maiyu{/link}",
   "theme_toggle_label": "Theme: {theme}. Tap to change",
   "theme_system": "Automatic",
   "theme_light": "Light",

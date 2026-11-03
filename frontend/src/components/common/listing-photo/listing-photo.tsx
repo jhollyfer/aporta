@@ -1,32 +1,29 @@
 import * as React from 'react'
 
-import { PHOTO_ENVIRONMENT } from '@aporta/shared'
+import {
+  Bed,
+  Buildings,
+  DoorOpen,
+  House,
+  Suitcase,
+} from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
+
 import type {
   ListingPhoto as ListingPhotoRecord,
   ListingType,
 } from '@aporta/shared'
 
-import { SCENE_KIND, Scene } from '#/components/common/scene'
-import type { SceneKind } from '#/components/common/scene'
 import { PHOTO_ENVIRONMENT_LABELS } from '#/lib/labels'
+import { m } from '#/paraglide/messages'
 import { cn } from '#/lib/cn'
 
-const FACADE_BY_TYPE: Record<ListingType, SceneKind> = {
-  HOUSE: SCENE_KIND.HOUSE,
-  ROOM: SCENE_KIND.HOUSE,
-  KITNET: SCENE_KIND.BUILDING,
-  APARTMENT: SCENE_KIND.BUILDING,
-  HOTEL: SCENE_KIND.HOTEL,
-}
-
-const INDOOR: Record<
-  Exclude<ListingPhotoRecord['environment'], 'FACADE'>,
-  SceneKind
-> = {
-  BEDROOM: SCENE_KIND.BEDROOM,
-  BATHROOM: SCENE_KIND.BATHROOM,
-  KITCHEN: SCENE_KIND.KITCHEN,
-  LIVING: SCENE_KIND.LIVING,
+const ICONS: Record<ListingType, Icon> = {
+  HOUSE: House,
+  APARTMENT: Buildings,
+  KITNET: DoorOpen,
+  ROOM: Bed,
+  HOTEL: Suitcase,
 }
 
 type ListingPhotoProps = {
@@ -37,22 +34,13 @@ type ListingPhotoProps = {
   className?: string
 }
 
-function sceneFor(
-  photo: ListingPhotoRecord,
-  listingType: ListingType,
-): SceneKind {
-  if (photo.environment === PHOTO_ENVIRONMENT.FACADE) {
-    return FACADE_BY_TYPE[listingType]
-  }
-  return INDOOR[photo.environment]
-}
-
 /**
- * A foto de um anúncio: a imagem real quando o dono enviou, e a cena desenhada
- * quando ainda não.
+ * A foto de um anúncio: a imagem real quando o dono enviou, e um quadro neutro
+ * ("Foto em breve", com o tipo do imóvel) quando ainda não. Sem desenho repetido
+ * em cada card: o mesmo desenho em toda a lista lê como imagem de enfeite.
  *
  * Mora em `common/` porque o card da lista, a galeria do detalhe e o resumo do
- * mapa mostram a mesma foto, e a regra "sem `url`, desenha" não pode divergir
+ * mapa mostram a mesma foto, e a regra "sem `url`, quadro neutro" não pode divergir
  * entre eles. `loading="lazy"` e dimensões fixas: internet lenta pinta a
  * imagem depois, e sem a caixa reservada a página pula a cada foto que chega.
  *
@@ -83,11 +71,21 @@ export function ListingPhoto({
     )
   }
 
+  const Glyph = ICONS[listingType]
+
   return (
-    <Scene
-      kind={sceneFor(photo, listingType)}
-      label={label}
-      className={className}
-    />
+    <div
+      role="img"
+      aria-label={label}
+      className={cn(
+        'flex size-full flex-col items-center justify-center gap-2 bg-clay-wash text-ink-soft',
+        className,
+      )}
+    >
+      <Glyph aria-hidden className="size-9" weight="light" />
+      <span className="text-xs font-bold tracking-wide uppercase">
+        {m.photo_missing()}
+      </span>
+    </div>
   )
 }

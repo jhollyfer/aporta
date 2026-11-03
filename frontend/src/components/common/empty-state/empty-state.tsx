@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Scene, SCENE_KIND } from '#/components/common/scene'
+import { MagnifyingGlass } from '@phosphor-icons/react'
 
 type EmptyStateProps = {
   title: string
@@ -11,7 +11,7 @@ type EmptyStateProps = {
 /**
  * O estado vazio ensina o que fazer em vez de só dizer "nada aqui": uma busca
  * sem resultado é o momento em que o visitante precisa de uma saída (limpar
- * filtro, ver todos), não de um desenho.
+ * filtro, ver todos). Só um ícone de linha discreto: sem ilustração.
  */
 export function EmptyState({
   title,
@@ -23,9 +23,11 @@ export function EmptyState({
       data-slot="empty-state"
       className="flex flex-col items-center gap-4 rounded-card bg-moss-wash px-6 py-12 text-center"
     >
-      <div className="h-32 w-48 overflow-hidden rounded-card">
-        <Scene kind={SCENE_KIND.RIVER} />
-      </div>
+      <MagnifyingGlass
+        aria-hidden
+        className="size-8 text-ink-soft"
+        weight="light"
+      />
       <h2 className="text-xl font-extrabold text-ink">{title}</h2>
       <p className="max-w-md text-ink-soft">{description}</p>
       {children}

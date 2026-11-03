@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { ActionButton } from '#/components/common/action-button'
 import { PillButton } from '#/components/common/pill-button'
-import { Scene, SCENE_KIND } from '#/components/common/scene'
 import { m } from '#/paraglide/messages'
 
 type NotFoundPageProps = {
@@ -47,9 +46,6 @@ export function NotFoundPage({
             {m.not_found_home()}
           </PillButton>
         </div>
-      </div>
-      <div className="mt-auto h-[38vh] min-h-56">
-        <Scene kind={SCENE_KIND.PANORAMA} />
       </div>
     </section>
   )

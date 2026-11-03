@@ -1,18 +1,17 @@
 /**
- * Gera a prévia de link (Open Graph), 1200x630, a partir da cena do projeto.
+ * Gera a prévia de link (Open Graph), 1200x630.
  *
  *   node scripts/generate-og.mjs
  *
- * Saem quatro imagens em `public/`: `og-image.png` (a panorâmica do rio, a prévia padrão do
- * site) e uma por fachada de anúncio (`og-house.png`, `og-building.png`, `og-hotel.png`), que
- * é o que a página de um anúncio usa. **Nenhuma leva foto**: a foto do dono mora em bucket
- * privado e uma prévia pública dela vazaria o que o dono não escolheu publicar. A cena desenha
- * "aqui entra a foto" e não finge ser ela (`docs/DESIGN.md` §1).
+ * Sai uma imagem só, `public/og-image.png`, em tipografia e cor da paleta: o nome, a cidade e a
+ * porta da marca. **Nem foto nem ilustração de imóvel**: a foto do dono mora em bucket privado e
+ * uma prévia pública dela vazaria o que ele não escolheu publicar, e o desenho de casa, prédio
+ * ou paisagem passa impressão de imagem gerada (`docs/DESIGN.md` §1).
  *
  * O texto é só o nome e a cidade, sem frase: a mesma imagem serve ao português, ao inglês e ao
  * espanhol. Quem lê a descrição é o `og:description`, que muda por idioma.
  *
- * As peças (cena, cores, fonte, Chromium) vêm de `generate-icons.mjs`, para o desenho do ícone
+ * As peças (cores, fonte, marca, Chromium) vêm de `generate-icons.mjs`, para o desenho do ícone
  * e o da prévia nunca divergirem. Mesmos requisitos: `docs/ENV.md`.
  */
 import { resolve } from 'node:path'
@@ -25,63 +24,50 @@ import {
   fontFace,
   launchBrowser,
   readTokens,
-  renderScenes,
 } from './generate-icons.mjs'
 
 const WIDTH = 1200
 const HEIGHT = 630
-const TEXT_COLUMN = 480
 
-/** Arquivo e cena de cada prévia. A cena é a mesma que o card desenha na falta de foto. */
-const IMAGES = [
-  { file: 'og-image.png', kind: 'PANORAMA' },
-  { file: 'og-house.png', kind: 'HOUSE' },
-  { file: 'og-building.png', kind: 'BUILDING' },
-  { file: 'og-hotel.png', kind: 'HOTEL' },
-]
-
-function page({ css, font, tokens, scene }) {
+function page({ css, font, tokens }) {
   return `<!doctype html><meta charset="utf-8"><style>
 ${css}
 ${font}
 html,body{margin:0}
-.card{display:flex;width:${WIDTH}px;height:${HEIGHT}px;background:${tokens.paper};font-family:'Plus Jakarta Sans Variable',sans-serif}
-.text{flex:none;width:${TEXT_COLUMN}px;box-sizing:border-box;padding:72px 56px;display:flex;flex-direction:column;justify-content:space-between}
-.name{margin:0;font-size:116px;line-height:1;font-weight:800;letter-spacing:-0.03em;color:${tokens['moss-deep']}}
-.place{margin:20px 0 0;font-size:40px;font-weight:700;color:${tokens['ink-soft']}}
-.scene{flex:1;overflow:hidden}
-.scene svg{display:block;width:100%;height:100%}
+.card{position:relative;display:flex;width:${WIDTH}px;height:${HEIGHT}px;background:${tokens.paper};font-family:'Plus Jakarta Sans Variable',sans-serif;overflow:hidden}
+.text{flex:1;box-sizing:border-box;padding:72px 64px;display:flex;flex-direction:column;justify-content:space-between}
+.name{margin:0;font-size:176px;line-height:.9;font-weight:800;letter-spacing:-0.04em;color:${tokens['moss-deep']}}
+.place{margin:24px 0 0;font-size:44px;font-weight:700;color:${tokens['ink-soft']}}
+.field{flex:none;width:340px;background:${tokens.stage};display:flex;align-items:flex-end;justify-content:center}
+.door{width:220px;height:300px;background:${tokens.wall};border-radius:110px 110px 0 0;display:flex;align-items:flex-end;justify-content:center}
+.leaf{width:170px;height:260px;background:${tokens.clay};border-radius:85px 85px 0 0}
 </style>
 <div class="card">
   <div class="text">
-    ${brandMark(tokens, { size: 120 })}
+    ${brandMark(tokens, { size: 96 })}
     <div><p class="name">Aporta</p><p class="place">Benjamin Constant</p></div>
   </div>
-  <div class="scene">${scene}</div>
+  <div class="field"><div class="door"><div class="leaf"></div></div></div>
 </div>`
 }
 
 async function main() {
   const { tokens, css } = await readTokens()
   const font = await fontFace()
-  const scenes = await renderScenes(IMAGES.map(({ kind }) => kind))
   const browser = await launchBrowser()
 
   try {
-    for (const { file, kind } of IMAGES) {
-      const scene = scenes.get(kind)
-      const tab = await browser.newPage({
-        viewport: { width: WIDTH, height: HEIGHT },
-      })
+    const tab = await browser.newPage({
+      viewport: { width: WIDTH, height: HEIGHT },
+    })
 
-      await tab.setContent(page({ css, font, tokens, scene }))
-      await tab.evaluate(() => document.fonts.ready)
-      await writeFile(
-        resolve(PUBLIC_DIR, file),
-        await tab.screenshot({ type: 'png' }),
-      )
-      await tab.close()
-    }
+    await tab.setContent(page({ css, font, tokens }))
+    await tab.evaluate(() => document.fonts.ready)
+    await writeFile(
+      resolve(PUBLIC_DIR, 'og-image.png'),
+      await tab.screenshot({ type: 'png' }),
+    )
+    await tab.close()
   } finally {
     await browser.close()
   }

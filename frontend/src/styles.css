@@ -34,14 +34,6 @@
   --river: #4f7f86;
   --danger: #b3412f;
 
-  --sky-top: #cfe4e0;
-  --sky-bottom: #f1ead2;
-  --forest-far: #7ba08a;
-  --forest-near: #3f6e55;
-  --water: #8db6b9;
-  --water-deep: #5f8f95;
-  --stilt: #8a5a3a;
-  --roof: #b5532f;
   --wall: #efe3cc;
 
   --radius-card: 1.25rem;
@@ -65,14 +57,6 @@
     --river: #86b8bf;
     --danger: #ef8d7a;
 
-    --sky-top: #14302f;
-    --sky-bottom: #3a3320;
-    --forest-far: #2a4a3a;
-    --forest-near: #1c3a2a;
-    --water: #1f4a50;
-    --water-deep: #153a40;
-    --stilt: #6a452c;
-    --roof: #8a3f22;
     --wall: #cdbb9a;
   }
 }
@@ -154,15 +138,6 @@
       transition-duration: 0.01ms !important;
     }
   }
-}
-
-/* A cena de cada anúncio: o céu, o dia e a noite saem só de CSS e de tokens. */
-.scene-sky-top {
-  stop-color: var(--sky-top);
-}
-
-.scene-sky-bottom {
-  stop-color: var(--sky-bottom);
 }
 
 /*

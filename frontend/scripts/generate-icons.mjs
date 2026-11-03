@@ -20,10 +20,6 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { chromium } from '@playwright/test'
-import { createServer } from 'vite'
-import react from '@vitejs/plugin-react'
-import { renderToStaticMarkup } from 'react-dom/server'
-import { createElement } from 'react'
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 export const PUBLIC_DIR = resolve(ROOT, 'public')
@@ -44,11 +40,7 @@ export async function readTokens() {
       match[2].trim(),
     ]),
   )
-  const sky = [...css.matchAll(/\.scene-sky-(?:top|bottom)\s*\{[^}]*\}/g)]
-    .map((match) => match[0])
-    .join('\n')
-
-  return { tokens, css: `:root{${block}}\n${sky}` }
+  return { tokens, css: `:root{${block}}` }
 }
 
 /**
@@ -98,37 +90,6 @@ export async function fontFace() {
   const data = (await readFile(FONT)).toString('base64')
 
   return `@font-face{font-family:'Plus Jakarta Sans Variable';font-weight:200 800;src:url(data:font/woff2;base64,${data}) format('woff2')}`
-}
-
-/**
- * As cenas do projeto (`components/common/scene`) como marcação estática, uma por tipo. O módulo é TSX e usa
- * `#/`, então passa pelo Vite em modo de SSR, sem os plugins do produto: a mesma geometria do
- * site, sem uma segunda cópia do desenho.
- */
-export async function renderScenes(kinds) {
-  const vite = await createServer({
-    root: ROOT,
-    configFile: false,
-    appType: 'custom',
-    logLevel: 'error',
-    plugins: [react()],
-    server: { middlewareMode: true, hmr: false, watch: null },
-  })
-
-  try {
-    const { Scene } = await vite.ssrLoadModule(
-      '/src/components/common/scene/scene.tsx',
-    )
-
-    return new Map(
-      kinds.map((kind) => [
-        kind,
-        renderToStaticMarkup(createElement(Scene, { kind })),
-      ]),
-    )
-  } finally {
-    await vite.close()
-  }
 }
 
 /** Um `.ico` com uma imagem PNG por tamanho (o formato aceita PNG por dentro desde o Vista). */

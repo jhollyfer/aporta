@@ -7,7 +7,6 @@ import { PLACE_CATEGORY } from '@aporta/shared'
 import { EmptyState } from '#/components/common/empty-state'
 import { GuideTabs } from '#/components/common/guide-tabs'
 import { PlaceCard } from '#/components/common/place-card'
-import { Scene, SCENE_KIND } from '#/components/common/scene'
 import { storefrontPlacesQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
 import { m } from '#/paraglide/messages'
 
@@ -48,10 +47,6 @@ function RouteComponent(): React.JSX.Element {
           <p className="max-w-md text-lg text-ink-soft">{m.guide_lead()}</p>
         </header>
         <GuideTabs active={category} />
-        {/* No desktop a coluna da esquerda é mais curta que a lista: a cena fecha o vazio de baixo das abas. */}
-        <div className="hidden aspect-[4/3] overflow-hidden rounded-card lg:block">
-          <Scene kind={SCENE_KIND.HOUSE} />
-        </div>
       </div>
       {places.length === 0 && (
         <EmptyState

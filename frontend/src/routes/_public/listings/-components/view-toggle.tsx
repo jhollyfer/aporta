@@ -2,26 +2,31 @@ import * as React from 'react'
 import { ListBullets, MapTrifold } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 
+import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
 
 import { LISTINGS_VIEW } from '../-search'
 import type { ListingsView } from '../-search'
 
-type Spec = { label: () => string; Glyph: Icon }
+type Option = { view: ListingsView; label: () => string; Glyph: Icon }
 
-/** O que o botão oferece é a vista que NÃO está aberta: estando na lista, "Mapa". */
-const OFFER: Record<ListingsView, Spec> = {
-  [LISTINGS_VIEW.LIST]: { label: () => m.view_show_map(), Glyph: MapTrifold },
-  [LISTINGS_VIEW.MAP]: { label: () => m.view_show_list(), Glyph: ListBullets },
-}
-
-/** Flutua sobre a lista que rola: overlay de verdade, com sombra. */
-const FLOATING =
-  'fixed bottom-5 left-1/2 z-40 inline-flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-6 text-sm font-extrabold text-paper shadow-xl transition-transform active:scale-[0.97] motion-reduce:transition-none lg:hidden' // taste-skill-ignore: botão flutuante
+const OPTIONS: ReadonlyArray<Option> = [
+  {
+    view: LISTINGS_VIEW.LIST,
+    label: () => m.view_show_list(),
+    Glyph: ListBullets,
+  },
+  {
+    view: LISTINGS_VIEW.MAP,
+    label: () => m.view_show_map(),
+    Glyph: MapTrifold,
+  },
+]
 
 /**
- * O botão flutuante do rodapé que alterna lista e mapa no celular, como o
- * Airbnb faz. Some a partir do `lg`, onde os dois cabem lado a lado.
+ * A escolha entre lista e mapa em tela estreita: dois botões lado a lado, no fluxo da página,
+ * acima dos resultados, como num site (nada flutua sobre o conteúdo, nada imita barra de
+ * aplicativo). Some a partir do `lg`, onde os dois cabem lado a lado.
  */
 export function ViewToggle({
   view,
@@ -30,12 +35,29 @@ export function ViewToggle({
   view: ListingsView
   onToggle: () => void
 }): React.JSX.Element {
-  const { label, Glyph } = OFFER[view]
-
   return (
-    <button type="button" onClick={onToggle} className={FLOATING}>
-      <Glyph aria-hidden weight="bold" className="size-5" />
-      {label()}
-    </button>
+    <div
+      role="group"
+      aria-label={m.view_toggle_label()}
+      className="flex w-fit rounded-full bg-moss-wash p-0.5 lg:hidden"
+    >
+      {OPTIONS.map(({ view: option, label, Glyph }) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={option === view}
+          onClick={() => {
+            if (option !== view) onToggle()
+          }}
+          className={cn(
+            'inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-extrabold text-moss-deep',
+            option === view && 'bg-moss text-paper',
+          )}
+        >
+          <Glyph aria-hidden weight="bold" className="size-5" />
+          {label()}
+        </button>
+      ))}
+    </div>
   )
 }

@@ -54,7 +54,7 @@ A coluna "Estado" diz o que existe no repositório em 2026-11-02.
 - Chat interno: o contato é só o WhatsApp, por decisão (`DECISIONS.md` #7).
 - Pagamento, reserva e contrato pela plataforma: o Aporta aproxima as partes, e o acerto é entre elas.
 - Conta de visitante, favoritos e alertas de novo anúncio: o briefing não pede, e a busca não exige login.
-- Aplicativo nativo de celular: o site é mobile first.
+- Aplicativo nativo de celular: o site é responsivo, com a mesma qualidade em celular, tablet e desktop.
 - Avaliação e nota de imóvel ou de dono: não pedido; a confiança vem do selo, da data de atualização e da moderação.
 - Painel da equipe com telas próprias: ainda não definido; depende da resposta à pergunta de quem modera (§8).
 
@@ -65,7 +65,7 @@ A coluna "Estado" diz o que existe no repositório em 2026-11-02.
 | Desempenho | Leve e utilizável com internet lenta. Orçamento numérico (peso da página, tempo até o conteúdo) ainda não definido: pergunta aberta no §8 |
 | Disponibilidade | Site público sempre que o deploy estiver de pé; o healthcheck do app não depende da API (`ARCHITECTURE.md` §9.1) |
 | Acessibilidade | WCAG 2.1 AA nas telas públicas (`DESIGN.md` §10); há uma falha conhecida no tema escuro (`MEMORY.md`, "Problemas conhecidos") |
-| Dispositivos | Celular primeiro; mapa e lista se alternam em tela estreita e ficam lado a lado a partir de `lg` |
+| Dispositivos | Responsivo em todos os tamanhos (celular, tablet e desktop), cada um com o seu arranjo; mapa e lista se alternam em tela estreita e ficam lado a lado a partir de `lg` |
 | Idiomas | pt-BR (base, sem prefixo na URL), es e en (`/es/...`, `/en/...`) |
 | Busca e compartilhamento | Filtros, aba do guia e vista lista/mapa na URL, para o link mandado por WhatsApp abrir igual; `sitemap.xml` e `robots.txt` existem |
 | Dados pessoais | Nome, WhatsApp e e-mail do dono e a conta de quem opera. O rascunho do cadastro fica no aparelho do dono. Detalhe em `SECURITY.md` §8 |

@@ -47,7 +47,7 @@ export function FilterBarFields(): React.JSX.Element {
   if (priceInvalid) priceDescription = PRICE_ERROR_ID
 
   return (
-    <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_type_label()}
         <NativeSelect
@@ -146,7 +146,7 @@ export function FilterBarFields(): React.JSX.Element {
         <p
           id={PRICE_ERROR_ID}
           role="alert"
-          className="col-span-2 text-sm font-bold text-danger lg:col-span-5"
+          className="col-span-2 text-sm font-bold text-danger md:col-span-3 lg:col-span-5"
         >
           {m.filter_price_invalid()}
         </p>

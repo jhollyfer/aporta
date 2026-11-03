@@ -233,8 +233,8 @@ function RouteComponent(): React.JSX.Element {
   const sending = checking || create.isPending
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 pt-8">
-      <header className="flex flex-col gap-3">
+    <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 pt-8 lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-16">
+      <header className="flex flex-col gap-3 lg:sticky lg:top-24">
         <h1 className="text-headline font-extrabold tracking-tight text-ink">
           {m.owner_title()}
         </h1>

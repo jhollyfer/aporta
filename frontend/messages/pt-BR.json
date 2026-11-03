@@ -150,6 +150,7 @@
   "filter_price_invalid": "Preço mínimo maior que o máximo: ajuste um dos dois.",
   "chip_remove": "Remover filtro {label}",
   "view_show_map": "Mapa",
+  "view_toggle_label": "Ver os imóveis em",
   "view_show_list": "Lista",
   "detail_price_title": "Valor",
   "detail_available": "Disponível a partir de",

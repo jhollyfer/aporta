@@ -22,13 +22,6 @@ export const Route = createLazyFileRoute('/_public/listings/$slug')({
 const route = getRouteApi('/_public/listings/$slug')
 
 /**
- * A barra do celular é `sticky` dentro do contêiner da página e não `fixed`: ela gruda no rodapé da
- * tela enquanto o conteúdo rola e para no fim dele, em vez de cobrir o rodapé do site.
- */
-const STICKY_BAR =
-  'sticky bottom-0 z-40 -mx-4 bg-paper p-3 shadow-[0_-4px_16px_rgb(0_0_0/0.12)] lg:hidden' // taste-skill-ignore: barra fixa
-
-/**
  * O detalhe: galeria por ambiente, o valor com o que está incluso, as regras da
  * casa e o dono. O botão de WhatsApp é a ação principal e fica preso ao rodapé no
  * celular, onde a pessoa já rolou a página inteira até decidir.
@@ -58,7 +51,7 @@ function RouteComponent(): React.JSX.Element {
         </p>
       </header>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6 lg:gap-10">
         <Gallery listing={listing}>
           <Gallery.Tabs />
           <Gallery.Main />
@@ -127,7 +120,7 @@ function RouteComponent(): React.JSX.Element {
             phone={listing.owner.whatsapp}
             message={message}
             label={m.whatsapp_cta()}
-            className="hidden w-full lg:inline-flex"
+            className="w-full"
           />
         </div>
       </div>
@@ -157,16 +150,6 @@ function RouteComponent(): React.JSX.Element {
       </section>
 
       <ReportListing slug={listing.slug} title={listing.title} />
-
-      {/* A barra do celular: última filha do contêiner, para o `sticky` parar acima do rodapé do site. */}
-      <div className={STICKY_BAR}>
-        <WhatsAppCta
-          phone={listing.owner.whatsapp}
-          message={message}
-          label={m.whatsapp_cta()}
-          className="w-full"
-        />
-      </div>
     </div>
   )
 }

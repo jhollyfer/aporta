@@ -127,6 +127,19 @@ function RouteComponent(): React.JSX.Element {
         <FilterBar.Actions />
       </FilterBar>
 
+      <ViewToggle
+        view={view}
+        onToggle={() =>
+          void navigate({
+            search: (previous) => ({
+              ...previous,
+              view: NEXT_VIEW[view],
+            }),
+            replace: true,
+          })
+        }
+      />
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div
           className={cn('flex flex-col gap-6', showingMap && 'hidden lg:flex')}
@@ -203,19 +216,6 @@ function RouteComponent(): React.JSX.Element {
           </ListingMap>
         </div>
       </div>
-
-      <ViewToggle
-        view={view}
-        onToggle={() =>
-          void navigate({
-            search: (previous) => ({
-              ...previous,
-              view: NEXT_VIEW[view],
-            }),
-            replace: true,
-          })
-        }
-      />
     </div>
   )
 }

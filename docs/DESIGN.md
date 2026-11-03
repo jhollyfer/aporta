@@ -1,6 +1,6 @@
 # Design system
 
-**Aporta** · acolhedor, claro, leve no celular
+**Aporta** · acolhedor, claro, leve em qualquer tela
 
 > Registra a **decisão**: que valor, por quê, onde usar. O valor que o código lê mora no tema
 > (`frontend/src/styles.css`); componente usa token semântico, nunca hex nem valor arbitrário
@@ -109,16 +109,22 @@ Número de preço em `text-4xl` extrabold no detalhe. Texto corrido com `max-w-3
 
 ## 4. Layout
 
-- Breakpoints: os do Tailwind (`sm` 40 rem, `md` 48 rem, `lg` 64 rem), sem sobrescrita. Celular
-  primeiro: base sem prefixo, camadas em `sm:` e `lg:`.
+- Breakpoints: os do Tailwind (`sm` 40 rem, `md` 48 rem, `lg` 64 rem), sem sobrescrita. O site é
+  responsivo em todos os tamanhos: nenhuma tela é pensada só para o celular e esticada depois, e
+  cada faixa (celular, tablet, desktop) tem o seu arranjo. Escrever a base sem prefixo e as faixas
+  em `sm:`, `md:` e `lg:` é só a técnica do Tailwind, não uma ordem de prioridade do desenho.
 - Contêiner: `max-w-6xl` (home, detalhe, cadastro mais estreito em `max-w-2xl`) e `max-w-7xl`
   (listagem), com gutter `px-4` (16 px).
 - Espaço: escala padrão do Tailwind; conforto sobre densidade, com blocos da home separados por
   `pt-28`.
 - Listagem: no desktop, lista em duas colunas e mapa fixo (`lg:grid-cols`, cerca de um terço para o
-  mapa); no celular lista e mapa se alternam por um botão flutuante.
-- Detalhe: no celular o botão de WhatsApp fica fixo no rodapé, com `pb-28` na página para não cobrir
-  o conteúdo.
+  mapa); em tela estreita lista e mapa se alternam por dois botões lado a lado, no fluxo da página,
+  acima dos resultados.
+- Detalhe: a partir de `md` a galeria e o bloco de valor e contato ficam lado a lado; em tela
+  estreita o contato vem logo abaixo do valor. O botão de WhatsApp é um botão da página, nunca uma
+  barra fixa no rodapé.
+- Site e não aplicativo: nada flutua sobre o conteúdo (sem botão flutuante, barra fixa de rodapé
+  ou navegação inferior); a página rola e o cabeçalho só gruda a partir de `sm`.
 - Sem rolagem horizontal da página; a faixa de categorias rola na horizontal dentro do próprio
   componente, sem barra visível.
 

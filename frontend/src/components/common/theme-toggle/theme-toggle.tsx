@@ -3,6 +3,11 @@ import { CircleHalf, Moon, Sun } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 
 import { Button } from '#/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
 import { applyTheme, nextTheme, readTheme } from '#/lib/theme'
 import type { Theme } from '#/lib/theme'
 import { m } from '#/paraglide/messages'
@@ -41,15 +46,24 @@ export function ThemeToggle(): React.JSX.Element {
     setTheme(next)
   }
 
+  const label = m.theme_toggle_label({ theme: LABELS[theme]() })
+
   return (
-    <Button
-      variant="ghost"
-      type="button"
-      onClick={cycle}
-      aria-label={m.theme_toggle_label({ theme: LABELS[theme]() })}
-      className="inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-moss-wash sm:size-9"
-    >
-      <Glyph aria-hidden className="size-5" weight="bold" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={cycle}
+            aria-label={label}
+            className="inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-moss-wash sm:size-9"
+          />
+        }
+      >
+        <Glyph aria-hidden className="size-5" weight="bold" />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }

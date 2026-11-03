@@ -24,7 +24,7 @@
 
 ## Parou em
 
-2026-11-03 (fim do dia): tema (automático, claro, escuro) no cabeçalho público e na casca da conta e do painel; shadcn sobre Base UI em `components/ui` e usado em quase toda tela (7.20, ver `TASKS.md`); site responsivo em todos os tamanhos e sem jeito de aplicativo; 14 bairros oficiais no seed. Faltam o `AlertDialog`, `Skeleton`, `Toast` e `Tooltip` nas telas, o tema por cookie no `loader`, as fotos reais (7.13) e a conferência de coordenadas, telefones e lugares (7.10). Ambiente local: o Postgres do sistema cai sozinho; `pg_ctlcluster 16 main start` e reiniciar o backend (`node ace serve`).
+2026-11-03 (fim do dia): tema (automático, claro, escuro) no cabeçalho público e na casca da conta e do painel; shadcn sobre Base UI em `components/ui` e usado em quase toda tela (7.20, ver `TASKS.md`); site responsivo em todos os tamanhos e sem jeito de aplicativo; 14 bairros oficiais no seed. Faltam o `Toast`, `Tabs`/`ToggleGroup` no guia e nos seletores, o tema por cookie no `loader`, as fotos reais (7.13) e a conferência de coordenadas, telefones e lugares (7.10). Ambiente local: o Postgres do sistema cai sozinho; `pg_ctlcluster 16 main start` e reiniciar o backend (`node ace serve`).
 
 2026-11-03: sync do `maiyu-pattern` (799bd33) trouxe os workflows que leem `secrets.VITE_API_URL` e `secrets.VITE_SITE_URL`. O dono precisa ter esses dois **secrets** (aba Secrets de Actions, não Variables) com `https://aporta.maiyu.com.br` e `https://api-aporta.maiyu.com.br`, sem barra no fim; valores em `docs/ENV.md`. Ainda não conferi o run da `main` no GitHub Actions.
 

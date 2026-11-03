@@ -8,6 +8,7 @@ import type {
 } from '@aporta/shared'
 
 import { storefrontListingPinsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
+import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/cn'
 import { sameWindow } from '#/lib/listing-map'
 import type { MapWindow } from '#/lib/listing-map'
@@ -105,10 +106,14 @@ export function ListingMapRoot({
     <ListingMapContext value={value}>
       <div className={cn('relative size-full', className)}>
         <ClientOnly
-          fallback={<div className="size-full rounded-card bg-moss-wash" />}
+          fallback={
+            <Skeleton className="size-full rounded-card bg-moss-wash" />
+          }
         >
           <React.Suspense
-            fallback={<div className="size-full rounded-card bg-moss-wash" />}
+            fallback={
+              <Skeleton className="size-full rounded-card bg-moss-wash" />
+            }
           >
             <ListingMapCanvas />
           </React.Suspense>

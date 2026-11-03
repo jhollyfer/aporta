@@ -305,7 +305,7 @@ test.describe('moderação de anúncios e denúncias', () => {
     await page.goto(`/administrator/listings/${listingId}`)
     await page.getByRole('button', { name: 'Arquivar', exact: true }).click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.getByRole('alertdialog')
     await expect(dialog).toContainText(`Arquivar "${TITLE}"?`)
     await dialog.getByRole('button', { name: 'Arquivar anúncio' }).click()
 

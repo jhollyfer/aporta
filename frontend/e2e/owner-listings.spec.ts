@@ -138,7 +138,7 @@ test.describe('anúncios do dono', () => {
     await page.goto('/owner/listings')
     await page.getByRole('button', { name: `Arquivar ${NEW_TITLE}` }).click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.getByRole('alertdialog')
     await expect(dialog).toContainText(`Arquivar "${NEW_TITLE}"?`)
 
     // Manter não muda nada.
@@ -150,7 +150,7 @@ test.describe('anúncios do dono', () => {
     await page.getByRole('button', { name: 'Arquivar anúncio' }).click()
 
     await expect(page.getByRole('heading', { name: NEW_TITLE })).toHaveCount(0)
-    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByRole('alertdialog')).toBeHidden()
   })
 
   test('quando o servidor recusa o bairro, a mensagem vai para o campo e a etapa certa volta', async ({

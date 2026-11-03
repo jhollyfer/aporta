@@ -1,9 +1,16 @@
 import * as React from 'react'
 
-import { Button } from '#/components/ui/button'
 import { ActionButton } from '#/components/common/action-button'
 import { FormNotice } from '#/components/common/form-notice'
-import { ModalDialog } from '#/components/common/modal-dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '#/components/ui/alert-dialog'
+import { Button } from '#/components/ui/button'
 
 type ConfirmDialogProps = {
   title: string
@@ -23,7 +30,8 @@ type ConfirmDialogProps = {
 /**
  * A confirmação de uma ação que não se desfaz (`_standards/frontend.md` §10.6): nomeia a
  * ação, o objeto e a consequência, e os botões levam verbo e objeto, nunca "Sim/Não".
- * A casca (foco, Esc, clique fora) é a do `ModalDialog`.
+ * É o `AlertDialog` do shadcn (Base UI): role `alertdialog`, não fecha por clique fora, e o
+ * Esc fica travado enquanto a confirmação está em andamento.
  */
 export function ConfirmDialog({
   title,
@@ -35,17 +43,38 @@ export function ConfirmDialog({
   onConfirm,
   renderTrigger,
 }: ConfirmDialogProps): React.JSX.Element {
+  const [isOpen, setIsOpen] = React.useState(false)
+
+  function open(): void {
+    setIsOpen(true)
+  }
+
+  function close(): void {
+    setIsOpen(false)
+  }
+
+  function handleOpenChange(next: boolean): void {
+    // Esc chega aqui: com a confirmação em andamento a ação não corre sem dono.
+    if (!next && pending) return
+
+    setIsOpen(next)
+  }
+
   return (
-    <ModalDialog
-      title={title}
-      description={description}
-      pending={pending}
-      renderTrigger={renderTrigger}
-    >
-      {(close) => (
-        <>
+    <>
+      {renderTrigger(open)}
+      <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
+        <AlertDialogContent className="max-h-[calc(100dvh-2rem)] gap-4 overflow-y-auto rounded-card bg-surface p-6 text-base text-ink data-[size=default]:max-w-md data-[size=default]:sm:max-w-md">
+          <AlertDialogHeader className="place-items-start text-left">
+            <AlertDialogTitle className="text-xl font-extrabold text-balance">
+              {title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-ink-soft">
+              {description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <FormNotice>{error}</FormNotice>
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <AlertDialogFooter className="m-0 border-0 bg-transparent p-0">
             <Button
               type="button"
               onClick={close}
@@ -66,9 +95,9 @@ export function ConfirmDialog({
             >
               {confirmLabel}
             </ActionButton>
-          </div>
-        </>
-      )}
-    </ModalDialog>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

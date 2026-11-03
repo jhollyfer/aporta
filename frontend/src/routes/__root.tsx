@@ -10,6 +10,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import { ogLocale } from '#/lib/i18n'
 import { readNonce } from '#/lib/csp-nonce'
+import { TooltipProvider } from '#/components/ui/tooltip'
 import { THEME_INIT_SCRIPT } from '#/lib/theme'
 import { DEFAULT_OG_IMAGE } from '#/lib/page-head'
 import { SITE_TITLE, absoluteUrl } from '#/lib/site'
@@ -125,7 +126,7 @@ function RootDocument({
         <HeadContent />
       </head>
       <body>
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
         {/* Só em desenvolvimento: sem a guarda o botão flutuante apareceria sobre o site em produção. */}
         {import.meta.env.DEV && (
           <TanStackDevtools

@@ -54,9 +54,10 @@ function EmptyMedia({
   )
 }
 
-function EmptyTitle({ className, ...props }: React.ComponentProps<'div'>) {
+// casa: the title is an h2 so the empty state keeps its place in the page heading outline
+function EmptyTitle({ className, ...props }: React.ComponentProps<'h2'>) {
   return (
-    <div
+    <h2
       data-slot="empty-title"
       className={cn('text-sm font-medium tracking-tight', className)}
       {...props}

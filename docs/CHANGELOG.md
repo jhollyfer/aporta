@@ -28,6 +28,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Adicionado
 
+- Botão de tema no cabeçalho: automático (segue o aparelho), claro ou escuro, com a escolha guardada no aparelho e aplicada antes da primeira pintura, sem piscar.
 - Dados estruturados do guia (`ItemList` de `LocalBusiness` e `Event`), `hreflang` no sitemap e título próprio da página inicial nos três idiomas.
 - Ativos estáticos pré-comprimidos (gzip e brotli) pelo Nitro: o maior chunk de JS cai de 329 KB para 89 KB.
 - Página inicial com busca em pílula por tipo, bairro e período, faixa de categorias por tipo de

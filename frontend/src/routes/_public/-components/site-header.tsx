@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { STAFF_USER_ROLES, USER_ROLE } from '@aporta/shared'
 
 import { LocaleSwitcher } from '#/components/common/locale-switcher'
+import { ThemeToggle } from '#/components/common/theme-toggle'
 import { useSession } from '#/hooks/use-session'
 import { cn } from '#/lib/cn'
 import { m } from '#/paraglide/messages'
@@ -123,6 +124,7 @@ export function SiteHeader(): React.JSX.Element {
             {m.nav_list_your_place()}
           </Link>
           <LocaleSwitcher />
+          <ThemeToggle />
         </nav>
       </div>
     </header>

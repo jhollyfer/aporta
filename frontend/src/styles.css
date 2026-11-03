@@ -40,8 +40,15 @@
   --radius-pill: 999px;
 }
 
+/*
+ * O tema escuro, em dois lugares com os mesmos valores: o do sistema (`prefers-color-scheme`),
+ * que vale enquanto ninguém escolheu, e o escolhido (`data-theme="dark"`). A escolha vem de
+ * `lib/theme.ts`: `data-theme="light"` trava o claro mesmo com o sistema escuro. O
+ * `color-scheme` acompanha para a barra de rolagem e os campos nativos pintarem no tema certo.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
     --paper: #14201a;
     --surface: #1b2a22;
     --ink: #eef0e8;
@@ -59,6 +66,30 @@
 
     --wall: #cdbb9a;
   }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #14201a;
+  --surface: #1b2a22;
+  --ink: #eef0e8;
+  --ink-soft: #aab8ad;
+  --line: #2f4136;
+  --moss: #7fc29b;
+  --moss-deep: #a6dbbb;
+  --moss-wash: #213a2d;
+  --clay: #e0a47c;
+  --clay-wash: #3a2a20;
+  --sun: #f2b134;
+  --sun-deep: #ffc65a;
+  --river: #86b8bf;
+  --danger: #ef8d7a;
+
+  --wall: #cdbb9a;
 }
 
 @theme inline {

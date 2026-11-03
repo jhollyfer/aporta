@@ -598,5 +598,9 @@
   "map_pin_open": "Ver anuncio: {type}",
   "meta_og_image_alt": "Aporta, vivienda y guía de Benjamin Constant",
   "map_selected_label": "Inmueble seleccionado en el mapa",
-  "common_maiyu_credit": "Desarrollado por {#link}Maiyu{/link}"
+  "common_maiyu_credit": "Desarrollado por {#link}Maiyu{/link}",
+  "theme_toggle_label": "Tema: {theme}. Toca para cambiar",
+  "theme_system": "Automático",
+  "theme_light": "Claro",
+  "theme_dark": "Oscuro"
 }

@@ -10,6 +10,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import { ogLocale } from '#/lib/i18n'
 import { readNonce } from '#/lib/csp-nonce'
+import { THEME_INIT_SCRIPT } from '#/lib/theme'
 import { DEFAULT_OG_IMAGE } from '#/lib/page-head'
 import { SITE_TITLE, absoluteUrl } from '#/lib/site'
 import { m } from '#/paraglide/messages'
@@ -84,6 +85,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { rel: 'manifest', href: '/site.webmanifest' },
     ],
   }),
+  scripts: () => [{ children: THEME_INIT_SCRIPT }],
   shellComponent: RootDocument,
 })
 
@@ -102,7 +104,7 @@ function RootDocument({
   return (
     // `lang` do Paraglide e não literal: o site fala três línguas, e o leitor de
     // tela e o buscador precisam saber qual é a desta resposta.
-    <html lang={getLocale()}>
+    <html lang={getLocale()} suppressHydrationWarning>
       <head>
         {/*
           A cor da barra do sistema no celular, uma por tema. Aqui e não no

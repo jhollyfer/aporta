@@ -5,7 +5,10 @@ import type { Control } from 'react-hook-form'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { OwnerListingCreate, ListingPeriod } from '@aporta/shared'
 
-import { CONTROL, Field } from '#/components/common/field'
+import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
+import { Textarea } from '#/components/ui/textarea'
+import { Input } from '#/components/ui/input'
+import { Field } from '#/components/common/field'
 import { invalidProps } from '#/lib/form-a11y'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
@@ -44,19 +47,20 @@ export function TypeStep({ control }: StepProps): React.JSX.Element {
             htmlFor="type"
             error={fieldState.error?.message}
           >
-            <select
+            <NativeSelect
               id="type"
               {...field}
               {...invalidProps(fieldState.invalid, 'type')}
-              className={CONTROL}
             >
-              <option value="">{m.field_select()}</option>
+              <NativeSelectOption value="">
+                {m.field_select()}
+              </NativeSelectOption>
               {LISTING_TYPES.map((value) => (
-                <option key={value} value={value}>
+                <NativeSelectOption key={value} value={value}>
                   {LISTING_TYPE_LABELS[value]()}
-                </option>
+                </NativeSelectOption>
               ))}
-            </select>
+            </NativeSelect>
           </Field>
         )}
       />
@@ -93,19 +97,20 @@ export function PlaceStep({ control }: StepProps): React.JSX.Element {
             htmlFor="neighborhood"
             error={fieldState.error?.message}
           >
-            <select
+            <NativeSelect
               id="neighborhood"
               {...field}
               {...invalidProps(fieldState.invalid, 'neighborhood')}
-              className={CONTROL}
             >
-              <option value="">{m.field_select()}</option>
+              <NativeSelectOption value="">
+                {m.field_select()}
+              </NativeSelectOption>
               {neighborhoods.map((item) => (
-                <option key={item.slug} value={item.slug}>
+                <NativeSelectOption key={item.slug} value={item.slug}>
                   {item.name}
-                </option>
+                </NativeSelectOption>
               ))}
-            </select>
+            </NativeSelect>
           </Field>
         )}
       />
@@ -119,13 +124,12 @@ export function PlaceStep({ control }: StepProps): React.JSX.Element {
             htmlFor="address"
             error={fieldState.error?.message}
           >
-            <input
+            <Input
               id="address"
               type="text"
               autoComplete="street-address"
               {...field}
               {...invalidProps(fieldState.invalid, 'address')}
-              className={CONTROL}
             />
           </Field>
         )}
@@ -155,7 +159,7 @@ function NumberInput({
           htmlFor={name}
           error={fieldState.error?.message}
         >
-          <input
+          <Input
             id={name}
             type="text"
             inputMode="numeric"
@@ -163,7 +167,6 @@ function NumberInput({
             value={field.value ?? ''}
             onChange={(event) => field.onChange(toNumber(event.target.value))}
             {...invalidProps(fieldState.invalid, name)}
-            className={CONTROL}
           />
         </Field>
       )}
@@ -278,12 +281,11 @@ export function RulesStep({ control }: StepProps): React.JSX.Element {
             htmlFor="title"
             error={fieldState.error?.message}
           >
-            <input
+            <Input
               id="title"
               type="text"
               {...field}
               {...invalidProps(fieldState.invalid, 'title')}
-              className={CONTROL}
             />
           </Field>
         )}
@@ -297,12 +299,11 @@ export function RulesStep({ control }: StepProps): React.JSX.Element {
             htmlFor="description"
             error={fieldState.error?.message}
           >
-            <textarea
+            <Textarea
               id="description"
               rows={4}
               {...field}
               {...invalidProps(fieldState.invalid, 'description')}
-              className="w-full rounded-xl border border-line bg-surface p-4 text-base text-ink"
             />
           </Field>
         )}
@@ -317,12 +318,11 @@ export function RulesStep({ control }: StepProps): React.JSX.Element {
             htmlFor="rules"
             error={fieldState.error?.message}
           >
-            <textarea
+            <Textarea
               id="rules"
               rows={4}
               {...field}
               {...invalidProps(fieldState.invalid, 'rules')}
-              className="w-full rounded-xl border border-line bg-surface p-4 text-base text-ink"
             />
           </Field>
         )}
@@ -343,13 +343,12 @@ export function ContactStep({ control }: StepProps): React.JSX.Element {
             htmlFor="ownerName"
             error={fieldState.error?.message}
           >
-            <input
+            <Input
               id="ownerName"
               type="text"
               autoComplete="name"
               {...field}
               {...invalidProps(fieldState.invalid, 'ownerName')}
-              className={CONTROL}
             />
           </Field>
         )}
@@ -364,7 +363,7 @@ export function ContactStep({ control }: StepProps): React.JSX.Element {
             htmlFor="whatsapp"
             error={fieldState.error?.message}
           >
-            <input
+            <Input
               id="whatsapp"
               type="tel"
               inputMode="tel"
@@ -372,7 +371,6 @@ export function ContactStep({ control }: StepProps): React.JSX.Element {
               {...field}
               onChange={(event) => field.onChange(digits(event.target.value))}
               {...invalidProps(fieldState.invalid, 'whatsapp')}
-              className={CONTROL}
             />
           </Field>
         )}

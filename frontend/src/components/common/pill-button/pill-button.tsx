@@ -1,51 +1,51 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
-import { cva } from 'class-variance-authority'
-import type { VariantProps } from 'class-variance-authority'
 
 import type { Merge } from '@aporta/shared'
 
+import { buttonVariants } from '#/components/ui/button'
 import { cn } from '#/lib/cn'
 
-/**
- * O botão da casa, em forma de link. Sem `components/ui/button` porque o Aporta
- * não usa o shadcn: dois botões feitos à mão para a mesma ação divergem, então
- * há um só, com variantes.
- *
- *   moss     a ação principal da área
- *   sun      a ação de contato (WhatsApp, anunciar): o acento quente, no máximo um por tela
- *   outline  a secundária de formulário (botão), com o contorno no tom da tinta
- *   link     a ação que não é a principal da tela: texto sublinhado, sem pílula (`frontend.md` §10.8)
- *   danger   a ação que não se desfaz (arquivar), só dentro da confirmação
- */
-export const pillVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-full font-extrabold transition-[color,background-color,transform] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100',
-  {
-    variants: {
-      tone: {
-        moss: 'bg-moss text-paper hover:bg-moss-deep',
-        sun: 'bg-sun text-on-sun hover:bg-sun-deep',
-        danger: 'bg-danger text-paper hover:brightness-90',
-        outline: 'border-2 border-ink text-ink hover:bg-ink hover:text-paper',
-        link: 'text-moss underline underline-offset-4 hover:text-moss-deep',
-      },
-      scale: {
-        md: 'h-11 px-5 text-sm',
-        lg: 'h-14 px-8 text-base',
-      },
-    },
-    compoundVariants: [
-      // O link não tem pílula: sem raio nem preenchimento lateral, mantendo a altura de 44px do alvo de toque.
-      { tone: 'link', class: 'rounded-md px-1' },
-    ],
-    defaultVariants: { tone: 'moss', scale: 'md' },
-  },
-)
+export type PillTone = 'moss' | 'sun' | 'danger' | 'outline' | 'link'
+export type PillScale = 'md' | 'lg'
+
+/** Os tons do Aporta sobre as variantes do `Button` do shadcn: o link não tem pílula nem preenchimento. */
+const TONE_VARIANT = {
+  moss: 'moss',
+  sun: 'sun',
+  danger: 'danger',
+  outline: 'ink',
+  link: 'moss-link',
+} as const satisfies Record<
+  PillTone,
+  Parameters<typeof buttonVariants>[0] extends infer P
+    ? P extends { variant?: infer V }
+      ? NonNullable<V>
+      : never
+    : never
+>
+
+const SCALE_SIZE = {
+  md: 'pill-md',
+  lg: 'pill-lg',
+} as const satisfies Record<PillScale, string>
+
+type PillStyle = { tone?: PillTone; scale?: PillScale }
+
+/** A variante e o tamanho do `Button` do shadcn para um tom e uma escala da casa. */
+export function pillStyle({ tone = 'moss', scale = 'md' }: PillStyle) {
+  return { variant: TONE_VARIANT[tone], size: SCALE_SIZE[scale] } as const
+}
+
+/** As classes de um botão em pílula, para o link (`PillButton`). */
+export function pillVariants(style: PillStyle): string {
+  return buttonVariants(pillStyle(style))
+}
 
 type PillButtonProps = Merge<
   LinkProps,
-  VariantProps<typeof pillVariants> & {
+  PillStyle & {
     className?: string
     children: React.ReactNode
   }

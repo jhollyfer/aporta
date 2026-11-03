@@ -2,6 +2,7 @@ import * as React from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 
+import { Textarea } from '#/components/ui/textarea'
 import { ActionButton } from '#/components/common/action-button'
 import { Field } from '#/components/common/field'
 import { errorId, hintId, invalidProps } from '#/lib/form-a11y'
@@ -115,7 +116,7 @@ export function NoteDialog({
                 htmlFor={fieldId}
                 error={fieldState.error?.message}
               >
-                <textarea
+                <Textarea
                   id={fieldId}
                   rows={4}
                   disabled={pending}

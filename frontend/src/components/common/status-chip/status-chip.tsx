@@ -10,6 +10,7 @@ import type { Icon } from '@phosphor-icons/react'
 
 import type { ListingStatus } from '@aporta/shared'
 
+import { Badge } from '#/components/ui/badge'
 import { cn } from '#/lib/cn'
 import { LISTING_STATUS_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
@@ -62,16 +63,17 @@ export function StatusChip({
   const { icon: StatusIcon, tone } = TRAITS[key]
 
   return (
-    <span
+    <Badge
       data-slot="status-chip"
+      variant="ghost"
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold',
+        'h-auto gap-1.5 px-3 py-1 text-xs font-bold',
         tone,
         className,
       )}
     >
       <StatusIcon aria-hidden weight="bold" className="size-4" />
       {LABELS[key]()}
-    </span>
+    </Badge>
   )
 }

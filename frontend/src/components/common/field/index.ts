@@ -1,1 +1,1 @@
-export { CONTROL, Field } from './field'
+export { Field } from './field'

@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 
 import { REPORT_REASONS, StorefrontReportCreateValidator } from '@aporta/shared'
 
+import { Textarea } from '#/components/ui/textarea'
 import { ActionButton } from '#/components/common/action-button'
 import { Field } from '#/components/common/field'
 import { invalidProps } from '#/lib/form-a11y'
@@ -199,7 +200,7 @@ export function ReportListing({
                     htmlFor="details"
                     error={fieldState.error?.message}
                   >
-                    <textarea
+                    <Textarea
                       id="details"
                       rows={3}
                       {...field}
@@ -211,7 +212,6 @@ export function ReportListing({
                       ]
                         .filter((id) => typeof id === 'string')
                         .join(' ')}
-                      className="w-full rounded-xl border border-line bg-surface p-4 text-base text-ink"
                     />
                     <p
                       className={cn(

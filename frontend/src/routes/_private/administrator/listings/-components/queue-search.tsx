@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 
+import { Input } from '#/components/ui/input'
 import { ActionButton } from '#/components/common/action-button'
-import { CONTROL, Field } from '#/components/common/field'
+import { Field } from '#/components/common/field'
 import { m } from '#/paraglide/messages'
 
 type SearchValues = { q: string }
@@ -46,13 +47,12 @@ export function QueueSearch({
             htmlFor="queue-search"
             className="sm:flex-1"
           >
-            <input
+            <Input
               id="queue-search"
               type="search"
               maxLength={100}
               autoComplete="off"
               {...field}
-              className={CONTROL}
             />
           </Field>
         )}

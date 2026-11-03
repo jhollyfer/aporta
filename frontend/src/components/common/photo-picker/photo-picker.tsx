@@ -9,7 +9,7 @@ import {
 
 import { IMAGE_MIMETYPES, PHOTO_ENVIRONMENTS } from '@aporta/shared'
 
-import { CONTROL } from '#/components/common/field'
+import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import type { PhotoDraft, PhotoDrafts } from '#/hooks/use-photo-drafts'
 import { cn } from '#/lib/cn'
 import { PHOTO_ENVIRONMENT_LABELS } from '#/lib/labels'
@@ -96,7 +96,7 @@ function PhotoRow({
           <label htmlFor={selectId} className="text-xs font-bold text-ink-soft">
             {m.photos_environment()}
           </label>
-          <select
+          <NativeSelect
             id={selectId}
             value={item.environment}
             disabled={disabled}
@@ -106,14 +106,14 @@ function PhotoRow({
               )
               if (environment) drafts.setEnvironment(item.key, environment)
             }}
-            className={cn(CONTROL, 'h-11 py-0 text-sm')}
+            className="[&_select]:h-11 [&_select]:py-0 [&_select]:text-sm"
           >
             {PHOTO_ENVIRONMENTS.map((env) => (
-              <option key={env} value={env}>
+              <NativeSelectOption key={env} value={env}>
                 {PHOTO_ENVIRONMENT_LABELS[env]()}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </div>
         {item.status !== 'waiting' && (
           <div className="flex flex-col gap-1">

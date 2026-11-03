@@ -48,6 +48,3 @@ export function Field({
     </div>
   )
 }
-
-export const CONTROL =
-  'h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-ink'

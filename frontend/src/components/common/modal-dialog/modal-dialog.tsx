@@ -1,5 +1,13 @@
 import * as React from 'react'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
+
 type ModalDialogProps = {
   title: string
   description: string
@@ -14,9 +22,8 @@ type ModalDialogProps = {
 }
 
 /**
- * A casca de todo diálogo modal da casa. É o `<dialog>` nativo com `showModal()`, e não uma
- * biblioteca de sobreposição: o navegador já prende o foco, devolve o foco ao botão que
- * abriu, fecha no Esc e inerta o resto da página, e o projeto não instala o Base UI.
+ * A casca de todo diálogo modal da casa, sobre o `Dialog` do shadcn (Base UI): ele prende o
+ * foco, fecha no Esc, inerta o resto da página e devolve o foco a quem abriu.
  * O clique fora **não** fecha (é o contrato do AlertDialog): ação destrutiva e texto
  * digitado pedem um gesto deliberado.
  *
@@ -31,41 +38,51 @@ export function ModalDialog({
   renderTrigger,
   children,
 }: ModalDialogProps): React.JSX.Element {
-  const dialog = React.useRef<HTMLDialogElement>(null)
-  const titleId = React.useId()
-  const descriptionId = React.useId()
+  const [isOpen, setIsOpen] = React.useState(false)
 
   function open(): void {
-    dialog.current?.showModal()
+    setIsOpen(true)
   }
 
   function close(): void {
-    dialog.current?.close()
+    setIsOpen(false)
+    onClose?.()
+  }
+
+  function handleOpenChange(next: boolean): void {
+    // Esc e o botão do navegador chegam aqui: com um envio em andamento a ação não corre sem dono.
+    if (!next && pending) return
+    if (next) {
+      setIsOpen(true)
+      return
+    }
+
+    close()
   }
 
   return (
     <>
       {renderTrigger(open)}
-      <dialog
-        ref={dialog}
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        onCancel={(event) => {
-          if (pending) event.preventDefault()
-        }}
-        onClose={onClose}
-        className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-md overflow-y-auto rounded-card bg-surface p-6 text-ink backdrop:bg-ink/60"
+      <Dialog
+        open={isOpen}
+        onOpenChange={handleOpenChange}
+        disablePointerDismissal
       >
-        <div className="flex flex-col gap-4">
-          <h2 id={titleId} className="text-xl font-extrabold text-balance">
-            {title}
-          </h2>
-          <p id={descriptionId} className="text-base text-ink-soft">
-            {description}
-          </p>
+        <DialogContent
+          showCloseButton={false}
+          className="max-h-[calc(100dvh-2rem)] gap-4 overflow-y-auto rounded-card bg-surface p-6 text-base text-ink sm:max-w-md"
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold text-balance">
+              {title}
+            </DialogTitle>
+            <DialogDescription className="text-base text-ink-soft">
+              {description}
+            </DialogDescription>
+          </DialogHeader>
           {children(close)}
-        </div>
-      </dialog>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

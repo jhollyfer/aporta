@@ -22,6 +22,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Alterado
 
+- Campos de formulário, botões, selos de estado, avisos e telas vazias passam a usar os componentes do shadcn (Base UI), com o mesmo desenho e nos dois temas.
 - Bairros: o filtro e o cadastro passam a usar os 14 bairros oficiais de Benjamin Constant (Agropalmin, Alzenir Magalhães, Bom Jardim, Castanhal, Centro, Cidade Nova, Cohabam, Coimbra, Colônia I, Colônia II, Eduardo Braga, Javarizinho, Monte da Redenção e Umarizal). As coordenadas dos que ainda não tinham ponto estão provisórias no Centro.
 - Fim da ilustração vetorial: imóvel sem foto mostra um quadro neutro com ícone de linha e "Foto em breve"; o estado vazio e a página 404 não desenham mais paisagem; a prévia de link é tipográfica.
 - Página inicial recomposta: título grande à esquerda com a busca, tipos de imóvel como índice à direita, e o guia com as quatro categorias como links; texto revisado.

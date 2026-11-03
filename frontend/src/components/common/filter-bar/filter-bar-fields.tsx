@@ -3,14 +3,13 @@ import * as React from 'react'
 import { LISTING_PERIODS, LISTING_TYPES } from '@aporta/shared'
 import type { ListingPeriod, ListingType } from '@aporta/shared'
 
+import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
+import { Input } from '#/components/ui/input'
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
 import { useFilterBar } from './filter-bar-context'
-
-const FIELD =
-  'h-11 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink'
 
 const PRICE_ERROR_ID = 'filter-price-error'
 
@@ -51,59 +50,65 @@ export function FilterBarFields(): React.JSX.Element {
     <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_type_label()}
-        <select
-          className={FIELD}
+        <NativeSelect
+          className="[&_select]:h-11 [&_select]:text-sm"
           value={filters.type ?? ''}
           onChange={(event) => onChange({ type: toType(event.target.value) })}
         >
-          <option value="">{m.search_type_any()}</option>
+          <NativeSelectOption value="">
+            {m.search_type_any()}
+          </NativeSelectOption>
           {LISTING_TYPES.map((value) => (
-            <option key={value} value={value}>
+            <NativeSelectOption key={value} value={value}>
               {LISTING_TYPE_LABELS[value]()}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </label>
 
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_neighborhood_label()}
-        <select
-          className={FIELD}
+        <NativeSelect
+          className="[&_select]:h-11 [&_select]:text-sm"
           value={filters.neighborhood ?? ''}
           onChange={(event) =>
             onChange({ neighborhood: event.target.value || null })
           }
         >
-          <option value="">{m.search_neighborhood_any()}</option>
+          <NativeSelectOption value="">
+            {m.search_neighborhood_any()}
+          </NativeSelectOption>
           {neighborhoods.map((item) => (
-            <option key={item.slug} value={item.slug}>
+            <NativeSelectOption key={item.slug} value={item.slug}>
               {item.name}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </label>
 
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.search_period_label()}
-        <select
-          className={FIELD}
+        <NativeSelect
+          className="[&_select]:h-11 [&_select]:text-sm"
           value={filters.period ?? ''}
           onChange={(event) =>
             onChange({ period: toPeriod(event.target.value) })
           }
         >
-          <option value="">{m.search_period_any()}</option>
+          <NativeSelectOption value="">
+            {m.search_period_any()}
+          </NativeSelectOption>
           {LISTING_PERIODS.map((value) => (
-            <option key={value} value={value}>
+            <NativeSelectOption key={value} value={value}>
               {LISTING_PERIOD_LABELS[value]()}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </label>
 
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.filter_price_min()}
-        <input
+        <Input
           key={`min-${filters.minPrice}`}
           type="number"
           inputMode="numeric"
@@ -115,13 +120,13 @@ export function FilterBarFields(): React.JSX.Element {
           onBlur={(event) =>
             onChange({ minPrice: toNumber(event.target.value) })
           }
-          className={FIELD}
+          className="h-11 text-sm md:text-sm"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-xs font-bold">
         {m.filter_price_max()}
-        <input
+        <Input
           key={`max-${filters.maxPrice}`}
           type="number"
           inputMode="numeric"
@@ -133,7 +138,7 @@ export function FilterBarFields(): React.JSX.Element {
           onBlur={(event) =>
             onChange({ maxPrice: toNumber(event.target.value) })
           }
-          className={FIELD}
+          className="h-11 text-sm md:text-sm"
         />
       </label>
 

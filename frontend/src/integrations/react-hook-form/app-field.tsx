@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Controller } from 'react-hook-form'
 import type { Control, FieldValues, Path } from 'react-hook-form'
 
-import { CONTROL, Field } from '#/components/common/field'
+import { Input } from '#/components/ui/input'
+import { Field } from '#/components/common/field'
 import { errorId, hintId, invalidProps } from '#/lib/form-a11y'
 
 type AppFieldProps<TValues extends FieldValues> = {
@@ -61,7 +62,7 @@ export function AppField<TValues extends FieldValues>({
             hint={hint}
             error={fieldState.error?.message}
           >
-            <input
+            <Input
               id={name}
               name={field.name}
               ref={field.ref}
@@ -73,7 +74,6 @@ export function AppField<TValues extends FieldValues>({
               {...INPUT_TRAITS[type]}
               {...invalidProps(fieldState.invalid, name)}
               aria-describedby={describedBy || undefined}
-              className={CONTROL}
             />
           </Field>
         )

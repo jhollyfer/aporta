@@ -29,7 +29,7 @@ export const PLACES: ReadonlyArray<Place> = [
     name: 'Cantina do Campus',
     description:
       'Lanche, suco de cupuaçu e marmita barata para quem estuda na UFAM.',
-    neighborhood: 'colonia',
+    neighborhood: 'colonia-1',
     address: 'Em frente ao campus',
     hours: 'Seg a sex, 7h às 19h',
     whatsapp: '5597999990002',
@@ -76,7 +76,7 @@ export const PLACES: ReadonlyArray<Place> = [
     name: 'Festival dos Bois-Bumbás',
     description:
       'A cidade se divide entre os dois bois, com toadas, alegorias e arquibancada cheia.',
-    neighborhood: 'coaban',
+    neighborhood: 'cohabam',
     address: 'Arena do festival',
     hours: 'Noites do festival, a partir das 19h',
     whatsapp: null,
@@ -88,7 +88,7 @@ export const PLACES: ReadonlyArray<Place> = [
     name: 'Recepção dos calouros',
     description:
       'Encontro de boas-vindas com feira de moradia e roda de conversa com veteranos.',
-    neighborhood: 'colonia',
+    neighborhood: 'colonia-1',
     address: 'Auditório do campus',
     hours: 'Manhã de sábado',
     whatsapp: null,

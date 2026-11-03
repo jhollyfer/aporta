@@ -232,7 +232,7 @@ test.describe('mapa por janela', () => {
   test('quando o filtro não deixa nenhum imóvel, o mapa diz que a área está vazia', async ({
     page,
   }) => {
-    await page.goto('/listings?type=HOTEL&neighborhood=umariacu-2&view=map')
+    await page.goto('/listings?type=HOTEL&neighborhood=umarizal&view=map')
 
     await expect(
       page.getByRole('status').filter({ hasText: 'Nenhum imóvel nesta área' }),

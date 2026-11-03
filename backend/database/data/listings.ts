@@ -37,12 +37,12 @@ function photos(count: number): Listing['photos'] {
 export const LISTINGS: ReadonlyArray<Listing> = [
   {
     id: 'lst-001',
-    slug: 'casa-ampla-umariacu',
+    slug: 'casa-ampla-umarizal',
     type: LISTING_TYPE.HOUSE,
     title: 'Casa de dois quartos com quintal',
     description:
       "Casa de alvenaria, ventilada, com quintal e ponto para rede. Caixa d'água própria.",
-    neighborhood: 'umariacu-1',
+    neighborhood: 'umarizal',
     address: 'Rua perto da escola do bairro',
     price: { monthly: 1400, daily: null },
     costs: { water: true, electricity: false, internet: false },
@@ -106,7 +106,7 @@ export const LISTINGS: ReadonlyArray<Listing> = [
     title: 'Quarto em casa de família, perto do campus',
     description:
       'Quarto com janela e ventilador, banheiro compartilhado com uma pessoa. A pé até o campus.',
-    neighborhood: 'colonia',
+    neighborhood: 'colonia-1',
     address: 'Rua do campus',
     price: { monthly: 550, daily: null },
     costs: { water: true, electricity: true, internet: false },
@@ -165,12 +165,12 @@ export const LISTINGS: ReadonlyArray<Listing> = [
   },
   {
     id: 'lst-005',
-    slug: 'casa-coaban-turma',
+    slug: 'casa-cohabam-turma',
     type: LISTING_TYPE.HOUSE,
     title: 'Casa grande para dividir com a turma',
     description:
       'Casa com quatro quartos, duas salas e cozinha ampla. Ideal para república de calouros.',
-    neighborhood: 'coaban',
+    neighborhood: 'cohabam',
     address: 'Rua paralela à avenida',
     price: { monthly: 2200, daily: null },
     costs: { water: true, electricity: true, internet: true },
@@ -229,12 +229,12 @@ export const LISTINGS: ReadonlyArray<Listing> = [
   },
   {
     id: 'lst-007',
-    slug: 'kitnet-umariacu-2',
+    slug: 'kitnet-umarizal',
     type: LISTING_TYPE.KITNET,
     title: 'Kitnet simples e barata',
     description:
       'Kitnet de alvenaria, com banheiro e pia. Medidor de luz e hidrômetro próprios.',
-    neighborhood: 'umariacu-2',
+    neighborhood: 'umarizal',
     address: 'Rua sem saída, bairro tranquilo',
     price: { monthly: 600, daily: null },
     costs: { water: false, electricity: false, internet: false },
@@ -294,7 +294,7 @@ export const LISTINGS: ReadonlyArray<Listing> = [
     title: 'Apartamento de dois quartos',
     description:
       'Apartamento arejado no térreo alto, dois quartos, sala e cozinha separadas.',
-    neighborhood: 'colonia',
+    neighborhood: 'colonia-1',
     address: 'Rua do mercado',
     price: { monthly: 1600, daily: null },
     costs: { water: true, electricity: false, internet: false },
@@ -377,12 +377,12 @@ export const LISTINGS: ReadonlyArray<Listing> = [
   },
   {
     id: 'lst-012',
-    slug: 'quarto-coaban-republica',
+    slug: 'quarto-cohabam-republica',
     type: LISTING_TYPE.ROOM,
     title: 'Vaga em república de estudantes',
     description:
       'Vaga em quarto individual numa república. Contas divididas igualmente, inclusas no valor.',
-    neighborhood: 'coaban',
+    neighborhood: 'cohabam',
     address: 'Rua paralela à avenida',
     price: { monthly: 480, daily: null },
     costs: { water: true, electricity: true, internet: true },

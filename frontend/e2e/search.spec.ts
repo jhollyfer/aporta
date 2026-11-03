@@ -81,7 +81,7 @@ test.describe('busca e filtros', () => {
   test('quando o filtro não deixa nenhum imóvel, mostra a saída para limpar', async ({
     page,
   }) => {
-    await page.goto('/listings?type=HOTEL&neighborhood=umariacu-2')
+    await page.goto('/listings?type=HOTEL&neighborhood=umarizal')
 
     await expect(
       page.getByRole('heading', { name: 'Nenhum imóvel com esses filtros' }),

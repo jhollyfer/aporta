@@ -89,13 +89,10 @@ export default class StorageFileCompleteUseCase {
 
       const metadata = stat.value
 
-      // The object is not in the bucket: there is nothing to confirm.
-      if (metadata === null)
-        return left(
-          this.#failure(
-            new Error(`object missing in the bucket: ${storage.path}`),
-          ),
-        )
+      // The object is not in the bucket: the client confirmed before the `PUT` finished (or the
+      // `PUT` failed). That is the client's to fix, not a server fault: `422`, and the row stays
+      // `PENDING` so the same confirmation works once the bytes are there.
+      if (metadata === null) return left(this.#missing())
 
       const confirmed = found.storage.confirm(metadata.contentLength)
 
@@ -125,12 +122,7 @@ export default class StorageFileCompleteUseCase {
 
       if (head.isLeft()) return left(this.#failure(head.value.cause))
 
-      if (head.value === null)
-        return left(
-          this.#failure(
-            new Error(`object missing in the bucket: ${storage.path}`),
-          ),
-        )
+      if (head.value === null) return left(this.#missing())
 
       const verified = found.storage.verifyContent({
         contentType: metadata.contentType,
@@ -161,6 +153,14 @@ export default class StorageFileCompleteUseCase {
     } catch (error) {
       return left(this.#failure(error))
     }
+  }
+
+  /** The object is not in the bucket yet: nothing to confirm, and the client can try again. */
+  #missing(): HTTPException {
+    return HTTPException.UnprocessableEntity(
+      Translation.t('errors.STORAGE_UPLOAD_MISSING'),
+      'STORAGE_UPLOAD_MISSING',
+    )
   }
 
   /** Logs the cause, which never reaches the client, and answers the `500`. */

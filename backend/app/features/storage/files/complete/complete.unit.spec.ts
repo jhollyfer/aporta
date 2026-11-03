@@ -117,6 +117,23 @@ test.group('storage > files > complete (unit)', () => {
     assert.isFalse(stored?.isUploaded())
   })
 
+  test('when the object is not in the bucket yet, it answers 422 STORAGE_UPLOAD_MISSING and keeps the row PENDING', async ({
+    assert,
+  }) => {
+    const { files, useCase } = subject()
+    const file = storageDraft({ size: 30 })
+    await files.save(file)
+
+    const result = await useCase.execute({ id: file.id })
+
+    assert.containsSubset(result.value, {
+      status: 422,
+      code: 'STORAGE_UPLOAD_MISSING',
+    })
+    const stored = await files.findById(file.id)
+    assert.isFalse(stored?.isUploaded())
+  })
+
   test('when the bytes are an SVG under a declared PNG, it deletes binary and row and answers 422 STORAGE_CONTENT_MISMATCH', async ({
     assert,
   }) => {

@@ -2441,11 +2441,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Arquivo incompleto · Arquivo diferente do tipo declarado",
+            "description": "Dados inválidos · Arquivo incompleto · Arquivo diferente do tipo declarado · O arquivo ainda não foi enviado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422StorageContentMismatchStorageSizeMismatchValidationError"
+                  "$ref": "#/components/schemas/Error422StorageContentMismatchStorageSizeMismatchStorageUploadMissingValidationError"
                 }
               }
             }
@@ -5746,7 +5746,7 @@
           "errors"
         ]
       },
-      "Error422StorageContentMismatchStorageSizeMismatchValidationError": {
+      "Error422StorageContentMismatchStorageSizeMismatchStorageUploadMissingValidationError": {
         "type": "object",
         "properties": {
           "message": {
@@ -5765,6 +5765,7 @@
             "enum": [
               "STORAGE_CONTENT_MISMATCH",
               "STORAGE_SIZE_MISMATCH",
+              "STORAGE_UPLOAD_MISSING",
               "VALIDATION_ERROR"
             ]
           },

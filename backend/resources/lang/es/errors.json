@@ -32,6 +32,7 @@
   "STORAGE_CONTENT_MISMATCH": "Archivo distinto del tipo declarado",
   "STORAGE_IN_USE": "Archivo en uso",
   "STORAGE_NOT_FOUND": "Archivo no encontrado",
+  "STORAGE_UPLOAD_MISSING": "El archivo aún no se ha subido",
   "STORAGE_SIZE_MISMATCH": "Archivo incompleto",
   "TOO_MANY_REQUESTS": "Demasiados intentos. Inténtalo de nuevo más tarde",
   "UNAUTHORIZED": "No autorizado",

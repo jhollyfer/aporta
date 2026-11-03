@@ -12,6 +12,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Corrigido
 
+- Confirmar um envio de foto antes de o arquivo chegar ao bucket respondia erro 500; agora responde 422 (`STORAGE_UPLOAD_MISSING`, "O arquivo ainda não foi enviado") e o registro fica pendente para confirmar de novo.
 - Campos de busca da página inicial voltam a mostrar o foco do teclado (o `outline-none` apagava o anel).
 - Títulos em ordem na listagem e no guia (o nome de cada card é `h2`, logo abaixo do `h1`).
 - No celular o cabeçalho rola com a página em vez de ocupar três linhas fixas da tela.

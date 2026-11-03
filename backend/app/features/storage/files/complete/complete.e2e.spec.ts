@@ -69,6 +69,33 @@ test.group('storage > files > complete', (group) => {
     assert.isNull(body(response).uploadId)
   })
 
+  test('when the file was never uploaded to the bucket, it answers 422 STORAGE_UPLOAD_MISSING and the row stays PENDING', async ({
+    client,
+    assert,
+  }) => {
+    const session = await authenticateAsAdministrator(client)
+    const opened = await open(client, session, {
+      fileName: 'capa.png',
+      mimetype: 'image/png',
+      size: SMALL.byteLength,
+    })
+
+    const response = await client
+      .post(`/storages/${opened.storage.id}/complete`)
+      .cookies(session)
+      .json({})
+
+    response.assertStatus(422)
+    assert.equal(errorBody(response).code, 'STORAGE_UPLOAD_MISSING')
+
+    const detail = await client
+      .get(`/storages/${opened.storage.id}`)
+      .cookies(session)
+
+    detail.assertStatus(200)
+    assert.equal(body(detail).status, 'PENDING')
+  })
+
   const LANGUAGES = [
     {
       header: 'pt-BR',

@@ -178,14 +178,14 @@ test.describe('o head carrega a identidade e a prévia de link', () => {
     )
   })
 
-  test('quando se abre um anúncio, a prévia é a cena do tipo, e não uma foto', async ({
+  test('quando se abre um anúncio, sem foto enviada, a prévia é a imagem tipográfica do site', async ({
     page,
   }) => {
     await page.goto('/listings/kitnet-centro-porto')
 
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       'content',
-      `${new URL(E2eEnv.baseUrl).origin}/og-building.png`,
+      `${new URL(E2eEnv.baseUrl).origin}/og-image.png`,
     )
   })
 

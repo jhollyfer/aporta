@@ -20,4 +20,20 @@ describe('buildSitemap', () => {
     expect(xml).toContain('<lastmod>2026-11-01</lastmod>')
     expect(xml).toContain('<priority>1.0</priority>')
   })
+
+  it('liga as versões de idioma por xhtml:link', () => {
+    const xml = buildSitemap('https://exemplo.test', [
+      {
+        path: '/en/guide',
+        alternates: [
+          { hreflang: 'pt-BR', path: '/guide' },
+          { hreflang: 'en', path: '/en/guide' },
+        ],
+      },
+    ])
+    expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"')
+    expect(xml).toContain(
+      '<xhtml:link rel="alternate" hreflang="en" href="https://exemplo.test/en/guide"/>',
+    )
+  })
 })

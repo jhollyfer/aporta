@@ -14,9 +14,10 @@ export const SITE_URL = env.VITE_SITE_URL.replace(/\/+$/, '')
  * Se este ambiente pode ser indexado: só `SITE_ENV=production`. Staging e preview usam a mesma
  * imagem da produção, então o valor vem do ambiente em tempo de execução, e não do build. Vale
  * só no servidor (no navegador `SITE_ENV` não existe e o resultado é `false`, por isso nenhum
- * código do cliente decide nada com ele).
+ * código do cliente decide nada com ele; o guarda `import.meta.env.SSR` evita o erro do
+ * `@t3-oss/env-core`, que lança ao ler variável de servidor no cliente).
  */
-export const INDEXABLE = env.SITE_ENV === 'production'
+export const INDEXABLE = import.meta.env.SSR && env.SITE_ENV === 'production'
 
 /** O caminho vira endereço absoluto, para `canonical` e `og:url`. */
 export function absoluteUrl(path: string): string {

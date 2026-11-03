@@ -10,6 +10,13 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ## [Não lançado]
 
+### Corrigido
+
+- Endereço que não existe agora responde 404 de verdade (antes respondia 200 com a tela de "não existe"), mantendo menu e rodapé.
+- Erro de variável de servidor no navegador em todas as páginas (`INDEXABLE` lido no cliente).
+- Galeria: o nome do botão de cada miniatura inclui o texto "Foto em breve" que ele mostra (critério 2.5.3 do WCAG).
+- Filtro de preço: mínimo maior que o máximo agora avisa no campo, em vez de só mostrar "nenhum imóvel"; o chip mostra os valores em reais formatados.
+
 ### Alterado
 
 - Fim da ilustração vetorial: imóvel sem foto mostra um quadro neutro com ícone de linha e "Foto em breve"; o estado vazio e a página 404 não desenham mais paisagem; a prévia de link é tipográfica.

@@ -6,7 +6,7 @@ import { MAX_PER_PAGE } from '#/integrations/tanstack-query/queries/storefront'
 import { STATIC_ENTRIES, buildSitemap } from '#/lib/sitemap'
 import type { SitemapEntry } from '#/lib/sitemap'
 import { SITE_URL } from '#/lib/site'
-import { locales, localizeHref } from '#/paraglide/runtime'
+import { baseLocale, locales, localizeHref } from '#/paraglide/runtime'
 
 /**
  * Os anúncios publicados como entradas do sitemap, direto da API.
@@ -64,10 +64,22 @@ export const Route = createFileRoute('/sitemap.xml')({
         let cache = 'public, max-age=3600'
         if (listings === null) cache = 'no-store'
 
+        // Cada URL leva as irmãs de todos os idiomas e o `x-default` (o português, sem prefixo):
+        // o mesmo conjunto que o `<head>` da página declara em `alternateLinks`.
         const localized = locales.flatMap((locale) =>
           entries.map((entry) => ({
             ...entry,
             path: localizeHref(entry.path, { locale }),
+            alternates: [
+              ...locales.map((other) => ({
+                hreflang: other,
+                path: localizeHref(entry.path, { locale: other }),
+              })),
+              {
+                hreflang: 'x-default',
+                path: localizeHref(entry.path, { locale: baseLocale }),
+              },
+            ],
           })),
         )
 

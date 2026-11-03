@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { NotFoundPage } from '#/components/common/not-found-page'
 import { SITE_TITLE } from '#/lib/site'
@@ -12,11 +12,16 @@ import { m } from '#/paraglide/messages'
  * existe, e sem ele o buscador guardaria a URL errada com resposta de sucesso.
  */
 export const Route = createFileRoute('/_public/$')({
+  loader: () => {
+    throw notFound()
+  },
+  // O curinga casa qualquer caminho, e casar rende status 200. Lançar `notFound` faz o SSR
+  // responder 404 de verdade, e o `notFoundComponent` desta rota desenha a tela dentro do `_public`.
   head: () => ({
     meta: [
       { title: `${m.not_found_title()} · ${SITE_TITLE}` },
       { name: 'robots', content: 'noindex' },
     ],
   }),
-  component: () => <NotFoundPage />,
+  notFoundComponent: () => <NotFoundPage />,
 })

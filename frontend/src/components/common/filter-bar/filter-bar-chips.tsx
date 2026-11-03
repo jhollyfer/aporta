@@ -2,8 +2,10 @@ import * as React from 'react'
 import { X } from '@phosphor-icons/react'
 
 import { useNeighborhoods } from '#/hooks/use-neighborhoods'
+import { formatCurrency } from '#/lib/format'
 import { LISTING_PERIOD_LABELS, LISTING_TYPE_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
+import { getLocale } from '#/paraglide/runtime'
 
 import { useFilterBar } from './filter-bar-context'
 
@@ -43,11 +45,16 @@ export function FilterBarChips(): React.JSX.Element | null {
   }
 
   if (filters.minPrice !== null || filters.maxPrice !== null) {
+    let maxLabel = '∞'
+    if (filters.maxPrice !== null) {
+      maxLabel = formatCurrency(filters.maxPrice, getLocale())
+    }
+
     chips.push({
       key: 'price',
       label: m.chip_price({
-        min: String(filters.minPrice ?? 0),
-        max: String(filters.maxPrice ?? '∞'),
+        min: formatCurrency(filters.minPrice ?? 0, getLocale()),
+        max: maxLabel,
       }),
       remove: () => onChange({ minPrice: null, maxPrice: null }),
     })

@@ -10,6 +10,8 @@ export type SitemapEntry = {
   lastModified?: string
   /** Peso relativo entre as páginas do próprio site, de 0 a 1. */
   priority?: number
+  /** As versões da página em cada idioma (e `x-default`), que o rastreador liga por `hreflang`. */
+  alternates?: ReadonlyArray<{ hreflang: string; path: string }>
 }
 
 /**
@@ -45,12 +47,17 @@ export function buildSitemap(
     if (entry.priority !== undefined) {
       parts.push(`    <priority>${entry.priority.toFixed(1)}</priority>`)
     }
+    for (const alternate of entry.alternates ?? []) {
+      parts.push(
+        `    <xhtml:link rel="alternate" hreflang="${escapeXml(alternate.hreflang)}" href="${escapeXml(absolute(origin, alternate.path))}"/>`,
+      )
+    }
     return `  <url>\n${parts.join('\n')}\n  </url>`
   })
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ...urls,
     '</urlset>',
     '',

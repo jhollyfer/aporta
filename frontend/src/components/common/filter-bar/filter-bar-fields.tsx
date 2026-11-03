@@ -12,6 +12,8 @@ import { useFilterBar } from './filter-bar-context'
 const FIELD =
   'h-11 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink'
 
+const PRICE_ERROR_ID = 'filter-price-error'
+
 function toNumber(raw: string): number | null {
   if (raw.trim() === '') return null
   const value = Number(raw)
@@ -38,6 +40,12 @@ function toPeriod(raw: string): ListingPeriod | null {
 export function FilterBarFields(): React.JSX.Element {
   const { filters, onChange } = useFilterBar()
   const neighborhoods = useNeighborhoods()
+  const priceInvalid =
+    filters.minPrice !== null &&
+    filters.maxPrice !== null &&
+    filters.minPrice > filters.maxPrice
+  let priceDescription: string | undefined
+  if (priceInvalid) priceDescription = PRICE_ERROR_ID
 
   return (
     <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
@@ -102,6 +110,8 @@ export function FilterBarFields(): React.JSX.Element {
           min={0}
           step={50}
           defaultValue={filters.minPrice ?? ''}
+          aria-invalid={priceInvalid || undefined}
+          aria-describedby={priceDescription}
           onBlur={(event) =>
             onChange({ minPrice: toNumber(event.target.value) })
           }
@@ -118,12 +128,24 @@ export function FilterBarFields(): React.JSX.Element {
           min={0}
           step={50}
           defaultValue={filters.maxPrice ?? ''}
+          aria-invalid={priceInvalid || undefined}
+          aria-describedby={priceDescription}
           onBlur={(event) =>
             onChange({ maxPrice: toNumber(event.target.value) })
           }
           className={FIELD}
         />
       </label>
+
+      {priceInvalid && (
+        <p
+          id={PRICE_ERROR_ID}
+          role="alert"
+          className="col-span-2 text-sm font-bold text-danger lg:col-span-5"
+        >
+          {m.filter_price_invalid()}
+        </p>
+      )}
     </div>
   )
 }

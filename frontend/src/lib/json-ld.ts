@@ -1,4 +1,7 @@
-import type { StorefrontListingShowResponse } from '@aporta/shared'
+import type {
+  StorefrontListingShowResponse,
+  StorefrontPlaceShowResponse,
+} from '@aporta/shared'
 
 import { SITE_TITLE, SITE_URL, absoluteUrl } from './site'
 
@@ -94,4 +97,52 @@ export function listingJsonLd(listing: StorefrontListingShowResponse): JsonLd {
   }
 
   return data
+}
+
+/**
+ * Um lugar do guia: evento com data vira `Event`, o resto é `LocalBusiness`. Sem telefone: o
+ * número do lugar fica no botão do guia, e o dado estruturado só leva o que a página mostra
+ * a qualquer um, sem contato.
+ */
+function placeJsonLd(place: StorefrontPlaceShowResponse): JsonLd {
+  const address = {
+    '@type': 'PostalAddress',
+    streetAddress: place.address,
+    addressLocality: place.neighborhood.name,
+    addressRegion: 'AM',
+    addressCountry: 'BR',
+  }
+
+  if (place.date !== null) {
+    return {
+      '@type': 'Event',
+      name: place.name,
+      description: place.description,
+      startDate: place.date,
+      location: { '@type': 'Place', name: place.name, address },
+    }
+  }
+
+  return {
+    '@type': 'LocalBusiness',
+    name: place.name,
+    description: place.description,
+    openingHours: place.hours,
+    address,
+  }
+}
+
+/** A lista do guia como `ItemList`, na ordem em que a tela mostra. */
+export function placesJsonLd(
+  places: ReadonlyArray<StorefrontPlaceShowResponse>,
+): JsonLd {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: places.map((place, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: placeJsonLd(place),
+    })),
+  }
 }

@@ -146,7 +146,8 @@
     }
   ],
   "chips_label": "Filtros aplicados",
-  "chip_price": "R$ {min} a {max}",
+  "chip_price": "{min} a {max}",
+  "filter_price_invalid": "Preço mínimo maior que o máximo: ajuste um dos dois.",
   "chip_remove": "Remover filtro {label}",
   "view_show_map": "Mapa",
   "view_show_list": "Lista",

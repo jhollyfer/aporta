@@ -1,6 +1,7 @@
 import { defineConfig } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 
+import { TrustedProxies } from '#core/trusted-proxies'
 import env from '#start/env'
 
 /**
@@ -29,7 +30,7 @@ export const http = defineConfig({
    * own key. When absent, the framework default (`loopback`) applies.
    * https://docs.adonisjs.com/guides/basics/request
    */
-  trustProxy: env.get('TRUSTED_PROXIES') ?? 'loopback',
+  trustProxy: TrustedProxies.compile(env.get('TRUSTED_PROXIES')),
 
   /**
    * `ETag` on every response that has a body, and `304 Not Modified` when the client already holds

@@ -12,8 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # A PR that only touches text does not run the suite (`_standards/tooling.md` §7,
-  # `DECISIONS.md` #273): the files of the PR are listed in shell, no third-party filter, and
+  # A PR that only touches text does not run the suites (`_standards/tooling.md` §7,
+  # `DECISIONS.md` #273): the PR's files are listed in shell, with no third-party filter, and
   # backend and frontend are called only when some file is NOT text. A skipped job shows as
   # skipped, which satisfies the required check (GitHub's page not checked).
   # `repository` below always runs.
@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Arquivos do PR
         id: diff
@@ -47,8 +48,8 @@ jobs:
           done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
           echo "code=$code" >> "$GITHUB_OUTPUT"
 
-  # The same reusables that the push to main uses, so the PR does not go through a
-  # different standard from the deploy's (`_standards/tooling.md` §8.1).
+  # The same reusables that the push to main calls, so the PR does not go through a
+  # different gate from the deploy's (`_standards/tooling.md` §8.1).
   backend:
     needs: changes
     if: ${{ needs.changes.outputs.code == 'true' }}
@@ -59,6 +60,8 @@ jobs:
     if: ${{ needs.changes.outputs.code == 'true' }}
     uses: ./.github/workflows/main-check-frontend.yml
 
+  # Authorship, audit, secrets and workflow injection: always, even on a text-only PR
+  # (`_standards/tooling.md` §7).
   repository:
     name: Repositório - Autoria, Audit, Segredos & Workflows
     runs-on: ubuntu-latest
@@ -72,6 +75,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm e Node
         uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
@@ -83,10 +87,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Single author (`tooling.md` §6, layer 3): catches a commit made with
-      # `--no-verify` or on a machine without the hook.
-      # Up to the PR's `head.sha`, and not up to `HEAD`: the `pull_request` checkout
-      # is the synthetic merge that GitHub creates, with committer `noreply@github.com`.
+      # Single author (`_standards/tooling.md` §6, layer 3; `DECISIONS.md` #250): catches a
+      # commit made with `--no-verify` or on a machine without the hook. Up to the PR's
+      # `head.sha`, not up to `HEAD`: the `pull_request` checkout is the synthetic merge that
+      # GitHub creates, committed by `noreply@github.com`.
       - name: Autoria dos commits
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -122,8 +126,9 @@ jobs:
       # The action above lists only the PR's commits (`pulls/<n>/commits`) and has no input to
       # widen that range, so a secret that lives on another ref (a Dependabot branch, an old
       # tag) passes. This step runs the same CLI over every ref the checkout fetched
-      # (`fetch-depth: 0`), with the repository's config. The tarball is pinned by version
-      # and checked against the sha256 of the release's `checksums.txt`.
+      # (`fetch-depth: 0`), with the repository's `.gitleaks.toml` (which keeps the upstream
+      # mirror `_doc-lib/`, `_standards/` and `.claude/skills/` out of the scan). The tarball is
+      # pinned by version and checked against the sha256 of the release's `checksums.txt`.
       - name: Varredura de segredo em todas as refs
         env:
           GITLEAKS_VERSION: 8.28.0
@@ -135,8 +140,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
           "$RUNNER_TEMP/gitleaks" git --config .gitleaks.toml --log-opts=--all --redact --no-banner .
 
-      # Workflow without injection (`tooling.md` §9): no `pull_request_target`, and no
-      # interpolation of event data inside `run:`, only through `env:`. The awk below also
+      # Workflow without injection (`_standards/tooling.md` §9): no `pull_request_target`, and
+      # no interpolation of event data inside `run:`, only through `env:`. The awk below also
       # scans comments that follow a `run:`, so this text cannot spell the expression out.
       - name: Workflows sem injeção
         run: |

@@ -3,17 +3,22 @@ name: Deploy to Coolify
 # The address and the target of the deploy are secrets, never written here
 # (`_standards/tooling.md` §8.3, `DECISIONS.md` #272): a UUID copied from another project
 # would redeploy the other project's application, and the site host in place of the panel
-# answers the route with the app's 404 HTML.
+# answers the route with the app's 404 HTML. The smoke test reads the public addresses from
+# the repository variables `VITE_API_URL` and `VITE_SITE_URL`, the same the build put in the
+# bundle.
 on:
   workflow_call:
     secrets:
       COOLIFY_URL:
+        description: Base do painel do Coolify, sem caminho
         required: true
       COOLIFY_TOKEN:
         required: true
       COOLIFY_API_UUID:
+        description: UUID da aplicação da API (fim da URL da aplicação no painel)
         required: true
       COOLIFY_APP_UUID:
+        description: UUID da aplicação do frontend
         required: true
 
 permissions:
@@ -33,9 +38,7 @@ jobs:
       # Each value loses space and line break first (`tr -d '[:space:]'`): a secret pasted with
       # `\n` becomes a broken header. An empty secret fails naming it, and so does a
       # `COOLIFY_URL` with a path: it is the panel's base, and the endpoint is built here.
-      #
-      # ATTENTION: the UUID is the APPLICATION's, not the instance's. The value is at the end of
-      # the application's URL in the Coolify panel.
+      # The UUID is the APPLICATION's, not the instance's: the end of its URL in the panel.
       - name: Deploy da API e do app
         env:
           COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
@@ -43,62 +46,69 @@ jobs:
           COOLIFY_API_UUID: ${{ secrets.COOLIFY_API_UUID }}
           COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
         run: |
-          clean() { printf '%s' "$1" | tr -d '[:space:]'; }
-          url=$(clean "$COOLIFY_URL")
-          token=$(clean "$COOLIFY_TOKEN")
-          api_uuid=$(clean "$COOLIFY_API_UUID")
-          app_uuid=$(clean "$COOLIFY_APP_UUID")
-
-          for pair in "COOLIFY_URL:$url" "COOLIFY_TOKEN:$token" "COOLIFY_API_UUID:$api_uuid" "COOLIFY_APP_UUID:$app_uuid"; do
-            if [ -z "${pair#*:}" ]; then
-              echo "secret ${pair%%:*} vazio ou ausente" >&2; exit 1
-            fi
+          set -euo pipefail
+          for name in COOLIFY_URL COOLIFY_TOKEN COOLIFY_API_UUID COOLIFY_APP_UUID; do
+            value=$(printf '%s' "${!name}" | tr -d '[:space:]')
+            [ -n "$value" ] || { echo "secret $name vazio ou ausente: cadastre-o em Settings, Secrets and variables, Actions" >&2; exit 1; }
+            printf -v "$name" '%s' "$value"
           done
 
           # Whatever follows the host after the scheme is a path.
-          rest="${url#*://}"
+          rest="${COOLIFY_URL#*://}"
           case "${rest%/}" in
             */*) echo "COOLIFY_URL deve ser só a base do painel, sem caminho (veio com '/' depois do host)" >&2; exit 1 ;;
           esac
 
-          endpoint="${url%/}/api/v1/deploy"
+          endpoint="${COOLIFY_URL%/}/api/v1/deploy"
           response="$RUNNER_TEMP/coolify-response.txt"
 
-          for uuid in "$api_uuid" "$app_uuid"; do
+          trigger() {
+            label="$1"
+            uuid="$2"
             status=$(curl -sS -X POST "$endpoint" \
-              -H "Authorization: Bearer $token" \
+              -H "Authorization: Bearer $COOLIFY_TOKEN" \
               -H "Content-Type: application/json" \
               -d "{\"uuid\":\"$uuid\",\"force\":false}" \
               -o "$response" -w '%{http_code}')
+            echo "$label: HTTP $status"
             case "$status" in
               2??) ;;
               *)
-                echo "Coolify respondeu $status para $uuid: $(head -c 300 "$response" 2>/dev/null)" >&2
+                echo "Coolify respondeu $status para $label: $(head -c 300 "$response" 2>/dev/null)" >&2
                 exit 1
                 ;;
             esac
             grep -q '"deployment_uuid"' "$response" \
-              || { echo "Coolify não enfileirou $uuid: $(head -c 300 "$response" 2>/dev/null)" >&2; exit 1; }
-          done
+              || { echo "Coolify aceitou o pedido de $label e não enfileirou nada: $(head -c 300 "$response" 2>/dev/null)" >&2; exit 1; }
+          }
 
-      # The trigger is asynchronous: the job only finishes green when the API answers on
-      # `/health-check` and the app serves `/revision.txt` with this commit's SHA.
-      # Checking by the body, never by the status: the SSR catch-all answers
-      # 200 with HTML for a missing file.
+          trigger API "$COOLIFY_API_UUID"
+          trigger App "$COOLIFY_APP_UUID"
+
+      # The trigger is asynchronous: the job only finishes green when the API answers 200 on
+      # `/health-check` and the app serves `/revision.txt` with a body EQUAL to this commit's
+      # SHA. The app is checked by the body, never by the status: the SSR catch-all answers 200
+      # with HTML for a missing file, and the old container also answers 200. Attempts every
+      # 15 s up to two minutes, printing the type and the first bytes of a wrong answer.
       - name: Smoke test
         env:
-          APP_SERVER_URL: https://api-aporta.maiyu.com.br
-          APP_CLIENT_URL: https://aporta.maiyu.com.br
+          API_URL: ${{ vars.VITE_API_URL }}
+          SITE_URL: ${{ vars.VITE_SITE_URL }}
           REVISION: ${{ github.sha }}
         run: |
+          set -uo pipefail
+          [ -n "$API_URL" ] && [ -n "$SITE_URL" ] \
+            || { echo "variáveis VITE_API_URL e VITE_SITE_URL do repositório são obrigatórias" >&2; exit 1; }
+          body="$RUNNER_TEMP/smoke-body.txt"
           for attempt in $(seq 1 8); do
-            api=$(curl -fsS --max-time 10 "$APP_SERVER_URL/health-check" || true)
-            app=$(curl -fsS --max-time 10 "$APP_CLIENT_URL/revision.txt" || true)
-            if printf '%s' "$api" | grep -q '"ok"' && [ "$app" = "$REVISION" ]; then
+            api=$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' "${API_URL%/}/health-check" || true)
+            app_meta=$(curl -sS --max-time 10 -o "$body" -w '%{http_code} %{content_type}' "${SITE_URL%/}/revision.txt" || true)
+            app=$(tr -d '[:space:]' < "$body" 2>/dev/null || true)
+            if [ "$api" = 200 ] && [ "$app" = "$REVISION" ]; then
               echo "API e app no ar com $REVISION (tentativa $attempt)."
               exit 0
             fi
-            echo "Ainda subindo (tentativa $attempt): api=$(printf '%s' "$api" | head -c 80) app=$(printf '%s' "$app" | head -c 80)"
+            echo "Ainda subindo (tentativa $attempt): api=HTTP $api app=$app_meta $(head -c 80 "$body" 2>/dev/null | tr -d '\000')"
             sleep 15
           done
           echo "API ou app não chegaram em $REVISION em dois minutos." >&2

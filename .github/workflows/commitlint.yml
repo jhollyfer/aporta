@@ -1,5 +1,8 @@
 name: Commitlint
 
+# Conventional Commits, also enforced outside the local hook: `--no-verify` skips the
+# `commit-msg` hook (`_standards/tooling.md` §6, §7). A workflow of its own, so an invalid
+# message neither waits for nor blocks the suite.
 on:
   # `edited` because the PR title is validated here: a corrected title must
   # pass the standard again, and a push alone is not enough.
@@ -8,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,7 +24,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The whole history: without it the PR's `--from` does not resolve.
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm e Node
         uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
@@ -35,14 +39,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # The version is the root devDependency's (`pnpm exec`), the same as the local
-      # hook's (`_standards/tooling.md` §7).
+      # hook's, reading the repository's `.commitlintrc.json` (`_standards/tooling.md` §7).
       - name: Commits do PR
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
 
-      # Title and branch in the convention and without an agent name (`tooling.md` §6).
+      # Title and branch in the convention and without an agent name
+      # (`_standards/tooling.md` §6, `DECISIONS.md` #244).
       - name: Título e branch do PR
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}

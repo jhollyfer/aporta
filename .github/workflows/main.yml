@@ -11,11 +11,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# `check-backend` ∥ `build-frontend` → `docker-backend` ∥ `docker-frontend` → `deploy`
+# (`_standards/tooling.md` §8.1).
 jobs:
   check-backend:
     uses: ./.github/workflows/main-check-backend.yml
 
-  # The Playwright runs only on the PR: the merge enters with the E2E already proved, and
+  # Playwright runs only on the PR: the merge enters with the E2E already proved, and
   # repeating it delays the deploy (`_standards/tooling.md` §8.1, `DECISIONS.md` #273).
   build-frontend:
     uses: ./.github/workflows/main-build-frontend.yml

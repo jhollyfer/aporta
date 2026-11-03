@@ -1,8 +1,8 @@
 name: Build Frontend
 
-# The steps are the check's (`main-check-frontend.yml`), with the revision
-# stamp and the `.output` artifact that the image packages (`_standards/tooling.md`
-# §8.1). Calling the same reusable keeps a single standard.
+# The steps are the check's (`main-check-frontend.yml`), plus the revision stamp and the
+# `.output` artifact that the image packages (`_standards/tooling.md` §8.1, §8.3). Calling the
+# same reusable keeps a single gate for the PR and the deploy.
 on:
   workflow_call:
     inputs:

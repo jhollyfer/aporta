@@ -177,7 +177,7 @@ export function PhotoPicker({
             drafts.add(Array.from(event.target.files ?? []))
             event.target.value = ''
           }}
-          className="peer sr-only h-px w-px p-0"
+          className="peer sr-only h-px w-px border-0 p-0"
         />
         <Label
           htmlFor={inputId}

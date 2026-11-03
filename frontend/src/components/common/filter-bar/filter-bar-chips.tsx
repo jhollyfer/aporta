@@ -71,7 +71,7 @@ export function FilterBarChips(): React.JSX.Element | null {
             variant="ghost"
             type="button"
             onClick={chip.remove}
-            className="inline-flex items-center gap-1.5 rounded-full border border-moss bg-moss-wash px-3 py-1.5 text-sm font-semibold text-moss-deep hover:bg-moss/15"
+            className="inline-flex h-auto min-h-11 items-center gap-1.5 rounded-full border border-moss bg-moss-wash px-3 py-1.5 text-sm font-semibold text-moss-deep hover:bg-moss/15"
             aria-label={m.chip_remove({ label: chip.label })}
           >
             {chip.label}

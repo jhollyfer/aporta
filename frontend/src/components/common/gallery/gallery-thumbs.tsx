@@ -35,7 +35,7 @@ export function GalleryThumbs(): React.JSX.Element {
             )}
             aria-current={position === index && 'true'}
             className={cn(
-              'block aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-transparent',
+              'block h-auto aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-transparent p-0',
               position === index && 'border-moss',
             )}
           >

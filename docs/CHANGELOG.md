@@ -12,6 +12,9 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Corrigido
 
+- Campos de busca da página inicial voltam a mostrar o foco do teclado (o `outline-none` apagava o anel).
+- Títulos em ordem na listagem e no guia (o nome de cada card é `h2`, logo abaixo do `h1`).
+- No celular o cabeçalho rola com a página em vez de ocupar três linhas fixas da tela.
 - Endereço que não existe agora responde 404 de verdade (antes respondia 200 com a tela de "não existe"), mantendo menu e rodapé.
 - Erro de variável de servidor no navegador em todas as páginas (`INDEXABLE` lido no cliente).
 - Galeria: o nome do botão de cada miniatura inclui o texto "Foto em breve" que ele mostra (critério 2.5.3 do WCAG).
@@ -24,6 +27,8 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Adicionado
 
+- Dados estruturados do guia (`ItemList` de `LocalBusiness` e `Event`), `hreflang` no sitemap e título próprio da página inicial nos três idiomas.
+- Ativos estáticos pré-comprimidos (gzip e brotli) pelo Nitro: o maior chunk de JS cai de 329 KB para 89 KB.
 - Página inicial com busca em pílula por tipo, bairro e período, faixa de categorias por tipo de
   imóvel, imóveis em destaque, a explicação de por que confiar e atalhos para o guia e para anunciar.
 - Listagem de imóveis com filtros por tipo, bairro, período e faixa de preço guardados no endereço da

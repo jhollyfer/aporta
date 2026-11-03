@@ -1,6 +1,8 @@
 import { alternateLinks, localizedUrl } from './i18n'
 import { jsonLdScript } from './json-ld'
 import type { JsonLd } from './json-ld'
+import { m } from '#/paraglide/messages'
+
 import { SITE_TITLE, absoluteUrl } from './site'
 
 /** A prévia de link, a mesma em todas as páginas: o nome e a cidade em tipografia (`scripts/generate-og.mjs`). Nunca foto do dono, que mora em bucket privado, nem ilustração de imóvel. */
@@ -29,7 +31,7 @@ export type PageHead = {
 type HeadEntries = Array<Record<string, string>>
 
 function fullTitle(title: string | null): string {
-  if (title === null) return SITE_TITLE
+  if (title === null) return m.meta_title()
   return `${title} · ${SITE_TITLE}`
 }
 

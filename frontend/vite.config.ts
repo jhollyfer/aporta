@@ -42,6 +42,13 @@ const config = defineConfig(({ mode }) => ({
     nitro({
       preset: 'node-server',
       /*
+       * Ativos de `public/` e `/assets/` pré-comprimidos no build (gzip e brotli) e servidos
+       * conforme o `Accept-Encoding`: sem isto o servidor entrega o JS cru (329 KB o maior
+       * chunk), e a compressão ficaria na mão do proxy. _doc-lib/nitro.md#docs/assets;
+       * Nitro, "Compressed Public Assets": https://nitro.build/raw/docs/assets.md
+       */
+      compressPublicAssets: { gzip: true, brotli: true },
+      /*
        * Cabeçalhos fixos e cache dos ativos (_doc-lib/nitro.md#config; Nitro, "Route rules":
        * https://nitro.build/raw/docs/configuration.md). `routeRules` e não o servidor de SSR
        * porque também cobre `public/` e `/assets/`, que o SSR nunca vê. O que muda por resposta

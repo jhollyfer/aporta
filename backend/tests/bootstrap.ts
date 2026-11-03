@@ -111,15 +111,13 @@ export const reporters: Config['reporters'] = REPORTERS[reporterMode]
  * Configure lifecycle function to run before and after all the
  * tests.
  *
- * The setup functions are executed before all the tests
- * The teardown functions are executed after all the tests
+ * Empty on purpose: the migrations run in the setup of the suites that use the database
+ * (`configureSuite` below). A global hook would make `unit` need a database too, and that suite
+ * runs without one (`adonisrc.ts`: `unit` is "without a database"; CI's `check` job has no
+ * Postgres service, and `pre-commit` runs it on a bare machine).
  */
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
-  // Migrations run once, before everything. Without this line the schema would only
-  // be born as a side effect of `resetDatabase()`'s `truncate()`, and the
-  // specs that do not call `resetDatabase` - documentation, messages, multipart and
-  // validator - would have no table at all on a freshly created database.
-  setup: [() => testUtils.db().migrate()],
+  setup: [],
   teardown: [],
 }
 
@@ -129,6 +127,12 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
  */
 export const configureSuite: Config['configureSuite'] = (suite) => {
   if (!['browser', 'functional', 'e2e'].includes(suite.name)) return undefined
+
+  // Migrations run once, before this suite's tests. Without this line the schema would only
+  // be born as a side effect of `resetDatabase()`'s `truncate()`, and the specs that do not
+  // call `resetDatabase` - documentation, messages, multipart and validator - would have no
+  // table at all on a freshly created database.
+  suite.setup(() => testUtils.db().migrate())
 
   return suite.setup(() => testUtils.httpServer().start())
 }

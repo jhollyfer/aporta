@@ -35,59 +35,62 @@ export function Hero(): React.JSX.Element {
 
   return (
     <section aria-labelledby="hero-title" className="relative">
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 pt-10 pb-4 sm:pt-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:gap-16">
-        <div className="flex flex-col gap-7">
-          <p className="text-sm font-bold tracking-widest text-ink-soft uppercase">
-            {m.hero_kicker()}
-          </p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 pt-10 pb-4 sm:pt-16">
+        <div className="flex flex-col gap-4">
+          <p className="text-base font-bold text-moss">{m.hero_kicker()}</p>
           <h1
             id="hero-title"
-            className="max-w-3xl text-display font-extrabold tracking-tight text-balance text-ink"
+            className="max-w-5xl text-display font-extrabold tracking-tight text-balance text-ink"
           >
             {m.hero_title()}
           </h1>
-          <p className="max-w-xl text-lg text-ink-soft">{m.hero_lead()}</p>
-
-          <SearchPill
-            onSearch={(values) =>
-              void navigate({ to: '/listings', search: toSearch(values) })
-            }
-          >
-            <SearchPill.Segment field={SEARCH_FIELD.TYPE} />
-            <SearchPill.Segment field={SEARCH_FIELD.NEIGHBORHOOD} />
-            <SearchPill.Segment field={SEARCH_FIELD.PERIOD} />
-            <SearchPill.Submit />
-          </SearchPill>
-
-          <div>
-            <PillButton to="/list-your-place" tone="link">
-              {m.hero_cta_owner()}
-            </PillButton>
-          </div>
         </div>
 
-        <nav
-          aria-label={m.hero_categories_label()}
-          className="lg:self-end lg:pb-2"
-        >
-          <ul className="flex flex-col divide-y divide-line border-y border-line">
-            {LISTING_TYPES.map((type) => (
-              <li key={type}>
-                <Link
-                  to="/listings"
-                  search={{ type }}
-                  className="group flex min-h-14 items-center justify-between gap-4 py-3 text-2xl font-extrabold tracking-tight text-ink transition-colors hover:text-moss motion-reduce:transition-none"
-                >
-                  {LISTING_TYPE_LABELS[type]()}
-                  <ArrowUpRight
-                    aria-hidden
-                    className="size-6 shrink-0 text-ink-soft transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:gap-16">
+          <div className="flex flex-col gap-7">
+            <p className="max-w-xl text-lg text-ink-soft">{m.hero_lead()}</p>
+
+            <SearchPill
+              onSearch={(values) =>
+                void navigate({ to: '/listings', search: toSearch(values) })
+              }
+            >
+              <SearchPill.Segment field={SEARCH_FIELD.TYPE} />
+              <SearchPill.Segment field={SEARCH_FIELD.NEIGHBORHOOD} />
+              <SearchPill.Segment field={SEARCH_FIELD.PERIOD} />
+              <SearchPill.Submit />
+            </SearchPill>
+
+            <div>
+              <PillButton to="/list-your-place" tone="link">
+                {m.hero_cta_owner()}
+              </PillButton>
+            </div>
+          </div>
+
+          <nav
+            aria-label={m.hero_categories_label()}
+            className="lg:self-end lg:pb-2"
+          >
+            <ul className="flex flex-col gap-1">
+              {LISTING_TYPES.map((type) => (
+                <li key={type}>
+                  <Link
+                    to="/listings"
+                    search={{ type }}
+                    className="group flex min-h-14 items-center justify-between gap-4 rounded-2xl px-4 py-3 text-2xl font-extrabold tracking-tight text-ink transition-colors hover:bg-moss-wash hover:text-moss motion-reduce:transition-none"
+                  >
+                    {LISTING_TYPE_LABELS[type]()}
+                    <ArrowUpRight
+                      aria-hidden
+                      className="size-6 shrink-0 text-ink-soft transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
     </section>
   )

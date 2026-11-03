@@ -26,9 +26,9 @@ export function Trust(): React.JSX.Element {
       >
         {m.trust_title()}
       </h2>
-      <dl className="flex flex-col divide-y divide-line border-y border-line">
+      <dl className="flex flex-col gap-10">
         {items.map((item) => (
-          <div key={item.title} className="flex flex-col gap-1.5 py-6">
+          <div key={item.title} className="flex flex-col gap-1.5">
             <dt className="text-xl font-extrabold text-moss-deep">
               {item.title}
             </dt>

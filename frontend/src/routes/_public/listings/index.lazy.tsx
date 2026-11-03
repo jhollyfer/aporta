@@ -170,7 +170,7 @@ function RouteComponent(): React.JSX.Element {
                     <ListingCard listing={listing}>
                       <ListingCard.Photo priority={index < 2} />
                       <ListingCard.Badge />
-                      <ListingCard.Title />
+                      <ListingCard.Title as="h2" />
                       <ListingCard.Meta />
                       <ListingCard.Price />
                       <ListingCard.Available />

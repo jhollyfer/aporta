@@ -34,7 +34,7 @@ export function PlaceCard({
         </time>
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h3 className="text-lg font-extrabold text-ink">{place.name}</h3>
+        <h2 className="text-lg font-extrabold text-ink">{place.name}</h2>
         <p className="text-ink-soft">{place.description}</p>
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
           <span className="inline-flex items-center gap-1">

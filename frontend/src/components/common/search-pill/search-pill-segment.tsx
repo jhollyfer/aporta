@@ -71,7 +71,7 @@ export function SearchPillSegment({
         id={id}
         value={values[field]}
         onChange={(event) => setValue(field, event.target.value)}
-        className="h-14 w-full rounded-[inherit] bg-transparent px-4 pt-5 text-sm text-ink-soft outline-none"
+        className="h-14 w-full rounded-[inherit] bg-transparent px-4 pt-5 text-sm text-ink-soft focus-visible:outline-offset-[-2px]"
       >
         <option value="">{spec.any()}</option>
         {spec.options(neighborhoods).map((option) => (

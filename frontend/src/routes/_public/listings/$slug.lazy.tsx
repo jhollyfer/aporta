@@ -50,12 +50,12 @@ function RouteComponent(): React.JSX.Element {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pt-8">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-bold text-moss">
-          {LISTING_TYPE_LABELS[listing.type]()} · {listing.neighborhood.name}
-        </p>
         <h1 className="max-w-4xl text-headline font-extrabold tracking-tight break-words text-ink">
           {listing.title}
         </h1>
+        <p className="text-base font-bold text-ink-soft">
+          {LISTING_TYPE_LABELS[listing.type]()} · {listing.neighborhood.name}
+        </p>
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">

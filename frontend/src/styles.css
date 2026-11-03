@@ -105,6 +105,14 @@
 
   html {
     scroll-behavior: smooth;
+    /* Sem o atraso de toque duplo: o toque vira clique na hora. */
+    touch-action: manipulation;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 
   body {

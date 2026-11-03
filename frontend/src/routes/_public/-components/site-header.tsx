@@ -89,12 +89,13 @@ function PanelLink(): React.JSX.Element | null {
 }
 
 /**
- * O cabeçalho: nome, links, conta, idioma e uma ação. Sem barra flutuante nem
+ * O cabeçalho: nome, links, conta, idioma e uma ação. No celular ele rola com a página (três
+ * linhas fixas comeriam 15% da tela do formulário); a partir de `sm` ele gruda. Sem barra flutuante nem
  * vidro: no celular de 360px cada pixel de altura é conteúdo a menos.
  */
 export function SiteHeader(): React.JSX.Element {
   return (
-    <header className="sticky top-0 z-40 bg-paper">
+    <header className="z-40 bg-paper sm:sticky sm:top-0">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
         <Link
           to="/"

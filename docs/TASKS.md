@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 73 tarefas · 49 feitas · 0 em andamento · 4 bloqueadas · 20 a fazer, atualizado 2026-11-02
+**Resumo:** 77 tarefas · 50 feitas · 0 em andamento · 4 bloqueadas · 23 a fazer, atualizado 2026-11-03
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -108,8 +108,12 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 7.9 | Testes que faltam: `guideSearchSchema`, `listing-draft.validator.ts`, paridade das chaves de i18n | Média | A fazer | `TEST-PLAN.md` §3.1; o `/health-check` do app já é conferido em `e2e/health.spec.ts` |
 | 7.10 | Conferir telefones, coordenadas e lugares de exemplo antes de abrir ao público | Alta | Bloqueada | exige o dono e quem conhece a cidade |
 | 7.11 | Escrever o procedimento de rotação de `APP_KEY` e das credenciais | Média | A fazer | `SECURITY.md` §6 |
-| 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | Feita | favicon, ícones, manifesto e imagem de compartilhamento gerados por `frontend/scripts/generate-icons.mjs` e `generate-og.mjs`; a prévia usa a cena do tipo, não foto |
-| 7.13 | Fotos reais da cidade (acervos abertos com crédito, ou fotos do dono) no hero e no guia | Alta | Bloqueada | o inspetor de design reprova página só com ilustração; sem rede nesta sessão para buscar no Openverse e no Wikimedia |
+| 7.12 | Favicon, ícones e imagem de compartilhamento (`frontend/public` está vazio e o `head` não aponta imagem) | Média | Feita | favicon, ícones, manifesto e imagem de compartilhamento gerados por `frontend/scripts/generate-icons.mjs` e `generate-og.mjs`; a prévia é tipográfica, uma só (`og-image.png`), sem cena nem foto (`DECISIONS.md` #28) |
+| 7.13 | Fotos reais da cidade (acervos abertos com crédito, ou fotos do dono) no hero e no guia | Alta | Bloqueada | exige o dono: fotos reais de Benjamin Constant (porto, rio, orla, ruas) e de cada imóvel; sem elas, quadro neutro e tipografia |
+| 7.16 | Sem ilustração vetorial de imóvel: `Scene` removido, quadro neutro "Foto em breve", hero e home recompostos, prévia de link tipográfica | Alta | Feita | `DECISIONS.md` #28 |
+| 7.17 | Passada funcional completa em navegador (1280 e 390), com backend e banco locais: busca, filtros (mínimo > máximo, sem resultado), detalhe, galeria, WhatsApp, cadastro, entrada, anunciar com upload, editar e pausar, painel, i18n, 404 com status 404 | Alta | A fazer | a sessão foi interrompida antes; o E2E existente não chegou a rodar (porta 3333 ocupada por outro servidor; use outra porta) |
+| 7.18 | SEO e GEO: JSON-LD de imóvel, hotel e local, hreflang pt/es/en, sitemap, robots e og conferidos nas páginas reais | Média | A fazer | `lib/json-ld.ts` e `page-head.ts` já existem (commit `wip`), falta ligar nas rotas e conferir |
+| 7.19 | Auditoria de acessibilidade, Core Web Vitals e bundle com Lighthouse nas páginas reais | Média | A fazer | |
 | 7.14 | Passada de design e responsividade: sombras em repouso e réguas finas fora, texto a partir de 13px, título dominante, papel e texto de apoio mais escuros, movimento só em `transform` e `opacity` | Alta | Feita | 9 larguras, de 320 a 1920 px, sem estouro horizontal; E2E com axe nos dois temas |
 | 7.15 | A tela do cadastro dizia "Anúncio recebido" com um envio que não gravava nada: trocar o texto por um estado honesto | Alta | Feita | commit `01f86eb`: o stub saiu, o último passo "Finalizar cadastro" só valida o formulário inteiro e mostra "Anúncio pronto", avisa que o envio ainda não está no ar e mantém o rascunho |
 

@@ -15,7 +15,7 @@
 - Backend genérico: sessão por cookie, conta e perfil, upload multipart assinado em S3 ou MinIO,
   health-check, OpenAPI, guardas de padrão, papéis `ADMINISTRATOR`, `MODERATOR` e `OWNER`.
 - Frontend: home, listagem com mapa, detalhe, guia, cadastro do dono em seis etapas com rascunho
-  local, três idiomas, tema claro e escuro, kit de componentes e cenas SVG. Home, listagem, detalhe,
+  local, três idiomas, tema claro e escuro, kit de componentes (sem ilustração: quadro neutro quando falta foto). Home, listagem, detalhe,
   guia e sitemap leem a API pública (`frontend/src/integrations/tanstack-query/`); `lib/data` saiu.
 - API pública de leitura em `/storefront` (listagem e detalhe de anúncio por `slug`, bairros e
   guia), com tabelas, entidades, repositories, seeders de desenvolvimento, contrato em `shared/` e
@@ -23,6 +23,8 @@
 - Workflows de CI, imagens e deploy no Coolify escritos.
 
 ## Parou em
+
+2026-11-03, branch `claude/vibrant-ptolemy-c6v9iy` (a renomear antes de qualquer PR): o dono viu o card ilustrado e pediu fim de ilustração vetorial em todo o site. Feito: `Scene` removido, `ListingPhoto` com quadro neutro, hero assimétrico em tipografia, copy revisada, prévia de link tipográfica, formulários com a11y e erros compartilhados (`lib/form-errors.ts`, `form-a11y.ts`), JSON-LD e `page-head`. A sessão parou antes da passada funcional em navegador (7.17), do SEO nas rotas (7.18) e da auditoria de desempenho (7.19). Ambiente local que funcionou: Postgres 16 do sistema (`pg_ctlcluster 16 main start`), backend em porta própria (3334, a 3333 pode estar ocupada) com `APP_CLIENT_URL` do front, `s3rver` (npm) no lugar do MinIO na 9006, front com `VITE_API_URL` apontando para o backend, Chrome em `/usr/bin/google-chrome` via `E2E_CHROMIUM_PATH`.
 
 Pós-merge do PR #23, o CI da `main` ficou vermelho por duas causas que já existiam: o `pnpm-lock.yaml` sem `packageManagerDependencies` (o Dockerfile instala o pnpm 12, que exige o bloco por causa do `devEngines`) e o README gerado em `project.inlang/.lix` no `format:check`. Corrigidos na branch `fix/ci-lockfile-pnpm` (tarefa 9.11); o job `docker-frontend` ainda falhou com `"/.output": not found` (o `COPY` do Dockerfile não usava `frontend/.output/`), corrigido na tarefa 9.12; o build das imagens e o deploy ainda precisam fechar no GitHub.
 
@@ -102,7 +104,7 @@ coringa responde 200 para endereço inexistente (soft 404); não foi mexido.
   (`listing_photos` não aponta para `storages`). Para ver dados nela, rode `node ace db:seed` em
   desenvolvimento: entram 6 bairros, 12 anúncios, 53 fotos (sem arquivo) e 10 lugares.
 - O seeder do administrador liga por `SEED_OWNER_PASSWORD`; a demonstração (contas de exemplo, anúncios e lugares) liga por `SEED_DEMO_PASSWORD`; só os bairros ficam presos a `development`, e o `.env.test` não define a segunda.
-- Não há nenhuma foto real: cada ambiente é uma cena SVG desenhada.
+- Não há nenhuma foto real no seed: o quadro neutro "Foto em breve" aparece (`DECISIONS.md` #28). A API devolve `photos[].url` assinada quando o arquivo existe no bucket.
 - "Owner" em `SEED_OWNER_*` é o dono da plataforma e nada tem a ver com o papel `OWNER`, que é o
   dono do imóvel.
 - Não há cadastro de conta nem entrada do dono na tela; o seeder só roda fora de produção, então a

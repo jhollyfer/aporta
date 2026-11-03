@@ -18,8 +18,9 @@
 - Tema: claro e escuro, escolhido pelo sistema do visitante com `prefers-color-scheme`. Não há
   troca manual nem cookie de tema: o CSS redefine só os tokens semânticos no escuro, e a página não
   troca de tema no meio.
-- Imagem: nenhuma foto real ainda. Cada ambiente é uma cena SVG desenhada com os tokens de cena, que
-  mudam entre dia (claro) e noite (escuro). Foto gerada por IA não entra (`DECISIONS.md` #6).
+- Imagem: só foto real, enviada pelo dono. Sem foto, o quadro é neutro (cor sólida da paleta, ícone de
+  linha do tipo de imóvel e "Foto em breve"). Nenhuma ilustração de casa, prédio ou paisagem, em
+  lugar nenhum, e nenhuma foto gerada por IA (`DECISIONS.md` #6 e #28).
 
 ## 2. Cores
 
@@ -153,8 +154,7 @@ repouso, hover, `focus-visible`, desabilitado, erro.
 | `CategoryRail` | parte `Item` (um tipo de imóvel) | faixa horizontal, rola sem barra visível |
 | `FilterBar` | partes `Fields`, `Chips`, `Actions` | filtros da listagem; os chips mostram o que restringe e "Limpar" zera |
 | `ListingCard` | partes `Photo`, `Badge`, `Title`, `Meta`, `Price`, `Available` | diz o valor e o que está incluso antes de abrir o anúncio |
-| `ListingPhoto` | foto ou cena SVG do ambiente | `url: null` desenha a cena; com foto, `alt` com o nome do ambiente |
-| `Scene` | `SCENE_KIND`: `RIVER`, `PANORAMA`, `HOUSE`, `BUILDING`, `HOTEL`, `BEDROOM`, `BATHROOM`, `KITCHEN`, `LIVING` | decorativa por padrão (`aria-hidden`); com `label` vira imagem nomeada |
+| `ListingPhoto` | foto ou quadro neutro do ambiente | `url: null` mostra o quadro (ícone de linha do tipo e "Foto em breve"); com foto, `alt` com o nome do ambiente |
 | `Gallery` | partes `Tabs` (por ambiente), `Main`, `Thumbs` | galeria do detalhe |
 | `ListingMap` | parte `Summary`; carregado só no cliente | pin com o preço; o pin só leva o preço formatado, nunca texto de usuário |
 | `OwnerCard` | selo "dono verificado" quando `verified`, e "atualizado há X dias" | responde às duas dúvidas de confiança antes do contato |
@@ -173,11 +173,11 @@ avisa "aproxime para ver todos"; área sem imóvel e limite de leitura (429, com
 | Estado | Como aparece |
 |---|---|
 | Carregando | Não se aplica hoje: os dados são locais e não há espera. Com a API, esqueleto com a forma do card, e spinner só no botão que enviou. O botão de envio do cadastro desabilita e anuncia `aria-busy` enquanto envia |
-| Vazio | filtro sem resultado: `EmptyState` com a cena do rio e botão "Limpar filtros". Guia e listagem sem dados: Não se aplica hoje |
+| Vazio | filtro sem resultado: `EmptyState` com ícone de linha e botão "Limpar filtros". Guia e listagem sem dados: Não se aplica hoje |
 | Erro | erro de campo abaixo do campo, em `danger`, ligado por `aria-describedby`; página inexistente em `NotFoundPage`. Erro de rede aguarda a API |
 | Sucesso | o envio do cadastro troca a tela por uma confirmação com o título enviado |
 
-Ilustração de estado vazio: a cena SVG do rio, desenhada com os tokens de cena.
+Estado vazio: ícone de linha discreto, sem ilustração.
 
 ## 9. Movimento
 

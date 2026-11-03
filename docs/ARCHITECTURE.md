@@ -10,7 +10,7 @@
 Estado em 2026-11-02. O app lê anúncios, bairros e guia da API pública (`/storefront`): o servidor de
 SSR chama a API na primeira navegação, e o navegador a chama direto nas navegações seguintes (por isso
 a API precisa de `CORS_ORIGINS`, `ENV.md`). Não há dado de exemplo no frontend. Foto de anúncio ainda
-não existe: `photos[].url` vem sempre nulo e a cena SVG segue sendo o desenho.
+não existe: `photos[].url` vem sempre nulo e o quadro neutro "Foto em breve" aparece no lugar.
 
 ```
 Visitante (navegador) ──HTTPS──▶ Web (TanStack Start, SSR em Nitro) ──GET /storefront──▶ API (AdonisJS 7) ──▶ PostgreSQL

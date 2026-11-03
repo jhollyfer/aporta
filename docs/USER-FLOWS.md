@@ -39,16 +39,16 @@
 
 | Situação | Resposta |
 |---|---|
-| Filtros sem resultado | estado vazio com cena do rio, texto que orienta e botão "Limpar filtros"; vale também para um bairro de endereço que a API não conhece, que volta lista vazia |
+| Filtros sem resultado | estado vazio com ícone de linha, texto que orienta e botão "Limpar filtros"; vale também para um bairro de endereço que a API não conhece, que volta lista vazia |
 | API fora do ar ou lenta demais (15 s) | tela "Algo deu errado" com "Tentar de novo" e "Voltar ao início"; o botão refaz o carregamento. No navegador a API é tentada de novo até 2 vezes antes do erro, e no servidor não |
 | Valor inválido na URL (`?type=castelo`, bairro que não existe) | o campo é ignorado e a página abre sem esse filtro, sem tela de erro |
 | Imóvel com `slug` que não existe | página 404 própria da área pública, com caminho de volta para a home; só o erro `LISTING_NOT_FOUND` da API vira 404, e API fora do ar é a tela de erro |
-| Imóvel sem foto de um ambiente | a galeria desenha a cena SVG do ambiente (ainda não há fotos reais) |
+| Imóvel sem foto de um ambiente | a galeria mostra o quadro neutro "Foto em breve" |
 | Hotel que anuncia só diária | o card e a página mostram a diária; para a faixa de preço a API conta a diária como 30 vezes o valor |
 | Link do WhatsApp aberto em desktop sem o app | o `wa.me` abre o WhatsApp Web; a falha do app do visitante é fora do site |
 | Falha de rede ao carregar o mapa | o mapa pode ficar sem ladrilhos; a lista e os filtros não dependem dele |
 
-A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta paginação (`TASKS.md` 3.9). A foto real continua fora: a galeria desenha a cena SVG.
+A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta paginação (`TASKS.md` 3.9). A galeria mostra o quadro neutro enquanto o dono não envia a foto.
 
 ---
 

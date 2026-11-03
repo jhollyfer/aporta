@@ -10,6 +10,11 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ## [Não lançado]
 
+### Alterado
+
+- Fim da ilustração vetorial: imóvel sem foto mostra um quadro neutro com ícone de linha e "Foto em breve"; o estado vazio e a página 404 não desenham mais paisagem; a prévia de link é tipográfica.
+- Página inicial recomposta: título grande à esquerda com a busca, tipos de imóvel como índice à direita, e o guia com as quatro categorias como links; texto revisado.
+
 ### Adicionado
 
 - Página inicial com busca em pílula por tipo, bairro e período, faixa de categorias por tipo de

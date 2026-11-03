@@ -3,6 +3,11 @@ import * as React from 'react'
 import type { PaginationMeta } from '@aporta/shared'
 
 import { ActionButton } from '#/components/common/action-button'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '#/components/ui/pagination'
 import { m } from '#/paraglide/messages'
 
 type PaginationNavProps = {
@@ -22,30 +27,38 @@ export function PaginationNav({
   if (meta.lastPage <= 1) return null
 
   return (
-    <nav
-      aria-label={m.pagination_label()}
-      className="grid grid-cols-2 items-center gap-3 sm:flex sm:justify-between"
-    >
-      <ActionButton
-        tone="outline"
-        disabled={meta.currentPage <= meta.firstPage}
-        onClick={() => onPage(meta.currentPage - 1)}
-      >
-        {m.pagination_previous()}
-      </ActionButton>
-      <p
-        aria-live="polite"
-        className="order-first col-span-2 text-center text-sm font-bold text-ink-soft sm:order-none sm:col-span-1"
-      >
-        {m.pagination_status({ page: meta.currentPage, total: meta.lastPage })}
-      </p>
-      <ActionButton
-        tone="outline"
-        disabled={meta.currentPage >= meta.lastPage}
-        onClick={() => onPage(meta.currentPage + 1)}
-      >
-        {m.pagination_next()}
-      </ActionButton>
-    </nav>
+    <Pagination aria-label={m.pagination_label()}>
+      <PaginationContent className="grid w-full grid-cols-2 items-center gap-3 sm:flex sm:justify-between">
+        <PaginationItem>
+          <ActionButton
+            tone="outline"
+            disabled={meta.currentPage <= meta.firstPage}
+            onClick={() => onPage(meta.currentPage - 1)}
+          >
+            {m.pagination_previous()}
+          </ActionButton>
+        </PaginationItem>
+        <PaginationItem className="order-first col-span-2 sm:order-none sm:col-span-1">
+          <p
+            aria-live="polite"
+            className="text-center text-sm font-bold text-ink-soft"
+          >
+            {m.pagination_status({
+              page: meta.currentPage,
+              total: meta.lastPage,
+            })}
+          </p>
+        </PaginationItem>
+        <PaginationItem className="justify-self-end">
+          <ActionButton
+            tone="outline"
+            disabled={meta.currentPage >= meta.lastPage}
+            onClick={() => onPage(meta.currentPage + 1)}
+          >
+            {m.pagination_next()}
+          </ActionButton>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   )
 }

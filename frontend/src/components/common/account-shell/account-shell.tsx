@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 
 import { LocaleSwitcher } from '#/components/common/locale-switcher'
+import { ThemeToggle } from '#/components/common/theme-toggle'
 import { m } from '#/paraglide/messages'
 
 /** O alvo do "pular para o conteúdo". */
@@ -36,7 +37,10 @@ export function AccountShell({
         >
           {m.brand_name()}
         </Link>
-        <LocaleSwitcher />
+        <div className="flex items-center gap-1">
+          <LocaleSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
       <main
         id={MAIN_ID}

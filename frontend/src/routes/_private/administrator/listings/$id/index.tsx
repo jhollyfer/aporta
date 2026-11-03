@@ -4,7 +4,7 @@ import { EmptyState } from '#/components/common/empty-state'
 import { PillButton } from '#/components/common/pill-button'
 import { HTTP_ERROR_CODE } from '#/integrations/tanstack-query/http'
 import { administratorListingQueryOptions } from '#/integrations/tanstack-query/queries/administrator'
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { loadOrNotFound } from '#/lib/load-or-not-found'
 import { m } from '#/paraglide/messages'
 

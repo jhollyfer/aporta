@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { guideSearchSchema, toPlaceParams } from './-search'
 import { storefrontPlacesQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { m } from '#/paraglide/messages'
 
 export const Route = createFileRoute('/_public/guide/')({

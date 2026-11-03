@@ -10,10 +10,11 @@ import { ActionButton } from '#/components/common/action-button'
 import { useSessionSignUpMutation } from '#/integrations/tanstack-query/mutations/authentication'
 import { m } from '#/paraglide/messages'
 
-import { applyAuthFailure } from '../../-components/apply-auth-failure'
+import { describeAuthFailure } from '#/lib/auth-failure'
+import { applyHTTPErrorToForm } from '#/lib/form-errors'
 import { AuthCard } from '../../-components/auth-card'
 import { FormNotice } from '#/components/common/form-notice'
-import { TextField } from '../../-components/text-field'
+import { AppField } from '#/integrations/react-hook-form/app-field'
 import { useEnterSession } from '../../-components/use-enter-session'
 
 /**
@@ -55,7 +56,9 @@ export function SignUpForm(): React.JSX.Element {
   })
 
   const signUp = useSessionSignUpMutation({
-    onError: (error) => applyAuthFailure(form, error, FIELDS),
+    onError: (error) => {
+      applyHTTPErrorToForm(form, FIELDS, describeAuthFailure(error, FIELDS))
+    },
     onSuccess: (_account, payload) =>
       signIn.mutate({ email: payload.email, password: payload.password }),
   })
@@ -88,21 +91,21 @@ export function SignUpForm(): React.JSX.Element {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-5"
       >
-        <TextField
+        <AppField
           control={form.control}
           name="name"
           type="text"
           label={m.auth_field_name()}
           autoComplete="name"
         />
-        <TextField
+        <AppField
           control={form.control}
           name="email"
           type="email"
           label={m.auth_field_email()}
           autoComplete="email"
         />
-        <TextField
+        <AppField
           control={form.control}
           name="password"
           type="password"
@@ -110,7 +113,7 @@ export function SignUpForm(): React.JSX.Element {
           hint={m.auth_field_password_hint()}
           autoComplete="new-password"
         />
-        <TextField
+        <AppField
           control={form.control}
           name="passwordConfirmation"
           type="password"

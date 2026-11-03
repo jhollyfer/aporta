@@ -5,7 +5,7 @@ import type {
 
 /**
  * Os campos do formulário do dono, que são as chaves do `OwnerListingCreate`. A edição os
- * passa a `applyOwnerFailure` para decidir o que é "erro de um campo" e o que é "erro
+ * passa a `applyHTTPErrorToForm` para decidir o que é "erro de um campo" e o que é "erro
  * geral": uma chave que a API acusar e que não esteja aqui não some, vira a mensagem geral.
  */
 export const OWNER_LISTING_FIELDS = [

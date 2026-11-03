@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { listingsSearchSchema, toListingParams } from './-search'
 import { storefrontListingsQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { m } from '#/paraglide/messages'
 
 /**

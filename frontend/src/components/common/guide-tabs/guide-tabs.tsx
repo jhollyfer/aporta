@@ -6,6 +6,7 @@ import type { PlaceCategory } from '@aporta/shared'
 
 import { PLACE_CATEGORY_LABELS } from '#/lib/labels'
 import { cn } from '#/lib/cn'
+import { m } from '#/paraglide/messages'
 
 /**
  * As abas do guia (Comer, Beber, Eventos, Serviços), como links para
@@ -21,7 +22,7 @@ export function GuideTabs({
   className?: string
 }): React.JSX.Element {
   return (
-    <nav aria-label="Categorias" className={className}>
+    <nav aria-label={m.guide_tabs_label()} className={className}>
       <ul className="flex flex-wrap gap-2">
         {PLACE_CATEGORIES.map((category) => (
           <li key={category}>

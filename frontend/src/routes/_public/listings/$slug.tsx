@@ -3,8 +3,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { NotFoundPage } from '#/components/common/not-found-page'
 import { HTTP_ERROR_CODE } from '#/integrations/tanstack-query/http'
 import { storefrontListingQueryOptions } from '#/integrations/tanstack-query/queries/storefront'
-import { OG_IMAGE_BY_TYPE, pageHead } from '#/lib/head'
+import { breadcrumbJsonLd, listingJsonLd } from '#/lib/json-ld'
+import { pageHead } from '#/lib/page-head'
 import { loadOrNotFound } from '#/lib/load-or-not-found'
+import { m } from '#/paraglide/messages'
 
 /**
  * O detalhe do imóvel. Anúncio que não existe é `notFound()` no loader, e a rota
@@ -30,7 +32,13 @@ export const Route = createFileRoute('/_public/listings/$slug')({
       path: `/listings/${listing.slug}`,
       title: listing.title,
       description: listing.description,
-      image: OG_IMAGE_BY_TYPE[listing.type],
+      jsonLd: [
+        breadcrumbJsonLd([
+          { name: m.nav_listings(), path: '/listings' },
+          { name: listing.title, path: `/listings/${listing.slug}` },
+        ]),
+        listingJsonLd(listing),
+      ],
     })
   },
   notFoundComponent: () => <NotFoundPage />,

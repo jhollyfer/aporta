@@ -2,15 +2,10 @@ import * as React from 'react'
 import { Controller } from 'react-hook-form'
 import type { Control, FieldValues, Path } from 'react-hook-form'
 
-import {
-  CONTROL,
-  Field,
-  errorId,
-  hintId,
-  invalidProps,
-} from '#/components/common/field'
+import { CONTROL, Field } from '#/components/common/field'
+import { errorId, hintId, invalidProps } from '#/lib/form-a11y'
 
-type TextFieldProps<TValues extends FieldValues> = {
+type AppFieldProps<TValues extends FieldValues> = {
   control: Control<TValues>
   name: Path<TValues>
   label: string
@@ -28,7 +23,7 @@ const INPUT_TRAITS = {
 } as const
 
 /**
- * Um campo de texto do formulário de conta: rótulo, dica, controle e erro ligados
+ * O binding único de campo de texto do formulário (`Controller` do RHF): rótulo, dica, controle e erro ligados
  * por `Field`, `invalidProps` e `errorId`. O `id` é o `name` do campo, e o erro e a
  * dica são apontados por `aria-describedby` (o leitor de tela lê os dois).
  *
@@ -36,14 +31,14 @@ const INPUT_TRAITS = {
  * valor é lido por narrowing: o RHF tipa `field.value` pelo caminho, e aqui todo
  * campo é texto.
  */
-export function TextField<TValues extends FieldValues>({
+export function AppField<TValues extends FieldValues>({
   control,
   name,
   label,
   hint,
   type,
   autoComplete,
-}: TextFieldProps<TValues>): React.JSX.Element {
+}: AppFieldProps<TValues>): React.JSX.Element {
   return (
     <Controller
       control={control}

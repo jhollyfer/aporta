@@ -1,24 +1,10 @@
-import type { ListingType } from '@aporta/shared'
-
 import { alternateLinks, localizedUrl } from './i18n'
+import { jsonLdScript } from './json-ld'
+import type { JsonLd } from './json-ld'
 import { SITE_TITLE, absoluteUrl } from './site'
 
-/** A prévia padrão de link: a panorâmica do rio (`scripts/generate-og.mjs`). */
+/** A prévia de link, a mesma em todas as páginas: o nome e a cidade em tipografia (`scripts/generate-og.mjs`). Nunca foto do dono, que mora em bucket privado, nem ilustração de imóvel. */
 export const DEFAULT_OG_IMAGE = '/og-image.png'
-
-/**
- * A prévia do link de um anúncio: a cena da fachada do tipo, a mesma que o card desenha
- * quando o dono não enviou foto. Nunca a foto do dono, que mora em bucket privado: uma prévia
- * pública dela vazaria o que ele não escolheu publicar. Os arquivos saem de
- * `scripts/generate-og.mjs`, e `head.test.ts` confere que cada um existe em `public/`.
- */
-export const OG_IMAGE_BY_TYPE: Record<ListingType, string> = {
-  HOUSE: '/og-house.png',
-  ROOM: '/og-house.png',
-  KITNET: '/og-building.png',
-  APARTMENT: '/og-building.png',
-  HOTEL: '/og-hotel.png',
-}
 
 /**
  * O `head` de uma página pública. A montagem mora aqui porque o site fala três
@@ -36,6 +22,8 @@ export type PageHead = {
   image?: string
   /** Página que não deve aparecer na busca: o 404. */
   noindex?: boolean
+  /** Dados estruturados da página (JSON-LD), um script por item. */
+  jsonLd?: ReadonlyArray<JsonLd>
 }
 
 type HeadEntries = Array<Record<string, string>>
@@ -51,7 +39,12 @@ export function pageHead({
   description,
   image,
   noindex = false,
-}: PageHead): { meta: HeadEntries; links: HeadEntries } {
+  jsonLd = [],
+}: PageHead): {
+  meta: HeadEntries
+  links: HeadEntries
+  scripts: Array<{ type: string; children: string }>
+} {
   const url = localizedUrl(path)
   const heading = fullTitle(title)
 
@@ -78,5 +71,6 @@ export function pageHead({
   return {
     meta,
     links: [{ rel: 'canonical', href: url }, ...alternateLinks(path)],
+    scripts: jsonLd.map((data) => jsonLdScript(data)),
   }
 }

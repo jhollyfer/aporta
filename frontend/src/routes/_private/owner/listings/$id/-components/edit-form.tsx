@@ -27,7 +27,8 @@ import { useSendPhotos } from '#/hooks/use-send-photos'
 import { useInvalidate } from '#/integrations/tanstack-query/invalidate'
 import { useOwnerListingUpdateMutation } from '#/integrations/tanstack-query/mutations/owner-listings'
 import { ownerListingQueryOptions } from '#/integrations/tanstack-query/queries/owner-listings'
-import { applyOwnerFailure } from '#/lib/apply-owner-failure'
+import { applyHTTPErrorToForm } from '#/lib/form-errors'
+import { describeOwnerFailure } from '#/lib/owner-failure'
 import { PHOTO_ENVIRONMENT_LABELS } from '#/lib/labels'
 import { OWNER_LISTING_FIELDS, listingToForm } from '#/lib/owner-listing-form'
 import { returnedReview } from '#/lib/returned-review'
@@ -112,7 +113,11 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
           setSaved(message)
         },
         onError: (error) => {
-          applyOwnerFailure(form, error, OWNER_LISTING_FIELDS)
+          applyHTTPErrorToForm(
+            form,
+            OWNER_LISTING_FIELDS,
+            describeOwnerFailure(error),
+          )
         },
       },
     )

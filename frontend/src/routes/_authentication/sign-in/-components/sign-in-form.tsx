@@ -9,10 +9,11 @@ import type { AuthenticationSessionSignInPayload } from '@aporta/shared'
 import { ActionButton } from '#/components/common/action-button'
 import { m } from '#/paraglide/messages'
 
-import { applyAuthFailure } from '../../-components/apply-auth-failure'
+import { describeAuthFailure } from '#/lib/auth-failure'
+import { applyHTTPErrorToForm } from '#/lib/form-errors'
 import { AuthCard } from '../../-components/auth-card'
 import { FormNotice } from '#/components/common/form-notice'
-import { TextField } from '../../-components/text-field'
+import { AppField } from '#/integrations/react-hook-form/app-field'
 import { useEnterSession } from '../../-components/use-enter-session'
 
 /**
@@ -40,7 +41,9 @@ export function SignInForm(): React.JSX.Element {
   })
 
   const signIn = useEnterSession({
-    onError: (error) => applyAuthFailure(form, error, FIELDS),
+    onError: (error) => {
+      applyHTTPErrorToForm(form, FIELDS, describeAuthFailure(error, FIELDS))
+    },
   })
 
   function onSubmit(payload: AuthenticationSessionSignInPayload): void {
@@ -72,14 +75,14 @@ export function SignInForm(): React.JSX.Element {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-5"
       >
-        <TextField
+        <AppField
           control={form.control}
           name="email"
           type="email"
           label={m.auth_field_email()}
           autoComplete="email"
         />
-        <TextField
+        <AppField
           control={form.control}
           name="password"
           type="password"

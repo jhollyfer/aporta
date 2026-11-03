@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { administratorReportsQueryOptions } from '#/integrations/tanstack-query/queries/administrator'
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { m } from '#/paraglide/messages'
 
 import { reportsSearchSchema, toReportParams } from './-search'

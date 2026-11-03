@@ -3,6 +3,7 @@ import {
   HTTP_STATUS,
 } from '#/integrations/tanstack-query/http'
 import type { HTTPError } from '#/integrations/tanstack-query/http'
+import type { FormFailure } from '#/lib/form-errors'
 import { m } from '#/paraglide/messages'
 
 /**
@@ -62,13 +63,6 @@ export function ownerFailureMessage(error: HTTPError): string {
   return m.http_unexpected_error()
 }
 
-export type OwnerFailure = {
-  /** Campo do formulário → mensagem. */
-  fields: Record<string, string>
-  /** O que não pertence a um campo; vazio quando só campos foram acusados. */
-  general: string
-}
-
 /**
  * Separa uma falha em "o que dizer em cada campo" e "o que dizer ao formulário todo":
  *
@@ -79,7 +73,7 @@ export type OwnerFailure = {
  *
  * Não toca no formulário: quem chama decide quais campos o formulário conhece.
  */
-export function describeOwnerFailure(error: HTTPError): OwnerFailure {
+export function describeOwnerFailure(error: HTTPError): FormFailure {
   const refusal = FIELD_REFUSALS[error.code]
 
   if (refusal !== undefined) {

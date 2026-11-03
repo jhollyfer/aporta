@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { m } from '#/paraglide/messages'
 
 /** O cadastro do dono. A tela mora em `index.lazy.tsx`; `noindex` porque ninguém procura esta página. */

@@ -30,7 +30,8 @@ import { useSendPhotos } from '#/hooks/use-send-photos'
 import { HTTPError } from '#/integrations/tanstack-query/http'
 import { useInvalidate } from '#/integrations/tanstack-query/invalidate'
 import { useOwnerListingCreateMutation } from '#/integrations/tanstack-query/mutations/owner-listings'
-import { applyOwnerFailure } from '#/lib/apply-owner-failure'
+import { applyHTTPErrorToForm } from '#/lib/form-errors'
+import { describeOwnerFailure } from '#/lib/owner-failure'
 import { readSession } from '#/lib/read-session'
 import { m } from '#/paraglide/messages'
 
@@ -199,7 +200,9 @@ function RouteComponent(): React.JSX.Element {
         await finish(listing)
       } catch (error) {
         if (!(error instanceof HTTPError)) throw error
-        goToFirstStepWith(applyOwnerFailure(form, error, FIELDS))
+        goToFirstStepWith(
+          applyHTTPErrorToForm(form, FIELDS, describeOwnerFailure(error)),
+        )
       }
     } finally {
       setChecking(false)

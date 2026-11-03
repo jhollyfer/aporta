@@ -10,7 +10,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import { ogLocale } from '#/lib/i18n'
 import { readNonce } from '#/lib/csp-nonce'
-import { DEFAULT_OG_IMAGE } from '#/lib/head'
+import { DEFAULT_OG_IMAGE } from '#/lib/page-head'
 import { SITE_TITLE, absoluteUrl } from '#/lib/site'
 import { m } from '#/paraglide/messages'
 import { getLocale } from '#/paraglide/runtime'

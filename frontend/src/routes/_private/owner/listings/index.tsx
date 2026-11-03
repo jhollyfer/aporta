@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ownerListingsQueryOptions } from '#/integrations/tanstack-query/queries/owner-listings'
-import { pageHead } from '#/lib/head'
+import { pageHead } from '#/lib/page-head'
 import { m } from '#/paraglide/messages'
 
 import { LISTINGS_PARAMS } from './-params'

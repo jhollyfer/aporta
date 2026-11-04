@@ -9,7 +9,6 @@ import type { OwnerListingCreate } from '@aporta/shared'
 
 import { ActionButton } from '#/components/common/action-button'
 import { FormNotice } from '#/components/common/form-notice'
-import { ListingPhoto } from '#/components/common/listing-photo'
 import {
   ContactStep,
   PlaceStep,
@@ -29,10 +28,11 @@ import { useOwnerListingUpdateMutation } from '#/integrations/tanstack-query/mut
 import { ownerListingQueryOptions } from '#/integrations/tanstack-query/queries/owner-listings'
 import { applyHTTPErrorToForm } from '#/lib/form-errors'
 import { describeOwnerFailure } from '#/lib/owner-failure'
-import { PHOTO_ENVIRONMENT_LABELS } from '#/lib/labels'
 import { OWNER_LISTING_FIELDS, listingToForm } from '#/lib/owner-listing-form'
 import { returnedReview } from '#/lib/returned-review'
 import { m } from '#/paraglide/messages'
+
+import { PhotoGallery } from './photo-gallery'
 
 const SAVED_MESSAGES = {
   saved: () => m.owner_edit_saved(),
@@ -65,8 +65,8 @@ function Section({
  * assumida: apagar a diária ou as regras não as remove, porque campo em branco conta como
  * "não mexer" na API.
  *
- * As fotos já enviadas aparecem só para leitura: a API permite adicionar (até
- * `LISTING_PHOTOS_MAX`) e não tem rota para remover ou reordenar.
+ * As fotos já enviadas ficam em `PhotoGallery` (reordenar e remover, ações próprias do servidor,
+ * fora do `PUT` do formulário); aqui só se adiciona, até `LISTING_PHOTOS_MAX`.
  */
 export function EditForm({ id }: { id: string }): React.JSX.Element {
   const { data: listing } = useSuspenseQuery(ownerListingQueryOptions(id))
@@ -212,24 +212,7 @@ export function EditForm({ id }: { id: string }): React.JSX.Element {
       </form>
 
       <Section title={m.step_photos()}>
-        {listing.photos.length > 0 && (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {listing.photos.map((photo) => (
-              <li key={photo.id} className="flex flex-col gap-1.5">
-                <div className="aspect-[4/3] overflow-hidden rounded-xl">
-                  <ListingPhoto
-                    photo={photo}
-                    listingType={listing.type}
-                    title={listing.title}
-                  />
-                </div>
-                <p className="text-xs font-bold text-ink-soft">
-                  {PHOTO_ENVIRONMENT_LABELS[photo.environment]()}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <PhotoGallery listing={listing} />
         <p className="text-sm text-ink-soft">
           {m.owner_edit_photos_note({
             count: listing.photos.length,

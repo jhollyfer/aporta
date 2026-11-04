@@ -9,12 +9,15 @@
 
 import {
   OwnerListingPhotoCreateResponse,
+  OwnerListingPhotoReorderResponse,
   OwnerListingShowResponse,
 } from '@aporta/shared'
 import type {
   Merge,
   OwnerListingCreate,
   OwnerListingPhotoCreatePayload,
+  OwnerListingPhotoDeletePayload,
+  OwnerListingPhotoReorderPayload,
   OwnerListingUpdatePayload,
 } from '@aporta/shared'
 import { useMutation } from '@tanstack/react-query'
@@ -99,6 +102,59 @@ export function useOwnerListingPhotosMutation(
         {
           method: 'POST',
           body: JSON.stringify({ photos }),
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+/**
+ * Tira uma foto do anúncio: o servidor responde 204, as seguintes sobem uma posição e o
+ * binário só sai do bucket se nenhuma outra foto o usa. As variáveis são o par que a rota leva.
+ */
+export function useOwnerListingPhotoDeleteMutation(
+  options?: MutationProps<void, OwnerListingPhotoDeletePayload>,
+): UseMutationResult<void, HTTPError, OwnerListingPhotoDeletePayload> {
+  return useMutation<void, HTTPError, OwnerListingPhotoDeletePayload>({
+    ...options,
+    mutationFn: ({ id, photoId }) =>
+      requestVoid(
+        '/owner/listings/'.concat(
+          encodeURIComponent(id),
+          '/photos/',
+          encodeURIComponent(photoId),
+        ),
+        { method: 'DELETE', ...WITH_SESSION },
+      ),
+  })
+}
+
+type ReorderVariables = Merge<OwnerListingPhotoReorderPayload, { id: string }>
+
+/**
+ * Grava a nova ordem da galeria: os ids de **todas** as fotos, da capa à última. A resposta
+ * é o anúncio inteiro, com as fotos na ordem que o servidor guardou.
+ */
+export function useOwnerListingPhotoReorderMutation(
+  options?: MutationProps<OwnerListingPhotoReorderResponse, ReorderVariables>,
+): UseMutationResult<
+  OwnerListingPhotoReorderResponse,
+  HTTPError,
+  ReorderVariables
+> {
+  return useMutation<
+    OwnerListingPhotoReorderResponse,
+    HTTPError,
+    ReorderVariables
+  >({
+    ...options,
+    mutationFn: ({ id, photoIds }) =>
+      request(
+        OwnerListingPhotoReorderResponse,
+        '/owner/listings/'.concat(encodeURIComponent(id), '/photos/order'),
+        {
+          method: 'PUT',
+          body: JSON.stringify({ photoIds }),
           ...WITH_SESSION,
         },
       ),

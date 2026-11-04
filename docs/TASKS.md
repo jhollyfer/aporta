@@ -71,19 +71,20 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 4.2 | Teto de upload próprio para foto e lista de tipos só de imagem | Alta | Feita | `LISTING_PHOTO_MIMETYPES` (JPEG, PNG, WebP) e `LISTING_PHOTO_MAX_SIZE` (10 MB) em `shared/`; a recusa é ao anexar (`POST /owner/listings/:id/photos`, 422 `LISTING_PHOTO_TYPE_INVALID` e `LISTING_PHOTO_TOO_LARGE`) e o seletor do front recusa antes de enviar; `POST /storages` e o avatar seguem com a lista e o teto genéricos (`DECISIONS.md` #31) |
 | 4.3 | Passo de fotos do cadastro envia por ambiente pelo fluxo multipart | Alta | Feita | escrita e testada no navegador até a escolha, prévia e remoção; **o envio ao bucket não foi exercitado** (sem MinIO), nem o CORS do bucket expondo `ETag` |
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
-| 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Ainda sem chamador: remover foto e excluir anúncio de vez usam o ponto (`DECISIONS.md` #32) |
+| 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Chamado ao remover foto (5.8); excluir anúncio de vez ainda não existe e usará o mesmo ponto (`DECISIONS.md` #32) |
 
-## Fase 5 · Dono, verificação e moderação (7/7)
+## Fase 5 · Dono, verificação e moderação (8/8)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
 | 5.1 | Definir como nasce a conta `OWNER` (cadastro com e-mail ou convite) | Alta | Feita | cadastro aberto, sem confirmação de e-mail até haver provedor (6.x); `DECISIONS.md` #12 |
 | 5.2 | Entrada do dono na tela e rota privada com guarda | Alta | Feita | `_authentication` e `_private`, `E2E` em `auth.spec.ts` |
-| 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | Feita | `_private/owner/listings`; a API só adiciona foto, não remove nem reordena |
+| 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | Feita | `_private/owner/listings`; fotos: anexar, remover e reordenar (5.8) |
 | 5.4 | Verificação do dono e selo "dono verificado" | Alta | Feita | a equipe marca `users.verified_at`; o selo vem da conta. O critério de verificação (documento, visita, WhatsApp) segue em aberto no `PRD.md` §8 |
 | 5.5 | Moderação de anúncio (aprovar, pedir ajuste, arquivar) | Alta | Feita | moderação antes de publicar (`DECISIONS.md` #14); sem apagar de vez, ver 4.5 |
 | 5.6 | Política de anúncio parado (prazo sem atualização) | Média | Feita | a tela só mostra "atualizado há X dias"; o prazo para tirar do ar continua pergunta aberta no `PRD.md` §8 e não há rotina que tire anúncio |
 | 5.7 | Canal de denúncia de golpe e WhatsApp institucional | Média | Feita | denúncia pública e fila da equipe; **o WhatsApp institucional continua sem número** (`PRD.md` §8) |
+| 5.8 | Remover e reordenar as fotos do próprio anúncio | Média | Feita | `DELETE /owner/listings/:id/photos/:photoId` (204) e `PUT /owner/listings/:id/photos/order` (200, anúncio inteiro); regras em `Listing.removePhoto` e `Listing.reorderPhotos`; `StorageOrphans.sweep` depois de remover; botões "Subir", "Descer" e "Remover" (com `ConfirmDialog`) na edição; `DECISIONS.md` #33 |
 
 ## Fase 6 · E-mail e fila (0/3)
 

@@ -88,7 +88,7 @@ A lista e o mapa mostram até 100 anúncios de uma vez; acima disso falta pagina
 **Sucesso:** o anúncio é criado em análise (nunca no ar sozinho), as fotos sobem e a tela diz que a equipe vai revisar; o rascunho é apagado e há o caminho para "Meus anúncios".
 **Falha:** mantém o formulário preenchido e leva o dono à primeira etapa com erro. Sem sessão no último passo, o rascunho é guardado e a pessoa vai para o login, voltando ao cadastro depois. Se as fotos falharem, o anúncio já existe e a tela repete só o envio das fotos.
 
-As fotos escolhidas não ficam no rascunho (o arquivo não cabe no `localStorage`): quem é mandado ao login no último passo escolhe as fotos de novo. Em "Meus anúncios" o dono edita os dados, adiciona fotos e arquiva; remover ou reordenar foto ainda não existe na API.
+As fotos escolhidas não ficam no rascunho (o arquivo não cabe no `localStorage`): quem é mandado ao login no último passo escolhe as fotos de novo. Em "Meus anúncios" o dono edita os dados, adiciona, reordena e remove fotos e arquiva. Cada foto tem "Subir", "Descer" (botões com rótulo, sem precisar arrastar; a primeira é a capa) e "Remover" (pede confirmação). Mexer nas fotos grava na hora, sem o botão "Salvar alterações", e não muda o estado do anúncio: só salvar o formulário reenvia à análise um anúncio recusado (`DECISIONS.md` #33).
 
 | # | Usuário faz | Sistema responde | Tela |
 |---|---|---|---|

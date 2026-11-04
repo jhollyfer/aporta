@@ -12,6 +12,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Adicionado
 
+- O dono pode remover e reordenar as fotos do próprio anúncio na edição: "Subir", "Descer" e "Remover" (com confirmação) em cada foto, a primeira é a capa. A API ganhou `DELETE /owner/listings/:id/photos/:photoId` e `PUT /owner/listings/:id/photos/order`; ordem que não traga exatamente as fotos do anúncio responde 422 (`LISTING_PHOTOS_ORDER_INVALID`). A imagem só sai do armazenamento quando nenhum outro anúncio a usa.
 - Foto de anúncio só aceita JPEG, PNG ou WebP, até 10 MB cada. O formulário avisa antes de enviar e a API recusa com 422 (`LISTING_PHOTO_TYPE_INVALID`, `LISTING_PHOTO_TOO_LARGE`) nos três idiomas.
 - Os anúncios de demonstração ganharam fotos (fachada, quarto, banheiro, cozinha e sala), de banco de imagens livre e sem pessoas; anúncio real segue só com as fotos do dono.
 

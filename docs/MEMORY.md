@@ -24,7 +24,7 @@
 
 ## Parou em
 
-2026-11-04 (fotos): tarefas 4.2 e 4.5 feitas. Teto e tipos de foto em `shared/` (`DECISIONS.md` #31); `StorageOrphans.sweep` pronto e testado, mas sem chamador (#32). Próximo: remover foto de um anúncio e excluir anúncio de vez devem soltar a referência e chamar o `sweep`.
+2026-11-04 (fotos, remover e reordenar): tarefa 5.8 feita (`DECISIONS.md` #33). `StorageOrphans.sweep` agora tem chamador (remover foto); falta o chamador de "excluir anúncio de vez", que ainda não existe. Antes disso: tarefas 4.2 e 4.5 feitas. Teto e tipos de foto em `shared/` (`DECISIONS.md` #31); `StorageOrphans.sweep` pronto e testado, mas sem chamador (#32). Próximo: remover foto de um anúncio e excluir anúncio de vez devem soltar a referência e chamar o `sweep`.
 
 2026-11-04 (depois): as fotos da demonstração caíam no CSP em produção. O `STORAGE_PUBLIC_URL` estava com o host do endpoint R2, mas sem `STORAGE_FORCE_PATH_STYLE` o SDK assina `https://aporta.<conta>.r2.cloudflarestorage.com/...`. Doc corrigida (`ENV.md`, `frontend/src/env.ts`); a correção da régua está na branch `docs/regua-storage-public-url` do `maiyu-pattern`, sem push (o classificador recusou o push direto na `main` do upstream). Falta o dono trocar o valor no Coolify.
 

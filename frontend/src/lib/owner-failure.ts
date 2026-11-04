@@ -44,6 +44,8 @@ const GENERAL_REFUSALS: Record<string, () => string> = {
   STORAGE_NOT_FOUND: () => m.owner_error_photo_file(),
   LISTING_PHOTO_TYPE_INVALID: () => m.owner_error_photo_type(),
   LISTING_PHOTO_TOO_LARGE: () => m.owner_error_photo_size(),
+  LISTING_PHOTO_NOT_FOUND: () => m.owner_error_photo_not_found(),
+  LISTING_PHOTOS_ORDER_INVALID: () => m.owner_error_photo_order(),
   LISTING_ALREADY_ARCHIVED: () => m.owner_error_already_archived(),
   [HTTP_ERROR_CODE.LISTING_NOT_FOUND]: () => m.owner_error_not_found(),
 }

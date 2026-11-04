@@ -42,6 +42,10 @@ export type ScannedRoutes = {
     'administrator.owners.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
     'administrator.reports.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.users.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.users.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.users.change_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.users.change_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.create': { paramsTuple?: []; params?: {} }
     'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -67,6 +71,8 @@ export type ScannedRoutes = {
     'administrator.places.paginate': { paramsTuple?: []; params?: {} }
     'administrator.places.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.users.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.users.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -89,6 +95,8 @@ export type ScannedRoutes = {
     'administrator.places.paginate': { paramsTuple?: []; params?: {} }
     'administrator.places.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.users.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.users.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -115,6 +123,8 @@ export type ScannedRoutes = {
     'administrator.places.unarchive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.owners.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.users.change_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.users.change_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

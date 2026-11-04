@@ -236,6 +236,30 @@ const routes = {
     tokens: [[0,"administrator"],[0,"reports"],[1,"id"],[0,"resolution"]],
     types: placeholder as Registry['administrator.reports.resolve']['types'],
   },
+  'administrator.users.paginate': {
+    methods: ["GET","HEAD"],
+    pattern: '/administrator/users',
+    tokens: [[0,"administrator"],[0,"users"]],
+    types: placeholder as Registry['administrator.users.paginate']['types'],
+  },
+  'administrator.users.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/administrator/users/:id',
+    tokens: [[0,"administrator"],[0,"users"],[1,"id"]],
+    types: placeholder as Registry['administrator.users.show']['types'],
+  },
+  'administrator.users.change_role': {
+    methods: ["PUT"],
+    pattern: '/administrator/users/:id/role',
+    tokens: [[0,"administrator"],[0,"users"],[1,"id"],[0,"role"]],
+    types: placeholder as Registry['administrator.users.change_role']['types'],
+  },
+  'administrator.users.change_status': {
+    methods: ["PUT"],
+    pattern: '/administrator/users/:id/status',
+    tokens: [[0,"administrator"],[0,"users"],[1,"id"],[0,"status"]],
+    types: placeholder as Registry['administrator.users.change_status']['types'],
+  },
   'storages.paginate': {
     methods: ["GET","HEAD"],
     pattern: '/storages',

@@ -24,6 +24,8 @@
 
 ## Parou em
 
+2026-11-04 (contas pelo administrador): tarefas 5.12 e 5.13 feitas (`DECISIONS.md` #36). `administrator/users` (paginate com `?role`, `?status`, `?search`; show; `PUT :id/role`; `PUT :id/status`) só do administrador, com as regras na entidade `User` (`changeRole`, `changeStatus`). `UserRepository.countActiveAdministrators` e `ListingRepository.existsLiveByOwner` são os fatos que o use-case lê (`_shared.user-access.ts`). Painel `/administrator/users` e `/administrator/users/:id`, aba "Contas" só do administrador. A suspensão já derrubava sessão e barrava login e renovação; ganhou E2E. Falta: teste de navegador (Playwright), trava contra a corrida de dois administradores se rebaixando, e uma decisão sobre os anúncios de dono suspenso (seguem no ar).
+
 2026-11-04 (guia pela equipe): tarefas 5.10 e 5.11 feitas (`DECISIONS.md` #35). `administrator/places` (paginate com `?trashed`, show, create, update, archive, unarchive e `:id/permanent` só do administrador) e o painel `/administrator/places` (lista com aba, busca e arquivados; formulário; arquivar, restaurar e excluir de vez). A entidade `Place` ganhou `change`, `archive`, `unarchive` e `ensureErasable`. O texto do lugar é em português só (a tabela não tem três idiomas). `QueueSearch` subiu para `components/common/queue-search`. Falta um teste de navegador (Playwright) do painel do guia.
 
 2026-11-04 (excluir de vez): tarefa 5.9 feita (`DECISIONS.md` #34). `DELETE /administrator/listings/:id/permanent`, só ADMINISTRATOR, só anúncio arquivado e sem denúncia; fotos por `CASCADE` e bucket por `StorageOrphans.sweep`, o chamador que faltava. Botão "Excluir de vez" no painel da equipe. Denúncia mantém `RESTRICT`: anúncio denunciado só chega a arquivado.

@@ -205,9 +205,10 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 |---|---|---|
 | visitante | ver busca, detalhe, guia, e abrir o WhatsApp; ler `/storefront` sem sessão | qualquer rota autenticada |
 | `OWNER` | ver e editar a própria conta | `/storages` e a documentação da API |
-| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar de vez anúncio ou lugar do guia (403 em `DELETE /administrator/listings/:id/permanent` e em `DELETE /administrator/places/:id/permanent`), gerir contas (regra do papel; ainda sem rotas) |
-| `ADMINISTRATOR` | tudo o que a equipe faz, apagar de vez o anúncio arquivado e sem denúncia (`DECISIONS.md` #34) e o lugar arquivado (#35) | |
+| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar de vez anúncio ou lugar do guia (403 em `DELETE /administrator/listings/:id/permanent` e em `DELETE /administrator/places/:id/permanent`), gerir contas (403 em tudo de `/administrator/users`, #36) |
+| `ADMINISTRATOR` | tudo o que a equipe faz, apagar de vez o anúncio arquivado e sem denúncia (`DECISIONS.md` #34) e o lugar arquivado (#35), e gerir contas: mudar o papel e suspender ou reativar (#36) | mudar o papel ou suspender a própria conta (409), deixar a plataforma sem administrador ativo (409), tirar do papel de dono quem tem anúncio fora da lixeira (409) |
 
+- Papel e suspensão (#36): a lista e o detalhe de conta saem por allowlist (id, nome, e-mail, papel, status, selo e datas; nunca senha, hash nem sessão). Mudar o papel e suspender derrubam as sessões da conta (CWE-613); a conta suspensa recebe o mesmo 401 de senha errada no login, não renova o token e o guard a barra a cada requisição, mesmo com cookie válido. O único risco restante é a corrida entre dois administradores se rebaixando juntos (a contagem do último administrador é lida antes da gravação, sem trava).
 - `/storages` fica fechado à equipe até existir policy de posse por dono (`DECISIONS.md` #2).
 
 ## 5. Entrada e saída

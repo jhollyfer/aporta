@@ -130,6 +130,17 @@ const tags: TagRule[] = [
     plural: 'denúncias',
   },
   {
+    prefix: '/administrator/users',
+    name: 'Administrador · Contas',
+    description:
+      'A gestão de contas, só do `ADMINISTRATOR` (moderador e dono recebem `403`). Lista e lê as ' +
+      'contas, muda o papel (`OWNER`, `MODERATOR`, `ADMINISTRATOR`) e suspende ou reativa o acesso. ' +
+      'Mudar o papel ou suspender derruba as sessões da conta. O administrador não muda a própria ' +
+      'conta, a plataforma nunca fica sem administrador ativo, e dono com anúncio não vira equipe.',
+    singular: 'conta',
+    plural: 'contas',
+  },
+  {
     prefix: '/storefront/reports',
     name: 'Vitrine · Denúncias',
     description:

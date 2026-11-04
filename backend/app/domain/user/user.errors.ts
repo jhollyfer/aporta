@@ -13,5 +13,20 @@ export type UserNotArchived = { readonly code: 'USER_NOT_ARCHIVED' }
 /** The seal is for the people who advertise: staff and archived accounts do not carry it. */
 export type UserNotVerifiable = { readonly code: 'USER_NOT_VERIFIABLE' }
 
+/** The administrator changing the role or the status of the account they are signed in with. */
+export type UserOwnAccessChange = { readonly code: 'USER_OWN_ACCESS_CHANGE' }
+
+/** The change would leave the platform without a single active administrator. */
+export type UserLastAdministrator = {
+  readonly code: 'USER_LAST_ADMINISTRATOR'
+}
+
+/** An owner who still has an ad outside the trash cannot become staff: staff has no ads of its own. */
+export type UserOwnsListings = { readonly code: 'USER_OWNS_LISTINGS' }
+
+/** What an access change (role or status) refuses. */
+export type UserAccessError =
+  UserOwnAccessChange | UserLastAdministrator | UserOwnsListings
+
 export type UserError =
-  UserAlreadyArchived | UserNotArchived | UserNotVerifiable
+  UserAlreadyArchived | UserNotArchived | UserNotVerifiable | UserAccessError

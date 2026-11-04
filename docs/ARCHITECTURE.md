@@ -229,8 +229,9 @@ abandonado é limpo pelo comando `node ace storages:prune` (`ARCHITECTURE.md` §
   /authentication/sign-out` apaga. O cookie leva `Secure` em produção e `COOKIE_DOMAIN` quando app
   e API estão em hosts diferentes.
 - Papéis (`USER_ROLE`): `ADMINISTRATOR` (nasce só do seeder, único que apaga de vez anúncio (`DELETE /administrator/listings/:id/permanent`, só o arquivado e sem denúncia, `DECISIONS.md` #34) e lugar do guia (`DELETE /administrator/places/:id/permanent`, só o arquivado, #35)), `MODERATOR`
-  (revisa e arquiva anúncios, mantém o guia de lugares e arquiva lugares, sem apagar de vez nem gerir contas) e `OWNER` (dono de
+  (revisa e arquiva anúncios, mantém o guia de lugares e arquiva lugares, sem apagar de vez nem gerir contas: `/administrator/users` é só do administrador, `DECISIONS.md` #36) e `OWNER` (dono de
   imóvel: gere só o que é seu e não opera o painel). Quem opera o painel é `STAFF_USER_ROLES`.
+- Contas (`administrator/users`, #36): só `ADMINISTRATOR` lista, lê, muda o papel e suspende ou reativa (`middleware.role` no grupo da rota). A entidade `User` recusa mudar a própria conta, deixar a plataforma sem administrador ativo e tirar do papel de dono quem ainda tem anúncio fora da lixeira (409). Mudar papel ou suspender derruba as sessões; a conta suspensa não entra, não renova e o guard (`CookieAccessTokensGuard`) a barra a cada requisição.
 - O grupo `/storages` exige sessão e papel de equipe: nenhuma ação de arquivo checa posse por dono
   ainda (`DECISIONS.md` #2).
 - Não há cadastro: nenhuma rota cria conta hoje, e a primeira conta nasce do seeder fora de

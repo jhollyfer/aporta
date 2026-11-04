@@ -70,6 +70,12 @@ export interface ApiDefinition {
       paginate: typeof routes['administrator.reports.paginate']
       resolve: typeof routes['administrator.reports.resolve']
     }
+    users: {
+      paginate: typeof routes['administrator.users.paginate']
+      show: typeof routes['administrator.users.show']
+      changeRole: typeof routes['administrator.users.change_role']
+      changeStatus: typeof routes['administrator.users.change_status']
+    }
   }
   storages: {
     paginate: typeof routes['storages.paginate']

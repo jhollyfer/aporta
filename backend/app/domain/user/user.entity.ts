@@ -10,6 +10,7 @@ import {
 } from '@aporta/shared'
 
 import type {
+  UserAccessError,
   UserAlreadyArchived,
   UserNotArchived,
   UserNotVerifiable,
@@ -63,6 +64,17 @@ export type UserCredentials = {
   readonly password: string | null
   /** Whether the account's open sessions drop along with the save. */
   readonly revokeSessions: boolean
+}
+
+/**
+ * What the entity cannot know by itself and the administrator's access change depends on: who is
+ * acting, how many active administrators exist (this account included, when it is one) and whether
+ * the account still has an ad outside the trash. The use-case reads them from the repositories.
+ */
+export type AccessChangeContext = {
+  readonly actorId: string
+  readonly activeAdministrators: number
+  readonly hasLiveListings: boolean
 }
 
 /**
@@ -131,6 +143,79 @@ export default class User {
     if (patch.avatarId !== undefined) this.props.avatarId = patch.avatarId
 
     return this
+  }
+
+  /**
+   * The administrator gives the account another role. Refuses, in this order: the account of the
+   * administrator himself (nobody demotes themselves by accident, and a mistaken click would lock
+   * the panel); an owner who still has an ad outside the trash (staff has no ads of its own, and the
+   * ad would be left without anyone who may edit it); and the last active administrator. Asking for
+   * the role the account already has changes nothing and is not an error. A new role drops the
+   * sessions (`update`).
+   */
+  changeRole(
+    role: UserRole,
+    context: AccessChangeContext,
+  ): Either<UserAccessError, User> {
+    if (role === this.props.role) return right(this)
+
+    const refusal = this.accessRefusal(context, {
+      leavesOwnership: this.props.role === USER_ROLE.OWNER,
+      leavesAdministration: role !== USER_ROLE.ADMINISTRATOR,
+    })
+    if (refusal) return left(refusal)
+
+    return right(this.update({ role }))
+  }
+
+  /**
+   * Suspends (`INACTIVE`) or reactivates (`ACTIVE`) the account. Suspending follows the same
+   * refusals as a demotion, except the ad rule: a suspended owner keeps the ads, only the sign-in
+   * is gone. Suspending drops the sessions (`update`); reactivating changes nothing else.
+   */
+  changeStatus(
+    status: ActiveStatus,
+    context: AccessChangeContext,
+  ): Either<UserAccessError, User> {
+    if (status === this.props.status) return right(this)
+
+    if (status === ACTIVE_STATUS.ACTIVE) return right(this.update({ status }))
+
+    const refusal = this.accessRefusal(context, {
+      leavesOwnership: false,
+      leavesAdministration: true,
+    })
+    if (refusal) return left(refusal)
+
+    return right(this.update({ status }))
+  }
+
+  private accessRefusal(
+    context: AccessChangeContext,
+    leaves: {
+      readonly leavesOwnership: boolean
+      readonly leavesAdministration: boolean
+    },
+  ): UserAccessError | null {
+    if (context.actorId === this.props.id)
+      return { code: 'USER_OWN_ACCESS_CHANGE' }
+
+    if (leaves.leavesOwnership && context.hasLiveListings)
+      return { code: 'USER_OWNS_LISTINGS' }
+
+    const administers =
+      this.props.role === USER_ROLE.ADMINISTRATOR &&
+      this.props.status === ACTIVE_STATUS.ACTIVE &&
+      this.props.deletedAt === null
+
+    if (
+      administers &&
+      leaves.leavesAdministration &&
+      context.activeAdministrators <= 1
+    )
+      return { code: 'USER_LAST_ADMINISTRATOR' }
+
+    return null
   }
 
   /**

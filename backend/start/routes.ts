@@ -234,7 +234,8 @@ router
 
 /**
  * The staff's side of the moderation: the queue of ads, the owner's seal, the scam reports and
- * the city guide the team keeps (`places`).
+ * the city guide the team keeps (`places`), plus the accounts (`users`), which only the
+ * `ADMINISTRATOR` reaches.
  * Open to `ADMINISTRATOR` and `MODERATOR` alike (`docs/PRD.md` §8 leaves open who composes the
  * team; the role lists below are the place to narrow it). The `OWNER` never enters: an owner
  * reviewing ads would be reviewing his own.
@@ -307,6 +308,23 @@ router
       })
       .prefix('reports')
       .as('reports')
+
+    // The accounts are the ADMINISTRATOR's alone: the group lets the moderator through, so the
+    // whole block narrows the roles, the same convention as `DELETE :id/permanent`.
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.users.paginate.Paginate])
+        router.get(':id', [controllers.administrator.users.show.Show])
+        router.put(':id/role', [
+          controllers.administrator.users.changeRole.ChangeRole,
+        ])
+        router.put(':id/status', [
+          controllers.administrator.users.changeStatus.ChangeStatus,
+        ])
+      })
+      .prefix('users')
+      .as('users')
+      .use(middleware.role([USER_ROLE.ADMINISTRATOR]))
   })
   .prefix('administrator')
   .as('administrator')

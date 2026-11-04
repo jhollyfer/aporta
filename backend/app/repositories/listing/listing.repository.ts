@@ -167,6 +167,9 @@ export default abstract class ListingRepository {
     criteria: ListingReviewCriteria,
   ): Promise<Paginated<ListingRecord>>
 
+  /** Whether the account has an ad outside the trash, whatever its status: the rule that keeps an owner from becoming staff. */
+  abstract existsLiveByOwner(ownerId: string): Promise<boolean>
+
   abstract paginateOwned(
     criteria: ListingOwnedCriteria,
   ): Promise<Paginated<ListingRecord>>

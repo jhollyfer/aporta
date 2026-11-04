@@ -310,6 +310,23 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.equal(await repository.countAlive(), before + 2)
     })
 
+    test('when counting the active administrators, suspended, archived and other roles do not count', async ({
+      assert,
+    }) => {
+      const { repository } = await make()
+      const before = await repository.countActiveAdministrators()
+      const admin = (extra: Parameters<typeof userDraft>[0] = {}) =>
+        userDraft({ role: USER_ROLE.ADMINISTRATOR, ...extra })
+
+      await repository.save(admin())
+      await repository.save(admin({ status: ACTIVE_STATUS.INACTIVE }))
+      await repository.save(userDraft({ role: USER_ROLE.MODERATOR }))
+      await repository.save(userDraft())
+      await archived(repository, admin())
+
+      assert.equal(await repository.countActiveAdministrators(), before + 1)
+    })
+
     test('when deleting, no read finds it and the sessions go along', async ({
       assert,
     }) => {

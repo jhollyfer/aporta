@@ -127,6 +127,16 @@ export default class ListingLucidRepository extends ListingRepository {
     return LucidMapping.page(query, criteria, (row) => this.toRecord(row))
   }
 
+  async existsLiveByOwner(ownerId: string): Promise<boolean> {
+    const row = await ListingModel.query()
+      .withScopes((scopes) => scopes.notDeleted())
+      .where('ownerId', ownerId)
+      .select('id')
+      .first()
+
+    return row !== null
+  }
+
   async paginateOwned(
     criteria: ListingOwnedCriteria,
   ): Promise<Paginated<ListingRecord>> {

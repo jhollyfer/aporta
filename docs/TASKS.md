@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 79 tarefas · 52 feitas · 0 em andamento · 4 bloqueadas · 23 a fazer, atualizado 2026-11-04
+**Resumo:** 81 tarefas · 54 feitas · 0 em andamento · 4 bloqueadas · 23 a fazer, atualizado 2026-11-04
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -73,7 +73,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
 | 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Chamado ao remover foto (5.8); excluir anúncio de vez ainda não existe e usará o mesmo ponto (`DECISIONS.md` #32) |
 
-## Fase 5 · Dono, verificação e moderação (11/11)
+## Fase 5 · Dono, verificação e moderação (13/13)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -89,6 +89,8 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 
 | 5.10 | A equipe mantém o guia da cidade: API | Alta | Feita | `administrator/places/`: `GET` (com `?category`, `?search`, `?trashed`), `GET :id`, `POST`, `PUT :id`, `DELETE :id` (arquivar), `PUT :id/unarchive` e `DELETE :id/permanent` (só o administrador, só o arquivado); `DECISIONS.md` #35; a vitrine continua sem o arquivado |
 | 5.11 | A equipe mantém o guia da cidade: painel | Alta | Feita | `/administrator/places` (lista com aba, busca, arquivados e página na URL), `/administrator/places/new` e `/administrator/places/:id` (formulário com o validator do `shared/`); arquivar e excluir de vez com `ConfirmDialog`, restaurar na lista de arquivados; "Excluir de vez" só para o administrador; item "Guia" no menu da equipe; sem teste de navegador (Playwright) ainda |
+| 5.12 | O administrador gere contas: API | Alta | Feita | `administrator/users/`: `GET` (`?role`, `?status`, `?search`, `?sort`), `GET :id`, `PUT :id/role` e `PUT :id/status`; só `ADMINISTRATOR` (403 ao moderador e ao dono). Regras na entidade `User` (`changeRole`, `changeStatus`): não muda a própria conta, não deixa a plataforma sem administrador ativo, dono com anúncio fora da lixeira não vira equipe (409); mudar papel ou suspender derruba as sessões. Conta suspensa já não entrava nem renovava (`canOpenSession`, guard a cada requisição); ganhou teste. `DECISIONS.md` #36 |
+| 5.13 | O administrador gere contas: painel | Alta | Feita | `/administrator/users` (lista com papel, status, busca e página na URL) e `/administrator/users/:id` (troca de papel e suspender/reativar, com `ConfirmDialog`); aba "Contas" só para o administrador, e o moderador que digita o endereço volta à fila de anúncios. Falta teste de navegador (Playwright). Criar conta de equipe pela API ficou de fora: segue só pelo `staff:create` |
 
 ## Fase 6 · E-mail e fila (0/3)
 

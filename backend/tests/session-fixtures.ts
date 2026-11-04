@@ -137,3 +137,19 @@ export async function authenticateAsOwnerAccount(
     userId: user.id,
   }
 }
+
+/**
+ * A new administrator account, signed in, together with its id. `authenticateAsAdministrator` is
+ * the seeded one and hides the account; the specs about "an administrator acting on himself" or
+ * on a second administrator need the id, and a second administrator to exist.
+ */
+export async function authenticateAsAdministratorAccount(
+  client: ApiClient,
+): Promise<OwnerAccount> {
+  const user = await UserFactory.apply('administrator').create()
+
+  return {
+    session: await authenticate(client, user.email, FACTORY_PASSWORD),
+    userId: user.id,
+  }
+}

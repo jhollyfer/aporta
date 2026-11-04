@@ -52,6 +52,9 @@ export default abstract class UserRepository {
   /** How many are outside the trash: the panel counter. */
   abstract countAlive(): Promise<number>
 
+  /** How many live `ADMINISTRATOR` accounts can still sign in: the count the last-administrator rule reads. */
+  abstract countActiveAdministrators(): Promise<number>
+
   abstract findById(id: string, trashed?: TrashedMode): Promise<User | null>
 
   /** Who occupies the email, live or archived: creation reuses the archived one. */

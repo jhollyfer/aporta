@@ -95,5 +95,12 @@
   "ADMINISTRATOR_PLACE_UPDATE_ERROR": "Error interno del servidor",
   "ADMINISTRATOR_PLACE_ARCHIVE_ERROR": "Error interno del servidor",
   "ADMINISTRATOR_PLACE_UNARCHIVE_ERROR": "Error interno del servidor",
-  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Error interno del servidor"
+  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Error interno del servidor",
+  "USER_OWN_ACCESS_CHANGE": "No puedes cambiar el rol ni suspender tu propia cuenta",
+  "USER_LAST_ADMINISTRATOR": "La plataforma necesita al menos un administrador activo",
+  "USER_OWNS_LISTINGS": "Esta cuenta todavía tiene anuncios. Archívalos antes de cambiar el rol a equipo",
+  "ADMINISTRATOR_USER_PAGINATE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_USER_SHOW_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_USER_CHANGE_ROLE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_USER_CHANGE_STATUS_ERROR": "Error interno del servidor"
 }

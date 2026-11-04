@@ -3,7 +3,9 @@ import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 import db from '@adonisjs/lucid/services/db'
 import {
+  ACTIVE_STATUS,
   TRASHED_MODE,
+  USER_ROLE,
   left,
   right,
   type Either,
@@ -44,6 +46,15 @@ export default class UserLucidRepository extends UserRepository {
   async countAlive(): Promise<number> {
     return LucidMapping.count(
       UserModel.query().withScopes((scopes) => scopes.notDeleted()),
+    )
+  }
+
+  async countActiveAdministrators(): Promise<number> {
+    return LucidMapping.count(
+      UserModel.query()
+        .withScopes((scopes) => scopes.notDeleted())
+        .where('role', USER_ROLE.ADMINISTRATOR)
+        .where('status', ACTIVE_STATUS.ACTIVE),
     )
   }
 

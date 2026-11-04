@@ -1,7 +1,7 @@
 import { ACTIVE_STATUS, USER_ROLE } from '@aporta/shared'
 import { test } from '@japa/runner'
 
-import User from '#domain/user/user.entity'
+import User, { type AccessChangeContext } from '#domain/user/user.entity'
 import { ARCHIVED_AT } from '#tests/repository-fixtures'
 import { USER_INPUT, userDraft } from '#tests/user-fixtures'
 
@@ -210,5 +210,183 @@ test.group('domain > user > verification', () => {
 
     assert.isNull(user.snapshot().verifiedAt)
     assert.isFalse(user.credentials().revokeSessions)
+  })
+})
+
+const ACTOR = '00000000-0000-4000-8000-0000000000a1'
+
+/** Another administrator acting, two active administrators on the platform and no ad on the account. */
+function context(
+  extra: Partial<AccessChangeContext> = {},
+): AccessChangeContext {
+  return {
+    actorId: ACTOR,
+    activeAdministrators: 2,
+    hasLiveListings: false,
+    ...extra,
+  }
+}
+
+test.group('domain > user > changeRole', () => {
+  test('when another administrator changes the role, it changes and drops the sessions', ({
+    assert,
+  }) => {
+    const user = stored({ role: USER_ROLE.OWNER })
+
+    const result = user.changeRole(USER_ROLE.MODERATOR, context())
+
+    assert.isTrue(result.isRight())
+    assert.equal(user.snapshot().role, USER_ROLE.MODERATOR)
+    assert.isTrue(user.credentials().revokeSessions)
+  })
+
+  test('when the role is the one the account already has, nothing changes and nothing is refused', ({
+    assert,
+  }) => {
+    const self = stored({ role: USER_ROLE.ADMINISTRATOR })
+
+    const result = self.changeRole(
+      USER_ROLE.ADMINISTRATOR,
+      context({ actorId: self.id, activeAdministrators: 1 }),
+    )
+
+    assert.isTrue(result.isRight())
+    assert.isFalse(self.credentials().revokeSessions)
+  })
+
+  test('when the administrator changes his own role, it refuses with USER_OWN_ACCESS_CHANGE and keeps the role', ({
+    assert,
+  }) => {
+    const self = stored({ role: USER_ROLE.ADMINISTRATOR })
+
+    const result = self.changeRole(
+      USER_ROLE.MODERATOR,
+      context({ actorId: self.id }),
+    )
+
+    assert.deepEqual(result.value, { code: 'USER_OWN_ACCESS_CHANGE' })
+    assert.equal(self.snapshot().role, USER_ROLE.ADMINISTRATOR)
+  })
+
+  test('when an owner with a live ad would become staff, it refuses with USER_OWNS_LISTINGS; without ads, or going to OWNER, it passes', ({
+    assert,
+  }) => {
+    const owner = stored({ role: USER_ROLE.OWNER })
+    const staff = stored({ role: USER_ROLE.MODERATOR })
+
+    const refused = owner.changeRole(
+      USER_ROLE.MODERATOR,
+      context({ hasLiveListings: true }),
+    )
+    const free = owner.changeRole(USER_ROLE.MODERATOR, context())
+    const back = staff.changeRole(
+      USER_ROLE.OWNER,
+      context({ hasLiveListings: true }),
+    )
+
+    assert.deepEqual(refused.value, { code: 'USER_OWNS_LISTINGS' })
+    assert.isTrue(free.isRight())
+    assert.isTrue(back.isRight())
+  })
+
+  test('when the account is the last active administrator, it refuses with USER_LAST_ADMINISTRATOR; with another one left, it passes', ({
+    assert,
+  }) => {
+    const last = stored({ role: USER_ROLE.ADMINISTRATOR })
+    const pair = stored({ role: USER_ROLE.ADMINISTRATOR })
+
+    const refused = last.changeRole(
+      USER_ROLE.OWNER,
+      context({ activeAdministrators: 1 }),
+    )
+    const passes = pair.changeRole(USER_ROLE.OWNER, context())
+
+    assert.deepEqual(refused.value, { code: 'USER_LAST_ADMINISTRATOR' })
+    assert.equal(last.snapshot().role, USER_ROLE.ADMINISTRATOR)
+    assert.isTrue(passes.isRight())
+  })
+
+  test('when a suspended administrator changes role, the count does not protect it: it was not one of the active', ({
+    assert,
+  }) => {
+    const suspended = stored({
+      role: USER_ROLE.ADMINISTRATOR,
+      status: ACTIVE_STATUS.INACTIVE,
+    })
+
+    const result = suspended.changeRole(
+      USER_ROLE.MODERATOR,
+      context({ activeAdministrators: 1 }),
+    )
+
+    assert.isTrue(result.isRight())
+  })
+})
+
+test.group('domain > user > changeStatus', () => {
+  test('when suspended, the account goes INACTIVE and the sessions drop; reactivating brings it back', ({
+    assert,
+  }) => {
+    const user = stored()
+
+    const suspended = user.changeStatus(ACTIVE_STATUS.INACTIVE, context())
+    const back = User.restore(user.snapshot())
+    back.changeStatus(ACTIVE_STATUS.ACTIVE, context())
+
+    assert.isTrue(suspended.isRight())
+    assert.equal(user.snapshot().status, ACTIVE_STATUS.INACTIVE)
+    assert.isTrue(user.credentials().revokeSessions)
+    assert.equal(back.snapshot().status, ACTIVE_STATUS.ACTIVE)
+  })
+
+  test('when the status is the one the account already has, nothing changes', ({
+    assert,
+  }) => {
+    const user = stored()
+
+    const result = user.changeStatus(ACTIVE_STATUS.ACTIVE, context())
+
+    assert.isTrue(result.isRight())
+    assert.isFalse(user.credentials().revokeSessions)
+  })
+
+  test('when the administrator suspends himself, it refuses with USER_OWN_ACCESS_CHANGE', ({
+    assert,
+  }) => {
+    const self = stored({ role: USER_ROLE.ADMINISTRATOR })
+
+    const result = self.changeStatus(
+      ACTIVE_STATUS.INACTIVE,
+      context({ actorId: self.id }),
+    )
+
+    assert.deepEqual(result.value, { code: 'USER_OWN_ACCESS_CHANGE' })
+    assert.equal(self.snapshot().status, ACTIVE_STATUS.ACTIVE)
+  })
+
+  test('when the last active administrator is suspended, it refuses with USER_LAST_ADMINISTRATOR', ({
+    assert,
+  }) => {
+    const last = stored({ role: USER_ROLE.ADMINISTRATOR })
+
+    const result = last.changeStatus(
+      ACTIVE_STATUS.INACTIVE,
+      context({ activeAdministrators: 1 }),
+    )
+
+    assert.deepEqual(result.value, { code: 'USER_LAST_ADMINISTRATOR' })
+  })
+
+  test('when an owner with live ads is suspended, it passes: only the sign-in goes, the ads stay', ({
+    assert,
+  }) => {
+    const owner = stored({ role: USER_ROLE.OWNER })
+
+    const result = owner.changeStatus(
+      ACTIVE_STATUS.INACTIVE,
+      context({ hasLiveListings: true }),
+    )
+
+    assert.isTrue(result.isRight())
   })
 })

@@ -191,6 +191,33 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 | Visitante com `?trashed` na vitrine | ignorado: o arquivado nunca aparece no guia público |
 
 
+## Administrador gere as contas
+
+**Entrada:** o administrador entra, abre "Painel" e toca em "Contas". O moderador não vê a aba.
+**Pré-condição:** sessão de `ADMINISTRATOR`. O moderador que digitar o endereço volta à fila de anúncios; o dono volta para a conta.
+
+| # | Usuário faz | Sistema responde | Tela |
+|---|---|---|---|
+| 1 | abre "Contas" | lista as contas, as mais novas primeiro; papel, acesso, busca e página ficam na URL | `/administrator/users` |
+| 2 | filtra por papel ou por acesso, busca por nome ou e-mail | a lista se refaz; busca sem resultado oferece "Limpar busca" | `/administrator/users?role=MODERATOR&status=INACTIVE&q=` |
+| 3 | toca em "Gerenciar" numa conta | mostra o nome, o e-mail, o papel e o acesso, com as duas ações | `/administrator/users/:id` |
+| 4 | escolhe outro papel e toca em "Mudar papel" | pede confirmação (as sessões da conta caem); grava e diz "Papel alterado" | detalhe |
+| 5 | toca em "Suspender conta" e confirma | a conta passa a "Suspensa": não entra, não renova e perde as sessões; a tela diz "Conta suspensa" | detalhe |
+| 6 | toca em "Reativar conta" e confirma | a conta volta a "Ativa" e a pessoa entra de novo, com sessão nova | detalhe |
+
+**Caminhos alternativos**
+
+| Situação | Resposta |
+|---|---|
+| Abre a própria conta | sem as ações: "Esta é a sua conta. Outro administrador precisa mudar o seu papel ou suspender o seu acesso" (a API recusa com 409 `USER_OWN_ACCESS_CHANGE`) |
+| Rebaixar ou suspender o último administrador ativo | 409 `USER_LAST_ADMINISTRATOR`; a tela explica no diálogo |
+| Tirar do papel de dono quem ainda tem anúncio fora da lixeira | 409 `USER_OWNS_LISTINGS`: o dono arquiva os anúncios antes (`DECISIONS.md` #36) |
+| Pedir o papel que a conta já tem | nada muda e as sessões ficam |
+| A conta suspensa tenta entrar ou usar o cookie que tinha | 401, o mesmo de senha errada; a sessão antiga não volta ao reativar |
+| Moderador ou dono chama a API de contas | 403 |
+| Outra pessoa já arquivou a conta | 404 "Essa conta não existe", com volta para a lista |
+
+
 ---
 
 ## Checklist de todo fluxo

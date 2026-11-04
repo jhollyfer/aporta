@@ -1,4 +1,6 @@
 import {
+  ACTIVE_STATUS,
+  USER_ROLE,
   left,
   right,
   type ActiveStatus,
@@ -51,6 +53,17 @@ export default class UserMemoryRepository extends UserRepository {
   countAlive(): Promise<number> {
     return Promise.resolve(
       [...this.#rows.values()].filter((row) => row.deletedAt === null).length,
+    )
+  }
+
+  countActiveAdministrators(): Promise<number> {
+    return Promise.resolve(
+      [...this.#rows.values()].filter(
+        (row) =>
+          row.deletedAt === null &&
+          row.role === USER_ROLE.ADMINISTRATOR &&
+          row.status === ACTIVE_STATUS.ACTIVE,
+      ).length,
     )
   }
 

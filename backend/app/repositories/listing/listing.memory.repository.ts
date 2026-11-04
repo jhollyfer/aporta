@@ -108,6 +108,14 @@ export default class ListingMemoryRepository extends ListingRepository {
     )
   }
 
+  existsLiveByOwner(ownerId: string): Promise<boolean> {
+    return Promise.resolve(
+      [...this.#rows.values()].some(
+        (row) => row.deletedAt === null && row.ownerId === ownerId,
+      ),
+    )
+  }
+
   paginateOwned(
     criteria: ListingOwnedCriteria,
   ): Promise<Paginated<ListingRecord>> {

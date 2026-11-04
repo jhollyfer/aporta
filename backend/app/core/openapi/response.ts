@@ -8,6 +8,8 @@ import {
   AdministratorPlaceShowResponse,
   AdministratorReportPaginateResponse,
   AdministratorReportShowResponse,
+  AdministratorUserPaginateResponse,
+  AdministratorUserShowResponse,
   OwnerListingPaginateResponse,
   OwnerListingPhotoCreateResponse,
   OwnerListingShowResponse,
@@ -54,7 +56,8 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
    * The staff's moderation. `show`, `review` answer the ad as the staff reads it; `archive`
    * answers `204`. The report `resolve` answers the report it closed. The guide's `show`,
    * `create` and `update` answer the place as the staff reads it; `archive`, `unarchive` and
-   * `delete` answer `204`.
+   * `delete` answer `204`. The accounts (`users`) answer the account on `show`, `change-role` and
+   * `change-status`.
    */
   'administrator/listings': AdministratorListingShowResponse,
   'administrator/listings/paginate': AdministratorListingPaginateResponse,
@@ -63,6 +66,8 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
   'administrator/places/paginate': AdministratorPlacePaginateResponse,
   'administrator/reports': AdministratorReportShowResponse,
   'administrator/reports/paginate': AdministratorReportPaginateResponse,
+  'administrator/users': AdministratorUserShowResponse,
+  'administrator/users/paginate': AdministratorUserPaginateResponse,
 
   /**
    * The owner's ads. `show`, `create` and `update` answer the same shape; `paginate` has its own

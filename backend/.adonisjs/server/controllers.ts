@@ -68,6 +68,20 @@ export const controllers = {
         Resolve: () => import('#features/administrator/reports/resolve/resolve.controller'),
       },
     },
+    users: {
+      changeRole: {
+        ChangeRole: () => import('#features/administrator/users/change-role/change-role.controller'),
+      },
+      changeStatus: {
+        ChangeStatus: () => import('#features/administrator/users/change-status/change-status.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/administrator/users/paginate/paginate.controller'),
+      },
+      show: {
+        Show: () => import('#features/administrator/users/show/show.controller'),
+      },
+    },
   },
   authentication: {
     session: {

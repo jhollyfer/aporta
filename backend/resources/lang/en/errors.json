@@ -95,5 +95,12 @@
   "ADMINISTRATOR_PLACE_UPDATE_ERROR": "Internal server error",
   "ADMINISTRATOR_PLACE_ARCHIVE_ERROR": "Internal server error",
   "ADMINISTRATOR_PLACE_UNARCHIVE_ERROR": "Internal server error",
-  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Internal server error"
+  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Internal server error",
+  "USER_OWN_ACCESS_CHANGE": "You cannot change the role of or suspend your own account",
+  "USER_LAST_ADMINISTRATOR": "The platform needs at least one active administrator",
+  "USER_OWNS_LISTINGS": "This account still has listings. Archive them before changing the role to staff",
+  "ADMINISTRATOR_USER_PAGINATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_USER_SHOW_ERROR": "Internal server error",
+  "ADMINISTRATOR_USER_CHANGE_ROLE_ERROR": "Internal server error",
+  "ADMINISTRATOR_USER_CHANGE_STATUS_ERROR": "Internal server error"
 }

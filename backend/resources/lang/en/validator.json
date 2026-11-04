@@ -51,6 +51,7 @@
       "decision": "the decision",
       "note": "the reason",
       "verified": "the verification",
+      "role": "the role",
       "reason": "the report reason",
       "details": "the details",
       "website": "the website",

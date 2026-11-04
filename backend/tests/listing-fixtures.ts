@@ -100,6 +100,10 @@ export class FailingListingRepository extends ListingRepository {
     throw new Error('database down')
   }
 
+  existsLiveByOwner(): never {
+    throw new Error('database down')
+  }
+
   paginateOwned(): never {
     throw new Error('database down')
   }

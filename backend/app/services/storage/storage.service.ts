@@ -146,6 +146,25 @@ export default class StorageService extends StorageContract {
   }
 
   /**
+   * Writes the bytes under `path`, with the `Content-Type` of the declared type, which is what
+   * the signed URL later serves. _doc-lib/flydrive.md#disk_api
+   * (https://flydrive.dev/docs/disk_api): `put(key, contents, { contentType })`.
+   */
+  async put(
+    path: string,
+    contents: Uint8Array,
+    mimetype: StorageMimetype,
+  ): Promise<Either<StorageFailure, null>> {
+    try {
+      await drive.use().put(path, contents, { contentType: mimetype })
+
+      return right(null)
+    } catch (error) {
+      return left(StorageFailure.of(error))
+    }
+  }
+
+  /**
    * A temporary URL that delivers the file with its original name.
    *
    * The `Content-Disposition` travels signed inside the URL itself, and it is the bucket

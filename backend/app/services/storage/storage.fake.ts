@@ -121,6 +121,21 @@ export default class StorageFake extends StorageContract {
     return Promise.resolve(right(null))
   }
 
+  put(
+    path: string,
+    contents: Uint8Array,
+    mimetype: StorageMimetype,
+  ): Promise<Either<StorageFailure, null>> {
+    if (this.#failure) return Promise.resolve(left(this.#failure))
+
+    this.object(path, contents.byteLength, {
+      contentType: mimetype,
+      head: contents.slice(0, 16),
+    })
+
+    return Promise.resolve(right(null))
+  }
+
   signedDownload(file: DownloadableFile): Promise<string> {
     return Promise.resolve(`fake://download/${file.path}`)
   }

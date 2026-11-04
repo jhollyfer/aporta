@@ -65,6 +65,16 @@ export default abstract class StorageContract {
    * already gone is success (S3 `DeleteObject` is idempotent); a bucket failure is `StorageFailure`.
    */
   abstract discard(path: string): Promise<Either<StorageFailure, null>>
+  /**
+   * Writes a binary this application already holds, under `path`. The upload of a user never
+   * comes through here (it goes from the browser to the bucket by signed URL); what does is
+   * a file the server itself produced or fetched, such as the pictures of the demo seed.
+   */
+  abstract put(
+    path: string,
+    contents: Uint8Array,
+    mimetype: StorageMimetype,
+  ): Promise<Either<StorageFailure, null>>
   abstract signedDownload(file: DownloadableFile): Promise<string>
   abstract contentDisposition(originalName: string): string
 }

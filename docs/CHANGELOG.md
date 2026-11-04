@@ -10,6 +10,10 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ## [Não lançado]
 
+### Adicionado
+
+- Os anúncios de demonstração ganharam fotos (fachada, quarto, banheiro, cozinha e sala), de banco de imagens livre e sem pessoas; anúncio real segue só com as fotos do dono.
+
 ### Corrigido
 
 - Confirmar um envio de foto antes de o arquivo chegar ao bucket respondia erro 500; agora responde 422 (`STORAGE_UPLOAD_MISSING`, "O arquivo ainda não foi enviado") e o registro fica pendente para confirmar de novo.

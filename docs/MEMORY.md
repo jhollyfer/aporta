@@ -7,7 +7,7 @@
 
 | Atualizado | Fase atual | Progresso | Status |
 |---|---|---|---|
-| 2026-11-02 | 9 · Deploy: o código está pronto, falta a infraestrutura do dono | 65% (45 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
+| 2026-11-04 | 9 · Deploy: o código está pronto, falta a infraestrutura do dono | 65% (45 de 69 tarefas) | Pré-MVP: o frontend lê bairros, anúncios e guia da API; o catálogo ainda é o de exemplo semeado no banco |
 
 ## Já feito
 
@@ -23,6 +23,8 @@
 - Workflows de CI, imagens e deploy no Coolify escritos.
 
 ## Parou em
+
+2026-11-04: os anúncios de demonstração têm fotos (tarefa 7.21, `DECISIONS.md` #30). São 34 fotos CC0 do Openverse, sem rosto, em `backend/database/data/demo-photos.ts`; o `ListingSeeder` baixa, grava no bucket por `StorageContract.put` e liga o `storage_id`, e sem rede deixa o slot vazio. Rotas conferidas a pedido do dono: backend e frontend já estão inteiros em inglês (caminho, parâmetro e valor), sem redirect de caminho antigo; nada a renomear. Ambiente que funcionou: Postgres 16 do sistema na 5432 (`DATABASE_URL` sobrescrito no shell, o `.env.test` aponta 5435), `s3rver` na 9006 com `STORAGE_KEY=S3RVER` e `STORAGE_SECRET=S3RVER`, e o seed com `NODE_USE_ENV_PROXY=1` e `NODE_EXTRA_CA_CERTS` porque o `fetch` do Node ignora o proxy da sessão na nuvem.
 
 2026-11-03 (fim do dia): tema (automático, claro, escuro) no cabeçalho público e na casca da conta e do painel; shadcn sobre Base UI em `components/ui` e usado em quase toda tela (7.20, ver `TASKS.md`); site responsivo em todos os tamanhos e sem jeito de aplicativo; 14 bairros oficiais no seed. Faltam o `Toast`, `Tabs`/`ToggleGroup` no guia e nos seletores, o tema por cookie no `loader`, as fotos reais (7.13) e a conferência de coordenadas, telefones e lugares (7.10). Ambiente local: o Postgres do sistema cai sozinho; `pg_ctlcluster 16 main start` e reiniciar o backend (`node ace serve`).
 

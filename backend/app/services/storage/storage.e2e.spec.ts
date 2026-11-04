@@ -2,7 +2,11 @@ import { randomUUID } from 'node:crypto'
 
 import app from '@adonisjs/core/services/app'
 import drive from '@adonisjs/drive/services/main'
-import { UPLOAD_STATUS, type UploadStatus } from '@aporta/shared'
+import {
+  STORAGE_MIMETYPE,
+  UPLOAD_STATUS,
+  type UploadStatus,
+} from '@aporta/shared'
 import { test } from '@japa/runner'
 
 import StorageContract from '#services/storage/storage.contract'
@@ -128,6 +132,25 @@ test.group('services > storage > bucket answers', () => {
     if (head.isLeft() || head.value === null) return assert.fail('no head')
 
     assert.equal(new TextDecoder().decode(head.value), 'abcd')
+
+    await storage.discard(key)
+  })
+
+  test('when putting bytes, the bucket keeps them with the declared type', async ({
+    assert,
+  }) => {
+    const storage = await app.container.make(StorageContract)
+    const key = `${randomUUID()}.jpg`
+    const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3])
+
+    const written = await storage.put(key, bytes, STORAGE_MIMETYPE.JPEG)
+    const found = await storage.metadata(key)
+
+    assert.isTrue(written.isRight())
+    assert.containsSubset(found.value, {
+      contentLength: bytes.byteLength,
+      contentType: STORAGE_MIMETYPE.JPEG,
+    })
 
     await storage.discard(key)
   })

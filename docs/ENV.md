@@ -37,7 +37,7 @@ boot quando falta, conforme o schema.
 | `STORAGE_FORCE_PATH_STYLE` | api | não | não | `true` para MinIO, que só serve `endpoint/bucket/chave`; em produção (R2, S3, Spaces), remover | `true` |
 | `SEED_OWNER_EMAIL` | api | junto com a senha | não | e-mail do primeiro administrador criado pelo seeder; senha sem e-mail faz o seeder parar. "owner" aqui é o dono da plataforma, não o papel `OWNER` | `administrator@example.com` |
 | `SEED_OWNER_PASSWORD` | api | não | **sim** | **liga** o seed do administrador, em qualquer ambiente: com valor, a conta é criada; vazia, o seed é pulado com uma linha de log e o resto do `db:seed` segue. Sem default | defina um valor forte |
-| `SEED_DEMO_PASSWORD` | api | não | **sim** | **liga** a demonstração, em qualquer ambiente: senha comum das contas `moderator@example.com` (papel `MODERATOR`) e `owner@example.com` (papel `OWNER`, dono dos anúncios de exemplo) e o conteúdo de exemplo (12 anúncios, 53 fotos, 10 lugares; os 6 bairros vêm junto). Vazia, a demonstração é pulada com uma linha de log. Nunca reaproveita `SEED_OWNER_PASSWORD` | defina um valor forte |
+| `SEED_DEMO_PASSWORD` | api | não | **sim** | **liga** a demonstração, em qualquer ambiente: senha comum das contas `moderator@example.com` (papel `MODERATOR`) e `owner@example.com` (papel `OWNER`, dono dos anúncios de exemplo) e o conteúdo de exemplo (12 anúncios, 53 fotos baixadas do Openverse para o bucket, 10 lugares; os 6 bairros vêm junto; sem rede, as fotos ficam vazias). Vazia, a demonstração é pulada com uma linha de log. Nunca reaproveita `SEED_OWNER_PASSWORD` | defina um valor forte |
 
 ### Só do `docker compose` local (`backend/docker-compose.yml`)
 

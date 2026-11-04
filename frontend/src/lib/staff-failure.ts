@@ -13,6 +13,8 @@ import { m } from '#/paraglide/messages'
 const GENERAL_REFUSALS: Record<string, () => string> = {
   LISTING_NOT_PENDING: () => m.staff_error_not_pending(),
   LISTING_ALREADY_ARCHIVED: () => m.owner_error_already_archived(),
+  LISTING_NOT_ARCHIVED: () => m.staff_error_not_archived(),
+  LISTING_HAS_REPORTS: () => m.staff_error_has_reports(),
   [HTTP_ERROR_CODE.LISTING_NOT_FOUND]: () => m.staff_error_listing_not_found(),
   REPORT_NOT_FOUND: () => m.staff_error_report_not_found(),
   REPORT_ALREADY_RESOLVED: () => m.staff_error_report_resolved(),

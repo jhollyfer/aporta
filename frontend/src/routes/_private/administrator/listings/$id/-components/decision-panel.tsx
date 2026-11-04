@@ -1,7 +1,12 @@
 import * as React from 'react'
 import { Check, Prohibit } from '@phosphor-icons/react'
+import { useNavigate } from '@tanstack/react-router'
 
-import { LISTING_REVIEW_DECISION, LISTING_STATUS } from '@aporta/shared'
+import {
+  LISTING_REVIEW_DECISION,
+  LISTING_STATUS,
+  USER_ROLE,
+} from '@aporta/shared'
 import type { AdministratorListingShowResponse } from '@aporta/shared'
 
 import { Button } from '#/components/ui/button'
@@ -10,9 +15,11 @@ import { ConfirmDialog } from '#/components/common/confirm-dialog'
 import { FormNotice } from '#/components/common/form-notice'
 import { NoteDialog } from '#/components/common/note-dialog'
 import { PillButton } from '#/components/common/pill-button'
+import { useSession } from '#/hooks/use-session'
 import { useInvalidate } from '#/integrations/tanstack-query/invalidate'
 import {
   useAdministratorListingArchiveMutation,
+  useAdministratorListingDeleteMutation,
   useAdministratorListingReviewMutation,
 } from '#/integrations/tanstack-query/mutations/administrator'
 import { formatDateTime } from '#/lib/format'
@@ -46,7 +53,10 @@ const STATE_TEXT: Record<
  * motivo que mandou.
  *
  * Recusar pede o motivo (3 a 500) num diálogo com contador, e o erro de motivo volta ao campo.
- * Arquivar pede confirmação que nomeia o anúncio. Depois de qualquer decisão a tela diz o
+ * Arquivar pede confirmação que nomeia o anúncio. "Excluir de vez" só aparece para o
+ * `ADMINISTRATOR` e só no anúncio arquivado (a API recusa o resto, `DECISIONS.md` #34); pede
+ * confirmação que diz que não tem volta e, apagado, a tela volta para a fila: o anúncio que
+ * ela mostra já não existe. Depois de qualquer decisão a tela diz o
  * que aconteceu (`role="status"`) e a fila, a vitrine e a lista do dono refazem.
  */
 export function DecisionPanel({
@@ -55,14 +65,18 @@ export function DecisionPanel({
   listing: AdministratorListingShowResponse
 }): React.JSX.Element {
   const invalidate = useInvalidate()
+  const navigate = useNavigate()
+  const { account } = useSession()
   const [outcome, setOutcome] = React.useState<Outcome | undefined>(undefined)
   const [failure, setFailure] = React.useState('')
   const [archiveFailure, setArchiveFailure] = React.useState('')
+  const [deleteFailure, setDeleteFailure] = React.useState('')
   const [refuseFailure, setRefuseFailure] = React.useState('')
 
   const review = useAdministratorListingReviewMutation()
   const archive = useAdministratorListingArchiveMutation()
-  const busy = review.isPending || archive.isPending
+  const remove = useAdministratorListingDeleteMutation()
+  const busy = review.isPending || archive.isPending || remove.isPending
 
   const refreshAll = (): Promise<unknown> =>
     Promise.all([
@@ -91,6 +105,9 @@ export function DecisionPanel({
   }
 
   const canDecide = listing.status === LISTING_STATUS.PENDING
+  const canDelete =
+    account?.role === USER_ROLE.ADMINISTRATOR &&
+    listing.status === LISTING_STATUS.ARCHIVED
   const canArchive =
     listing.status !== LISTING_STATUS.ARCHIVED && outcome !== 'archived'
 
@@ -234,6 +251,42 @@ export function DecisionPanel({
                 className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-danger underline underline-offset-4 hover:bg-clay-wash disabled:opacity-60"
               >
                 {m.owner_listings_archive()}
+              </Button>
+            )}
+          />
+        )}
+        {canDelete && (
+          <ConfirmDialog
+            title={m.staff_delete_title({ title: listing.title })}
+            description={m.staff_delete_text()}
+            confirmLabel={m.staff_delete_confirm()}
+            cancelLabel={m.staff_delete_keep()}
+            error={deleteFailure}
+            pending={remove.isPending}
+            onConfirm={() => {
+              setDeleteFailure('')
+              remove.mutate(listing.id, {
+                async onSuccess() {
+                  // Sai da tela antes de refazer as consultas: o detalhe que ela lê já não existe.
+                  await navigate({ to: '/administrator/listings' })
+                  await refreshAll()
+                },
+                onError: (error) =>
+                  setDeleteFailure(describeStaffFailure(error).general),
+              })
+            }}
+            renderTrigger={(open) => (
+              <Button
+                variant="ghost"
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setDeleteFailure('')
+                  open()
+                }}
+                className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-danger underline underline-offset-4 hover:bg-clay-wash disabled:opacity-60"
+              >
+                {m.staff_delete()}
               </Button>
             )}
           />

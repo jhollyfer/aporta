@@ -50,7 +50,7 @@ export function useAdministratorListingReviewMutation(
   })
 }
 
-/** Tira do ar: não há exclusão definitiva, `ARCHIVED` é a remoção. */
+/** Tira do ar: `ARCHIVED` é a remoção que o moderador também tem. */
 export function useAdministratorListingArchiveMutation(
   options?: MutationProps<void, string>,
 ): UseMutationResult<void, HTTPError, string> {
@@ -61,6 +61,26 @@ export function useAdministratorListingArchiveMutation(
         method: 'DELETE',
         ...WITH_SESSION,
       }),
+  })
+}
+
+/**
+ * Exclui de vez um anúncio já arquivado e sem denúncia. Só o `ADMINISTRATOR`: a API responde
+ * 403 ao moderador, e a tela só mostra o botão a quem pode (`DECISIONS.md` #34).
+ */
+export function useAdministratorListingDeleteMutation(
+  options?: MutationProps<void, string>,
+): UseMutationResult<void, HTTPError, string> {
+  return useMutation<void, HTTPError, string>({
+    ...options,
+    mutationFn: (id) =>
+      requestVoid(
+        '/administrator/listings/'.concat(encodeURIComponent(id), '/permanent'),
+        {
+          method: 'DELETE',
+          ...WITH_SESSION,
+        },
+      ),
   })
 }
 

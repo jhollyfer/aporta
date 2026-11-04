@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test as base, expect } from '@playwright/test'
-import type { Locator, Page } from '@playwright/test'
+import type { Browser, Locator, Page } from '@playwright/test'
 
 import type { E2eSession } from './account'
 import { E2eEnv } from './env'
@@ -64,6 +64,21 @@ export const test = base.extend<Fixtures>({
 
   expectNoBlockingViolations: async ({ page }, provide) => {
     await provide(async () => {
+      // O axe mede a página hidratada: antes disso o `role="checkbox"` do Base UI ainda não tem o
+      // rótulo que o React liga, e a regra `aria-toggle-field-name` reprova uma página que o
+      // usuário nunca vê assim. Todo elemento do kit (`data-slot`) já foi assumido pelo React.
+      await expect
+        .poll(() =>
+          page.evaluate(() =>
+            [...document.querySelectorAll('[data-slot]')].every((element) =>
+              Object.keys(element).some((key) =>
+                key.startsWith('__reactProps'),
+              ),
+            ),
+          ),
+        )
+        .toBe(true)
+
       // O interior de iframe de terceiro (vídeo, player) tem marcação que não é nossa: fica de
       // fora, e o próprio `<iframe>` (título, tamanho) continua checado (DECISIONS #268).
       const results = await new AxeBuilder({ page })
@@ -103,7 +118,11 @@ export const test = base.extend<Fixtures>({
   },
 })
 
-type Sessions = { owner: E2eSession; staff: E2eSession }
+type Sessions = {
+  owner: E2eSession
+  staff: E2eSession
+  administrator: E2eSession
+}
 
 /**
  * As duas contas, lidas dos arquivos que o projeto `setup` gravou (`auth.setup.ts`): o login
@@ -125,6 +144,13 @@ const withSessions = test.extend<object, Sessions>({
     },
     { scope: 'worker' },
   ],
+  administrator: [
+    // eslint-disable-next-line no-empty-pattern -- o Playwright exige desestruturação no 1º argumento do fixture
+    async ({}, provide) => {
+      await provide(await E2eSessionFiles.read(E2eSessionFiles.administrator))
+    },
+    { scope: 'worker' },
+  ],
 })
 
 /**
@@ -138,6 +164,23 @@ export const ownerTest = withSessions.extend<{
     await provide(owner.storageState)
   },
 })
+
+/** Abre uma página num contexto de navegador próprio (com a sessão, se houver) e o fecha no fim. */
+class E2eContexts {
+  static async provide(
+    browser: Browser,
+    storageState: E2eSession['storageState'] | undefined,
+    provide: (page: Page) => Promise<void>,
+  ): Promise<void> {
+    const context = await browser.newContext({
+      baseURL: E2eEnv.baseUrl,
+      storageState,
+    })
+
+    await provide(await context.newPage())
+    await context.close()
+  }
+}
 
 type Actors = {
   storageState: E2eSession['storageState']
@@ -164,19 +207,10 @@ export const staffTest = withSessions.extend<Actors>({
     await provide(staff.storageState)
   },
   ownerPage: async ({ browser, owner }, provide) => {
-    const context = await browser.newContext({
-      baseURL: E2eEnv.baseUrl,
-      storageState: owner.storageState,
-    })
-
-    await provide(await context.newPage())
-    await context.close()
+    await E2eContexts.provide(browser, owner.storageState, provide)
   },
   visitorPage: async ({ browser }, provide) => {
-    const context = await browser.newContext({ baseURL: E2eEnv.baseUrl })
-
-    await provide(await context.newPage())
-    await context.close()
+    await E2eContexts.provide(browser, undefined, provide)
   },
   crowdedCatalog: async ({ page, ownerPage }, provide) => {
     const created = await E2eListing.crowd(
@@ -190,6 +224,30 @@ export const staffTest = withSessions.extend<Actors>({
     } finally {
       for (const id of created) await E2eListing.archive(page.request, id)
     }
+  },
+})
+
+type AdministratorActors = {
+  storageState: E2eSession['storageState']
+  /** A página da moderadora, em outro contexto: o que o administrador faz e ela não pode. */
+  moderatorPage: Page
+  /** A página do dono, em outro contexto. */
+  ownerPage: Page
+}
+
+/**
+ * O `test` do administrador: `page` já entra como `administrator@example.com`, e `moderatorPage`
+ * e `ownerPage` são os outros dois papéis, cada um num contexto de navegador próprio.
+ */
+export const administratorTest = withSessions.extend<AdministratorActors>({
+  storageState: async ({ administrator }, provide) => {
+    await provide(administrator.storageState)
+  },
+  moderatorPage: async ({ browser, staff }, provide) => {
+    await E2eContexts.provide(browser, staff.storageState, provide)
+  },
+  ownerPage: async ({ browser, owner }, provide) => {
+    await E2eContexts.provide(browser, owner.storageState, provide)
   },
 })
 

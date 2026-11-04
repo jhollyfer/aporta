@@ -27,6 +27,19 @@ export class E2eEnv {
     return E2eEnv.read('E2E_DEMO_PASSWORD')
   }
 
+  /**
+   * O administrador do seeder (`SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD`): quem muda papel, suspende
+   * conta e exclui anúncio de vez. Métodos e não campos pelo mesmo motivo de `demoPassword`: só os
+   * specs de administrador as leem.
+   */
+  static administratorEmail(): string {
+    return E2eEnv.read('E2E_OWNER_EMAIL')
+  }
+
+  static administratorPassword(): string {
+    return E2eEnv.read('E2E_OWNER_PASSWORD')
+  }
+
   private static read(name: string): string {
     const value = process.env[name]
 

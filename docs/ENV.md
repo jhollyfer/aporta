@@ -62,8 +62,8 @@ boot quando falta, conforme o schema.
 | `PORT` | web | não | não | porta do servidor Nitro; o `Dockerfile-production` fixa `3000` | `3000` |
 | `E2E_BASE_URL` | e2e | sim, para rodar o E2E | não | o app sob teste; sem default, `e2e/support/env.ts` para dizendo qual falta | `http://localhost:3000` |
 | `E2E_API_URL` | e2e | sim, para rodar o E2E | não | a API sob teste, cujo `/health-check` o E2E confere | `http://localhost:3333` |
-| `E2E_OWNER_EMAIL` | e2e | não, hoje sem leitor | não | a conta do administrador do seeder (`SEED_OWNER_EMAIL`); os specs de hoje não entram como administrador, então fica comentada no `.env.example` | `administrator@example.com` |
-| `E2E_OWNER_PASSWORD` | e2e | não, hoje sem leitor | **sim** | a senha dessa conta (`SEED_OWNER_PASSWORD`); comentada no `.env.example` | a mesma de `SEED_OWNER_PASSWORD` |
+| `E2E_OWNER_EMAIL` | e2e | sim, para rodar o E2E | não | a conta do administrador do seeder (`SEED_OWNER_EMAIL`); o `auth.setup` entra com ela e os specs de contas, de lugares e de exclusão de anúncio a usam | `administrator@example.com` |
+| `E2E_OWNER_PASSWORD` | e2e | sim, para rodar o E2E | **sim** | a senha dessa conta (`SEED_OWNER_PASSWORD`); comentada no `.env.example` | a mesma de `SEED_OWNER_PASSWORD` |
 | `E2E_DEMO_PASSWORD` | e2e | sim, para rodar o E2E | **sim** | a `SEED_DEMO_PASSWORD` do backend sob teste. O E2E entra com ela como `moderator@example.com`; o dono é cadastrado a cada rodada. No CI nasce por rodada, mascarada | a mesma de `SEED_DEMO_PASSWORD` |
 | `E2E_SHOTS_DIR` | e2e | não | não | pasta fora do repositório onde o spec responsivo grava uma captura de página inteira por tela e viewport; ausente, não grava | `/tmp/shots` |
 | `E2E_CHROMIUM_PATH` | e2e | não | não | caminho de um Chromium já instalado, para quem não usa o do `playwright install`; o `scripts/generate-icons.mjs` lê a mesma chave; no CI fica vazia | `/opt/pw-browsers/chromium` |

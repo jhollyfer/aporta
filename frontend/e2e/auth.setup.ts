@@ -6,12 +6,12 @@ import { test as setup } from '@playwright/test'
 
 /**
  * O login do E2E, uma vez por execução (_doc-lib/playwright.md#docs/auth): cria a conta do
- * dono e entra, entra como a moderadora do seeder, e grava o estado do navegador de cada uma
+ * dono e entra, entra como a moderadora e como o administrador do seeder, e grava o estado do navegador de cada uma
  * em `playwright/.auth/`. Os projetos `mobile`, `tablet` e `desktop` dependem deste e leem os
  * arquivos em `support/test.ts`, em vez de cada worker entrar de novo: o limite de entrada é de
  * 5 por minuto por IP, e estourá-lo bloqueia por 10 minutos.
  */
-setup('entra como dono e como equipe', async ({ playwright }) => {
+setup('entra como dono, moderador e administrador', async ({ playwright }) => {
   setup.setTimeout(180_000)
 
   const request = await playwright.request.newContext()
@@ -19,10 +19,15 @@ setup('entra como dono e como equipe', async ({ playwright }) => {
   try {
     const owner = await E2eAccount.session(request)
     const staff = await E2eAccount.staffSession(request)
+    const administrator = await E2eAccount.administratorSession(request)
 
     await mkdir(E2eSessionFiles.directory, { recursive: true })
     await writeFile(E2eSessionFiles.owner, JSON.stringify(owner))
     await writeFile(E2eSessionFiles.staff, JSON.stringify(staff))
+    await writeFile(
+      E2eSessionFiles.administrator,
+      JSON.stringify(administrator),
+    )
     await E2eAccount.settle()
   } finally {
     await request.dispose()

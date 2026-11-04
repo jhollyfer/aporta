@@ -135,11 +135,34 @@ export class E2eAccount {
     )
   }
 
-  private static async signIn(
+  /**
+   * Tenta entrar e devolve só o status, para o spec que prova uma recusa (conta suspensa). Gasta
+   * o mesmo orçamento de entrada que `session`.
+   */
+  static async attempt(
     request: APIRequestContext,
     email: string,
     password: string,
+  ): Promise<number> {
+    return (await E2eAccount.post(request, email, password)).status()
+  }
+
+  /** Entra como o administrador do seeder. Mesmo orçamento de entrada: uma vez por execução. */
+  static async administratorSession(
+    request: APIRequestContext,
   ): Promise<E2eSession> {
+    return E2eAccount.signIn(
+      request,
+      E2eEnv.administratorEmail(),
+      E2eEnv.administratorPassword(),
+    )
+  }
+
+  private static async post(
+    request: APIRequestContext,
+    email: string,
+    password: string,
+  ): Promise<APIResponse> {
     await pace('sign-in')
     const response = await request.post(
       `${E2eEnv.apiUrl}/authentication/sign-in`,
@@ -147,6 +170,16 @@ export class E2eAccount {
     )
 
     note('sign-in', response)
+
+    return response
+  }
+
+  private static async signIn(
+    request: APIRequestContext,
+    email: string,
+    password: string,
+  ): Promise<E2eSession> {
+    const response = await E2eAccount.post(request, email, password)
 
     if (response.status() !== 204) {
       throw new Error(

@@ -42,6 +42,10 @@ export class E2eSessionFiles {
   )
   static readonly owner = path.join(E2eSessionFiles.directory, 'owner.json')
   static readonly staff = path.join(E2eSessionFiles.directory, 'staff.json')
+  static readonly administrator = path.join(
+    E2eSessionFiles.directory,
+    'administrator.json',
+  )
 
   static async read(file: string): Promise<E2eSession> {
     let text: string

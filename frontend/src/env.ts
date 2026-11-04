@@ -38,8 +38,9 @@ function readServerEnv(name: string): string | undefined {
  * `import.meta.env.PROD` é igual em staging e em produção (a imagem é a mesma): quem decide é o
  * ambiente em tempo de execução (`_standards/frontend.md` §9.7).
  *
- * `STORAGE_PUBLIC_URL` também é só do servidor, e opcional: a origem do bucket (o
- * `STORAGE_ENDPOINT` da API), que o `Content-Security-Policy` libera em `img-src` e
+ * `STORAGE_PUBLIC_URL` também é só do servidor, e opcional: a origem da URL assinada (o
+ * `STORAGE_ENDPOINT` da API no MinIO, com path-style; no R2, `https://<bucket>.<host do
+ * endpoint>`, porque o SDK põe o bucket no subdomínio), que o `Content-Security-Policy` libera em `img-src` e
  * `connect-src` para a foto abrir e o envio em partes chegar. Ausente, o CSP não menciona o
  * bucket e as fotos reais são bloqueadas pelo navegador: sem a variável, só as cenas
  * desenhadas aparecem. Lida em tempo de execução, então muda sem refazer o build.

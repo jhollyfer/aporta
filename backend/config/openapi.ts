@@ -96,7 +96,8 @@ const tags: TagRule[] = [
     description:
       'A fila de revisão e a gestão de anúncios pela equipe (`ADMINISTRATOR` e `MODERATOR`). Lista ' +
       'qualquer anúncio, inclusive o arquivado, com a conta do dono; aprova (publica) ou recusa com ' +
-      'motivo obrigatório, e arquiva qualquer um. Não há exclusão definitiva.',
+      'motivo obrigatório, e arquiva qualquer um. Só o `ADMINISTRATOR` exclui de vez, e só anúncio já ' +
+      'arquivado e sem denúncia.',
     singular: 'anúncio',
     plural: 'anúncios',
   },

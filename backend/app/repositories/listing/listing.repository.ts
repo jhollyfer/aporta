@@ -181,6 +181,14 @@ export default abstract class ListingRepository {
     listing: Listing,
   ): Promise<Either<UniqueConflict | RepositoryFailure, ListingRecord>>
 
+  /**
+   * Removes the ad and its photo rows for good (`ON DELETE CASCADE`). The files the photos showed
+   * are not touched: whether a binary leaves the bucket is `StorageOrphans`' question. The
+   * `reports` foreign key is `RESTRICT`, so an ad with a report cannot go; the use-case asks
+   * `ReportRepository.existsForListing` first and answers `409` before it gets here.
+   */
+  abstract delete(listing: Listing): Promise<void>
+
   /** The ad the storefront shows, by `slug`: `PUBLISHED` and outside the trash. */
   abstract findPublishedRecordBySlug(
     slug: string,

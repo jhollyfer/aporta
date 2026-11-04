@@ -47,6 +47,9 @@ export type ListingAlreadyArchived = {
   readonly code: 'LISTING_ALREADY_ARCHIVED'
 }
 
+/** Deleting for good an ad that is still on the air or in the queue: it has to be archived first. */
+export type ListingNotArchived = { readonly code: 'LISTING_NOT_ARCHIVED' }
+
 /** Approving or refusing an ad that is not waiting in the queue: it was already decided, or never sent. */
 export type ListingNotPending = { readonly code: 'LISTING_NOT_PENDING' }
 

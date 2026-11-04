@@ -16,8 +16,8 @@ const url = (id: string): string => `/administrator/listings/${id}`
 
 /**
  * The staff taking any ad off the air. The contract asserted here: ARCHIVED and the trash in one
- * step, every public and owner read stops finding it, the staff still does, and there is no
- * way to delete it for good.
+ * step, every public and owner read stops finding it, the staff still does. Deleting for
+ * good is the `delete` action's.
  */
 test.group('administrator > listings > archive', (group) => {
   group.each.setup(() => resetDatabase())

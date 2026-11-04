@@ -205,8 +205,8 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 |---|---|---|
 | visitante | ver busca, detalhe, guia, e abrir o WhatsApp; ler `/storefront` sem sessão | qualquer rota autenticada |
 | `OWNER` | ver e editar a própria conta | `/storages` e a documentação da API |
-| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar de vez, gerir contas (regra do papel; ainda sem rotas) |
-| `ADMINISTRATOR` | tudo o que a equipe faz e apagar de vez | |
+| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar anúncio de vez (403 em `DELETE /administrator/listings/:id/permanent`), gerir contas (regra do papel; ainda sem rotas) |
+| `ADMINISTRATOR` | tudo o que a equipe faz e apagar de vez o anúncio arquivado e sem denúncia (`DECISIONS.md` #34) | |
 
 - `/storages` fica fechado à equipe até existir policy de posse por dono (`DECISIONS.md` #2).
 
@@ -247,7 +247,7 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 | Rascunho do cadastro | não perder o que foi digitado | consentimento implícito do uso do formulário | no navegador do dono, até o dono limpar os dados do site; é apagado quando o envio cria o anúncio | apagado no envio com sucesso; o dono pode limpar os dados do site antes |
 | Denúncia de golpe | a equipe apurar o anúncio | legítimo interesse na segurança da plataforma (a confirmar com o dono) | o motivo e o texto livre (até 500 caracteres, podem citar terceiros) ficam sem prazo definido; do IP guarda-se só um HMAC com a `APP_KEY`, pseudonimização que deixa de casar se a chave mudar | prazo e anonimização a definir; a equipe só vê os 12 primeiros caracteres do hash |
 | Motivo de recusa e nota de resolução | explicar a decisão ao dono e registrar quem decidiu | execução de contrato | enquanto o anúncio ou a denúncia existir | acompanha o registro |
-| Foto do imóvel | mostrar o imóvel | execução de contrato | enquanto o anúncio existir | apagar o objeto do bucket junto com o anúncio (a implementar) |
+| Foto do imóvel | mostrar o imóvel | execução de contrato | enquanto o anúncio existir | ao apagar o anúncio de vez, o objeto sai do bucket se nenhuma outra foto o usa (`StorageOrphans.sweep`) |
 
 A base legal e os prazos são proposta técnica, não parecer jurídico: o dono do produto confirma
 antes do lançamento.

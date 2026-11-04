@@ -1,12 +1,13 @@
 import Translation from '#core/translation'
 import type {
   ListingAlreadyArchived,
+  ListingNotArchived,
   ListingReviewError,
 } from '#domain/listing/listing.errors'
 import HTTPException from '#exceptions/http.exception'
 
-/** The facts the staff's listing actions refuse: the review's own and archiving what already left. */
-type Fact = ListingAlreadyArchived | ListingReviewError
+/** The facts the staff's listing actions refuse: the review's own, archiving what already left and deleting what did not. */
+type Fact = ListingAlreadyArchived | ListingNotArchived | ListingReviewError
 
 /**
  * The translation of the listing facts the staff's actions refuse (`_standards/domain.md` §2).
@@ -34,6 +35,11 @@ export default class AdministratorListingRefusal {
       HTTPException.Conflict(
         Translation.t('errors.LISTING_ALREADY_ARCHIVED'),
         'LISTING_ALREADY_ARCHIVED',
+      ),
+    LISTING_NOT_ARCHIVED: () =>
+      HTTPException.Conflict(
+        Translation.t('errors.LISTING_NOT_ARCHIVED'),
+        'LISTING_NOT_ARCHIVED',
       ),
   } satisfies Record<Fact['code'], () => HTTPException>
 

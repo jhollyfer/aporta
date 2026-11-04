@@ -42,6 +42,12 @@ export default class ReportMemoryRepository extends ReportRepository {
     return Promise.resolve(this.entity(row))
   }
 
+  existsForListing(listingId: string): Promise<boolean> {
+    return Promise.resolve(
+      [...this.#rows.values()].some((row) => row.props.listingId === listingId),
+    )
+  }
+
   paginate(criteria: ReportListCriteria): Promise<Paginated<ReportRecord>> {
     const found = [...this.#rows.values()].filter((row) => {
       const listing = this.#listings.get(row.props.listingId)

@@ -17,6 +17,7 @@ import {
 
 import type {
   ListingAlreadyArchived,
+  ListingNotArchived,
   ListingError,
   ListingPhotoNotFound,
   ListingPhotosOrderInvalid,
@@ -396,6 +397,22 @@ export default class Listing {
       status: LISTING_STATUS.ARCHIVED,
       deletedAt: at,
     }
+
+    return right(this)
+  }
+
+  /**
+   * The rule of deleting for good: only an ad that already left the air (`ARCHIVED` and in the
+   * trash) may go, so a published one is never erased by a slip. The entity does not change: the
+   * removal itself is the repository's (`_standards/backend.md` §4.8, `delete` refuses
+   * what is not archived with `409`).
+   */
+  ensureErasable(): Either<ListingNotArchived, Listing> {
+    if (
+      this.props.status !== LISTING_STATUS.ARCHIVED ||
+      this.props.deletedAt === null
+    )
+      return left({ code: 'LISTING_NOT_ARCHIVED' })
 
     return right(this)
   }

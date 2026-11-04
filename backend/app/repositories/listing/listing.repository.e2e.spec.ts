@@ -1042,6 +1042,21 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.isNull(await repository.findById(entity.id))
     })
 
+    test('when deleted, the ad is gone from every read', async ({ assert }) => {
+      const { repository, neighborhood: bairro, seed } = await make()
+      const entity = listingIn(
+        LISTING_STATUS.ARCHIVED,
+        { slug: 'apagado', neighborhoodId: await bairro('centro', 'Centro') },
+        ARCHIVED_AT,
+      )
+      await seed(entity)
+
+      await repository.delete(entity)
+
+      assert.isNull(await repository.findAnyById(entity.id))
+      assert.isNull(await repository.findAnyRecordById(entity.id))
+    })
+
     test('when the neighborhood does not exist, save answers a repository failure instead of throwing', async ({
       assert,
     }) => {

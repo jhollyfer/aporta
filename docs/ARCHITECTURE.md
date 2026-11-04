@@ -67,6 +67,7 @@ substantivo no plural, a ação é verbo.
 | Anúncios do dono | listings | create, paginate, show, update, archive | `OWNER` | Feito |
 | Anúncios do dono | listing-photos | create (liga arquivos enviados a ambientes, até 12), delete (tira uma foto; o binário só sai se nada mais o referencia), reorder (grava a ordem; tem de ser exatamente as fotos do anúncio) | `OWNER` | Feito |
 | administrator | listings | paginate, show, review (aprovar e recusar com motivo), archive | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| administrator | listings | delete (`:id/permanent`, só o arquivado e sem denúncia) | `ADMINISTRATOR` | Feito |
 | administrator | owners | verify (marcar e desmarcar) | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | administrator | reports | paginate, resolve | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | storefront | reports | create (denúncia pública, com limite por IP) | visitante sem login | Feito |
@@ -223,7 +224,7 @@ abandonado é limpo pelo comando `node ace storages:prune` (`ARCHITECTURE.md` §
   `httpOnly` (acesso 1 dia, renovação 7 dias); `POST /authentication/refresh` renova; `POST
   /authentication/sign-out` apaga. O cookie leva `Secure` em produção e `COOKIE_DOMAIN` quando app
   e API estão em hosts diferentes.
-- Papéis (`USER_ROLE`): `ADMINISTRATOR` (nasce só do seeder, único que apaga de vez), `MODERATOR`
+- Papéis (`USER_ROLE`): `ADMINISTRATOR` (nasce só do seeder, único que apaga anúncio de vez: `DELETE /administrator/listings/:id/permanent`, só o arquivado e sem denúncia, `DECISIONS.md` #34), `MODERATOR`
   (revisa e arquiva anúncios e lugares, sem apagar de vez nem gerir contas) e `OWNER` (dono de
   imóvel: gere só o que é seu e não opera o painel). Quem opera o painel é `STAFF_USER_ROLES`.
 - O grupo `/storages` exige sessão e papel de equipe: nenhuma ação de arquivo checa posse por dono

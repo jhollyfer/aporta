@@ -19,6 +19,9 @@ export const controllers = {
       archive: {
         Archive: () => import('#features/administrator/listings/archive/archive.controller'),
       },
+      delete: {
+        Delete: () => import('#features/administrator/listings/delete/delete.controller'),
+      },
       paginate: {
         Paginate: () => import('#features/administrator/listings/paginate/paginate.controller'),
       },

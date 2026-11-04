@@ -331,6 +331,25 @@ test.group('domain > listing', () => {
     })
   })
 
+  test('when asked if it can be erased, only the archived ad answers yes', ({
+    assert,
+  }) => {
+    for (const status of [
+      LISTING_STATUS.DRAFT,
+      LISTING_STATUS.PENDING,
+      LISTING_STATUS.PUBLISHED,
+    ]) {
+      assert.deepEqual(listingIn(status).ensureErasable().value, {
+        code: 'LISTING_NOT_ARCHIVED',
+      })
+    }
+
+    const listing = listingIn(LISTING_STATUS.PUBLISHED)
+    listing.archive(new Date('2026-11-01T12:00:00.000Z'))
+
+    assert.isTrue(listing.ensureErasable().isRight())
+  })
+
   test('when approved from the queue, it is PUBLISHED with the instant and the author, and the storefront sees it', ({
     assert,
   }) => {

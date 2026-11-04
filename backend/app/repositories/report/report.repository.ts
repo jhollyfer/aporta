@@ -40,6 +40,9 @@ export type ReportListCriteria = Merge<
 export default abstract class ReportRepository {
   abstract findById(id: string): Promise<Report | null>
 
+  /** Whether any report, open or resolved, points to the ad: it is evidence, and it blocks the ad's deletion. */
+  abstract existsForListing(listingId: string): Promise<boolean>
+
   abstract paginate(
     criteria: ReportListCriteria,
   ): Promise<Paginated<ReportRecord>>

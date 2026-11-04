@@ -73,7 +73,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
 | 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Chamado ao remover foto (5.8); excluir anúncio de vez ainda não existe e usará o mesmo ponto (`DECISIONS.md` #32) |
 
-## Fase 5 · Dono, verificação e moderação (8/8)
+## Fase 5 · Dono, verificação e moderação (9/9)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -81,10 +81,11 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 5.2 | Entrada do dono na tela e rota privada com guarda | Alta | Feita | `_authentication` e `_private`, `E2E` em `auth.spec.ts` |
 | 5.3 | Área "Meus anúncios" (listar, editar, arquivar) | Alta | Feita | `_private/owner/listings`; fotos: anexar, remover e reordenar (5.8) |
 | 5.4 | Verificação do dono e selo "dono verificado" | Alta | Feita | a equipe marca `users.verified_at`; o selo vem da conta. O critério de verificação (documento, visita, WhatsApp) segue em aberto no `PRD.md` §8 |
-| 5.5 | Moderação de anúncio (aprovar, pedir ajuste, arquivar) | Alta | Feita | moderação antes de publicar (`DECISIONS.md` #14); sem apagar de vez, ver 4.5 |
+| 5.5 | Moderação de anúncio (aprovar, pedir ajuste, arquivar) | Alta | Feita | moderação antes de publicar (`DECISIONS.md` #14); apagar de vez é só do administrador, ver 5.9 |
 | 5.6 | Política de anúncio parado (prazo sem atualização) | Média | Feita | a tela só mostra "atualizado há X dias"; o prazo para tirar do ar continua pergunta aberta no `PRD.md` §8 e não há rotina que tire anúncio |
 | 5.7 | Canal de denúncia de golpe e WhatsApp institucional | Média | Feita | denúncia pública e fila da equipe; **o WhatsApp institucional continua sem número** (`PRD.md` §8) |
 | 5.8 | Remover e reordenar as fotos do próprio anúncio | Média | Feita | `DELETE /owner/listings/:id/photos/:photoId` (204) e `PUT /owner/listings/:id/photos/order` (200, anúncio inteiro); regras em `Listing.removePhoto` e `Listing.reorderPhotos`; `StorageOrphans.sweep` depois de remover; botões "Subir", "Descer" e "Remover" (com `ConfirmDialog`) na edição; `DECISIONS.md` #33 |
+| 5.9 | Excluir anúncio de vez, só o administrador | Média | Feita | `DELETE /administrator/listings/:id/permanent` (204); 403 ao moderador, 409 `LISTING_NOT_ARCHIVED` se não está arquivado e 409 `LISTING_HAS_REPORTS` se tem denúncia (`DECISIONS.md` #34); fotos saem por `CASCADE` e o bucket por `StorageOrphans.sweep`; botão "Excluir de vez" no painel da equipe, só para o administrador |
 
 ## Fase 6 · E-mail e fila (0/3)
 

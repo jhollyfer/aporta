@@ -106,6 +106,24 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.isNull(await repository.findById(randomUUID()))
     })
 
+    test('when asking whether an ad has reports, any report counts, open or resolved', async ({
+      assert,
+    }) => {
+      const { repository, listing, staff } = await make()
+      const reported = await listing('Com denúncia')
+      const clean = await listing('Sem denúncia')
+      const report = reportOn(reported)
+      recorded(await repository.save(report))
+
+      assert.isTrue(await repository.existsForListing(reported))
+      assert.isFalse(await repository.existsForListing(clean))
+
+      report.resolve(await staff(), 'Conferido pela equipe', new Date())
+      recorded(await repository.save(report))
+
+      assert.isTrue(await repository.existsForListing(reported))
+    })
+
     test('when the ad does not exist, save answers a repository failure instead of throwing', async ({
       assert,
     }) => {

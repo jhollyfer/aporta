@@ -238,8 +238,9 @@ router
  * team; the role lists below are the place to narrow it). The `OWNER` never enters: an owner
  * reviewing ads would be reviewing his own.
  *
- * There is no permanent delete of an ad: `archive` is the removal, and the reports and decisions
- * stay tied to it as record. The routes that take an `:id` need no policy because no per-record
+ * `DELETE :id` archives (the removal the moderator has); `DELETE :id/permanent` erases an
+ * **already archived** ad for good and is the `ADMINISTRATOR`'s alone. An ad with a report is not
+ * erased: reports and decisions stay tied to it as record. The routes that take an `:id` need no policy because no per-record
  * rule exists beyond the role: staff acts on any ad, report or owner account, and a missing one is
  * an honest `404` (the staff may know the id exists).
  */
@@ -255,6 +256,13 @@ router
         router.delete(':id', [
           controllers.administrator.listings.archive.Archive,
         ])
+        // The staff archives; erasing for good is the ADMINISTRATOR's alone, so the route
+        // narrows the group's roles (`role.middleware.ts`).
+        router
+          .delete(':id/permanent', [
+            controllers.administrator.listings.delete.Delete,
+          ])
+          .use(middleware.role([USER_ROLE.ADMINISTRATOR]))
       })
       .prefix('listings')
       .as('listings')

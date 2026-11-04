@@ -108,6 +108,10 @@ export class FailingListingRepository extends ListingRepository {
     throw new Error('database down')
   }
 
+  delete(): never {
+    throw new Error('database down')
+  }
+
   findPublishedRecordBySlug(): never {
     throw new Error('database down')
   }

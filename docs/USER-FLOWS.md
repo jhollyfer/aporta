@@ -146,6 +146,7 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 | 4 | recusa com motivo (3 a 500 caracteres) | o anúncio volta ao dono como "Precisa de ajuste", com o motivo em destaque | detalhe |
 | 5 | marca ou desmarca o dono como verificado | o selo muda em todos os anúncios da conta | detalhe |
 | 6 | arquiva | o anúncio sai do ar e o segundo arquivamento é recusado (409) | detalhe |
+| 6b | o administrador abre um anúncio arquivado, sem denúncia, e toca em "Excluir de vez" | pede confirmação ("não tem volta"); apaga o anúncio e as fotos, volta para a fila; só o administrador vê o botão | detalhe |
 | 7 | abre as denúncias, lê e resolve com nota | a denúncia passa a resolvida; o anúncio não muda, quem tira do ar é o arquivar | `/administrator/reports` |
 | 8 | o visitante toca em "Denunciar este anúncio" e escolhe o motivo | grava a denúncia, sem login, e agradece; mais de 5 por hora do mesmo IP recebe 429 com o tempo de espera | página do anúncio |
 
@@ -153,7 +154,9 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 
 | Situação | Resposta |
 |---|---|
-| Moderador tenta apagar de vez | não existe a ação: só se arquiva (`DECISIONS.md` #14) |
+| Moderador tenta apagar de vez | 403: só o administrador apaga (`DECISIONS.md` #34); o moderador arquiva |
+| Administrador apaga de vez um anúncio que não está arquivado | 409, arquive antes |
+| Administrador apaga de vez um anúncio que tem denúncia | 409: a denúncia é registro e o anúncio fica arquivado |
 | Dono tenta ver anúncio de outro dono | 404, igual ao anúncio que não existe |
 | Dono abre o painel | volta para a conta |
 | Dono edita o anúncio recusado | salva e o anúncio volta para análise; editar um anúncio no ar não passa por nova revisão |

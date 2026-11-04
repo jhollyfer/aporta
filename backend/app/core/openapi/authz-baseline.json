@@ -4,6 +4,7 @@
   "GET /administrator/listings": "ADMINISTRATOR, MODERATOR",
   "GET /administrator/listings/{id}": "ADMINISTRATOR, MODERATOR",
   "DELETE /administrator/listings/{id}": "ADMINISTRATOR, MODERATOR",
+  "DELETE /administrator/listings/{id}/permanent": "ADMINISTRATOR",
   "PUT /administrator/listings/{id}/review": "ADMINISTRATOR, MODERATOR",
   "PUT /administrator/owners/{id}/verification": "ADMINISTRATOR, MODERATOR",
   "GET /administrator/reports": "ADMINISTRATOR, MODERATOR",

@@ -157,6 +157,12 @@ export default class ListingMemoryRepository extends ListingRepository {
     return Promise.resolve(right(this.record(saved)))
   }
 
+  delete(listing: Listing): Promise<void> {
+    this.#rows.delete(listing.id)
+
+    return Promise.resolve()
+  }
+
   put(listing: Listing, stamps?: ListingStamps): void {
     const snapshot = listing.snapshot()
     const row = MemoryRows.stamp(

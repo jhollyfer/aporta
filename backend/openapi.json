@@ -480,11 +480,11 @@
             }
           },
           "409": {
-            "description": "Anúncio fora da fila de análise · Anúncio já arquivado",
+            "description": "Anúncio fora da fila de análise · Anúncio já arquivado · Só um anúncio arquivado pode ser excluído de vez",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingNotPending"
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingNotArchivedListingNotPending"
                 }
               }
             }
@@ -510,7 +510,7 @@
             }
           }
         },
-        "description": "A equipe tira do ar qualquer anúncio, em qualquer estado (um golpe confirmado não espera a fila). O estado vira `ARCHIVED` e o anúncio vai para a lixeira, na mesma transição: nenhuma leitura pública ou do dono o devolve, e a lista da equipe ainda o mostra.\n\nArquivar o que já foi arquivado responde `409`. Não há exclusão definitiva: a denúncia e a decisão são registro e ficam ligadas ao anúncio.",
+        "description": "A equipe tira do ar qualquer anúncio, em qualquer estado (um golpe confirmado não espera a fila). O estado vira `ARCHIVED` e o anúncio vai para a lixeira, na mesma transição: nenhuma leitura pública ou do dono o devolve, e a lista da equipe ainda o mostra.\n\nArquivar o que já foi arquivado responde `409`. Excluir de vez é outra ação, só do ADMINISTRATOR e só para o que já foi arquivado.",
         "security": [
           {
             "cookieAuth": []
@@ -519,6 +519,103 @@
         "x-roles": [
           "ADMINISTRATOR",
           "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      }
+    },
+    "/administrator/listings/{id}/permanent": {
+      "delete": {
+        "operationId": "administratorListingsDelete",
+        "summary": "Excluir um anúncio de vez",
+        "tags": [
+          "Equipe · Anúncios"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Anúncio com denúncia não pode ser excluído de vez · Anúncio fora da fila de análise · Anúncio já arquivado · Só um anúncio arquivado pode ser excluído de vez",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingHasReportsListingNotArchivedListingNotPending"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Motivo da recusa inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingReviewNoteInvalidValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorListingDeleteErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Apaga o anúncio e a galeria **sem volta**. Só o ADMINISTRATOR pode (o moderador recebe `403`) e só o que já foi arquivado: um anúncio no ar ou na fila responde `409` e precisa ser arquivado antes.\n\nAnúncio com denúncia, aberta ou resolvida, não é apagado (`409`): a denúncia e a decisão são registro e ficam ligadas a ele.\n\nDepois da exclusão, o arquivo de cada foto só sai do bucket se **nenhuma outra** foto ou conta o referenciar (imagens do catálogo de demonstração são compartilhadas). Se o bucket falhar, o anúncio continua excluído e a varredura de órfãos termina o trabalho depois.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR"
         ],
         "parameters": [
           {
@@ -585,11 +682,11 @@
             }
           },
           "409": {
-            "description": "Anúncio fora da fila de análise · Anúncio já arquivado",
+            "description": "Anúncio fora da fila de análise · Anúncio já arquivado · Só um anúncio arquivado pode ser excluído de vez",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingNotPending"
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingNotArchivedListingNotPending"
                 }
               }
             }
@@ -5707,7 +5804,7 @@
           "code"
         ]
       },
-      "Error409ListingAlreadyArchivedListingNotPending": {
+      "Error409ListingAlreadyArchivedListingHasReportsListingNotArchivedListingNotPending": {
         "type": "object",
         "properties": {
           "message": {
@@ -5725,6 +5822,44 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "LISTING_ALREADY_ARCHIVED",
+              "LISTING_HAS_REPORTS",
+              "LISTING_NOT_ARCHIVED",
+              "LISTING_NOT_PENDING"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error409ListingAlreadyArchivedListingNotArchivedListingNotPending": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              409
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "LISTING_ALREADY_ARCHIVED",
+              "LISTING_NOT_ARCHIVED",
               "LISTING_NOT_PENDING"
             ]
           },
@@ -6263,6 +6398,41 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "ADMINISTRATOR_LISTING_ARCHIVE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorListingDeleteErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_LISTING_DELETE_ERROR",
               "SERVER_ERROR"
             ]
           },

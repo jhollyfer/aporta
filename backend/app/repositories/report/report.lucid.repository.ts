@@ -22,6 +22,14 @@ export default class ReportLucidRepository extends ReportRepository {
     return this.toEntity(row)
   }
 
+  async existsForListing(listingId: string): Promise<boolean> {
+    const total = await LucidMapping.count(
+      ReportModel.query().where('listingId', listingId),
+    )
+
+    return total > 0
+  }
+
   async paginate(
     criteria: ReportListCriteria,
   ): Promise<Paginated<ReportRecord>> {

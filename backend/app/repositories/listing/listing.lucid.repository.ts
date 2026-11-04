@@ -171,6 +171,11 @@ export default class ListingLucidRepository extends ListingRepository {
     )
   }
 
+  async delete(listing: Listing): Promise<void> {
+    // The photos go with it by `ON DELETE CASCADE`; the same call in memory drops the row.
+    await ListingModel.query().where('id', listing.id).delete()
+  }
+
   private async persist(listing: Listing): Promise<ListingRecord | null> {
     const snapshot = listing.snapshot()
 

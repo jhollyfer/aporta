@@ -46,6 +46,8 @@
       "maxLng": "a longitude máxima",
       "maxLat": "a latitude máxima",
       "category": "a categoria",
+      "hours": "o horário",
+      "date": "a data",
       "decision": "a decisão",
       "note": "o motivo",
       "verified": "a verificação",

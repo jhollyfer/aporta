@@ -52,6 +52,16 @@ export interface ApiDefinition {
       show: typeof routes['administrator.listings.show']
       review: typeof routes['administrator.listings.review']
       archive: typeof routes['administrator.listings.archive']
+      delete: typeof routes['administrator.listings.delete']
+    }
+    places: {
+      paginate: typeof routes['administrator.places.paginate']
+      create: typeof routes['administrator.places.create']
+      show: typeof routes['administrator.places.show']
+      update: typeof routes['administrator.places.update']
+      unarchive: typeof routes['administrator.places.unarchive']
+      archive: typeof routes['administrator.places.archive']
+      delete: typeof routes['administrator.places.delete']
     }
     owners: {
       verify: typeof routes['administrator.owners.verify']

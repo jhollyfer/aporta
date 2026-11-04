@@ -14,5 +14,17 @@ export type PlaceEventDateRequired = {
 /** A date on a place that is not an event: a bar does not happen on a day. */
 export type PlaceDateNotAllowed = { readonly code: 'PLACE_DATE_NOT_ALLOWED' }
 
+/** A day that is not on the calendar (`2027-02-31`): the database would refuse it halfway. */
+export type PlaceDateInvalid = { readonly code: 'PLACE_DATE_INVALID' }
+
+/** Archiving what is already in the trash. */
+export type PlaceAlreadyArchived = { readonly code: 'PLACE_ALREADY_ARCHIVED' }
+
+/** Restoring or erasing what is not in the trash: both only make sense for the archived. */
+export type PlaceNotArchived = { readonly code: 'PLACE_NOT_ARCHIVED' }
+
 export type PlaceError =
-  PlaceNameEmpty | PlaceEventDateRequired | PlaceDateNotAllowed
+  | PlaceNameEmpty
+  | PlaceEventDateRequired
+  | PlaceDateNotAllowed
+  | PlaceDateInvalid

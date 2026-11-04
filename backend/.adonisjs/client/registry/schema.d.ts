@@ -359,6 +359,110 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/archive/archive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'administrator.listings.delete': {
+    methods: ["DELETE"]
+    pattern: '/administrator/listings/:id/permanent'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/listings/delete/delete.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/listings/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/listings/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.paginate': {
+    methods: ["GET","HEAD"]
+    pattern: '/administrator/places'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/administrator/places.validator').AdministratorPlacePaginateValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/paginate/paginate.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/paginate/paginate.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.create': {
+    methods: ["POST"]
+    pattern: '/administrator/places'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/administrator/places.validator').AdministratorPlaceWriteValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/administrator/places.validator').AdministratorPlaceWriteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/create/create.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/administrator/places/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/show/show.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/show/show.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.update': {
+    methods: ["PUT"]
+    pattern: '/administrator/places/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/places.validator').AdministratorPlaceWriteValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/administrator/places.validator').AdministratorPlaceWriteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/update/update.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/update/update.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/update/update.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.unarchive': {
+    methods: ["PUT"]
+    pattern: '/administrator/places/:id/unarchive'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/unarchive/unarchive.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/unarchive/unarchive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/unarchive/unarchive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.archive': {
+    methods: ["DELETE"]
+    pattern: '/administrator/places/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/archive/archive.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/archive/archive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/archive/archive.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'administrator.places.delete': {
+    methods: ["DELETE"]
+    pattern: '/administrator/places/:id/permanent'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/administrator/places/delete/delete.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/administrator/places/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/administrator/places/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'administrator.owners.verify': {
     methods: ["PUT"]
     pattern: '/administrator/owners/:id/verification'

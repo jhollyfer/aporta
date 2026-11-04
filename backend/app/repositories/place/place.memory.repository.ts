@@ -1,6 +1,7 @@
-import type { Paginated } from '@aporta/shared'
+import { left, right, type Either, type Paginated } from '@aporta/shared'
 
 import MemoryRows from '#core/memory-rows'
+import RepositoryFailure from '#core/repository-failure'
 import Place, { type PlaceProps } from '#domain/place/place.entity'
 import PlaceRepository, {
   type PlaceListCriteria,
@@ -53,9 +54,58 @@ export default class PlaceMemoryRepository extends PlaceRepository {
     )
   }
 
+  findAnyRecordById(id: string): Promise<PlaceRecord | null> {
+    const row = this.#rows.get(id)
+    if (!row) return Promise.resolve(null)
+
+    return Promise.resolve(this.record(row))
+  }
+
+  save(place: Place): Promise<Either<RepositoryFailure, PlaceRecord>> {
+    const snapshot = place.snapshot()
+
+    // The foreign key makes a place without a neighborhood impossible in Postgres.
+    if (!this.#neighborhoods.has(snapshot.neighborhoodId))
+      return Promise.resolve(
+        left(RepositoryFailure.of(new Error('neighborhood does not exist'))),
+      )
+
+    this.put(place)
+
+    const saved = this.#rows.get(snapshot.id)
+    if (!saved)
+      return Promise.resolve(
+        left(RepositoryFailure.of(new Error('place vanished after save'))),
+      )
+
+    const record = this.record(saved)
+    if (!record)
+      return Promise.resolve(
+        left(RepositoryFailure.of(new Error('place lost its neighborhood'))),
+      )
+
+    return Promise.resolve(right(record))
+  }
+
+  delete(place: Place): Promise<void> {
+    this.#rows.delete(place.id)
+
+    return Promise.resolve()
+  }
+
+  private record(row: Row): PlaceRecord | null {
+    const neighborhood = this.#neighborhoods.get(row.neighborhoodId)
+    if (!neighborhood) return null
+
+    return {
+      place: Place.restore(structuredClone(row)),
+      neighborhood: structuredClone(neighborhood),
+    }
+  }
+
   private matches(row: Row, criteria: PlaceListCriteria): boolean {
     return (
-      row.deletedAt === null &&
+      MemoryRows.inTrash(row, criteria.trashed) &&
       (criteria.category === undefined || row.category === criteria.category) &&
       MemoryRows.contains([row.name, row.description], criteria.search)
     )

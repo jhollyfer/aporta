@@ -4,6 +4,8 @@ import {
   AdministratorListingPaginateResponse,
   AdministratorListingShowResponse,
   AdministratorOwnerVerifyResponse,
+  AdministratorPlacePaginateResponse,
+  AdministratorPlaceShowResponse,
   AdministratorReportPaginateResponse,
   AdministratorReportShowResponse,
   OwnerListingPaginateResponse,
@@ -50,11 +52,15 @@ export const RESPONSES: Readonly<Record<string, ResponseSchema>> = {
 
   /**
    * The staff's moderation. `show`, `review` answer the ad as the staff reads it; `archive`
-   * answers `204`. The report `resolve` answers the report it closed.
+   * answers `204`. The report `resolve` answers the report it closed. The guide's `show`,
+   * `create` and `update` answer the place as the staff reads it; `archive`, `unarchive` and
+   * `delete` answer `204`.
    */
   'administrator/listings': AdministratorListingShowResponse,
   'administrator/listings/paginate': AdministratorListingPaginateResponse,
   'administrator/owners': AdministratorOwnerVerifyResponse,
+  'administrator/places': AdministratorPlaceShowResponse,
+  'administrator/places/paginate': AdministratorPlacePaginateResponse,
   'administrator/reports': AdministratorReportShowResponse,
   'administrator/reports/paginate': AdministratorReportPaginateResponse,
 

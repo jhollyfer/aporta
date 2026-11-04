@@ -233,7 +233,8 @@ router
   .use(middleware.role([USER_ROLE.OWNER]))
 
 /**
- * The staff's side of the moderation: the queue of ads, the owner's seal and the scam reports.
+ * The staff's side of the moderation: the queue of ads, the owner's seal, the scam reports and
+ * the city guide the team keeps (`places`).
  * Open to `ADMINISTRATOR` and `MODERATOR` alike (`docs/PRD.md` §8 leaves open who composes the
  * team; the role lists below are the place to narrow it). The `OWNER` never enters: an owner
  * reviewing ads would be reviewing his own.
@@ -266,6 +267,27 @@ router
       })
       .prefix('listings')
       .as('listings')
+
+    router
+      .group(() => {
+        router.get('/', [controllers.administrator.places.paginate.Paginate])
+        router.post('/', [controllers.administrator.places.create.Create])
+        router.get(':id', [controllers.administrator.places.show.Show])
+        router.put(':id', [controllers.administrator.places.update.Update])
+        router.put(':id/unarchive', [
+          controllers.administrator.places.unarchive.Unarchive,
+        ])
+        router.delete(':id', [controllers.administrator.places.archive.Archive])
+        // The staff keeps the guide; erasing a place for good is the ADMINISTRATOR's alone, and
+        // the same convention as the ads: the route narrows the group's roles.
+        router
+          .delete(':id/permanent', [
+            controllers.administrator.places.delete.Delete,
+          ])
+          .use(middleware.role([USER_ROLE.ADMINISTRATOR]))
+      })
+      .prefix('places')
+      .as('places')
 
     router
       .group(() => {

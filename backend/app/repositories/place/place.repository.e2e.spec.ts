@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import app from '@adonisjs/core/services/app'
-import { PLACE_CATEGORY, SORT_DIRECTION } from '@aporta/shared'
+import { PLACE_CATEGORY, SORT_DIRECTION, TRASHED_MODE } from '@aporta/shared'
 import { test } from '@japa/runner'
 
 import Place from '#domain/place/place.entity'
@@ -10,7 +10,7 @@ import PlaceMemoryRepository from '#repositories/place/place.memory.repository'
 import type PlaceRepository from '#repositories/place/place.repository'
 import { resetDatabase } from '#tests/database-fixtures'
 import { placeDraft } from '#tests/place-fixtures'
-import { ARCHIVED_AT } from '#tests/repository-fixtures'
+import { ARCHIVED_AT, recorded } from '#tests/repository-fixtures'
 import { neighborhood, seedPlace } from '#tests/storefront-fixtures'
 
 /**
@@ -189,6 +189,121 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
         result.data.map((each) => each.place.snapshot().name),
         ['Bar do Beiradão'],
       )
+    })
+
+    test('when asking for the trash, `only` returns the archived and `with` returns both', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const live = placeDraft({ name: 'Viva', neighborhoodId: centro })
+      const gone = placeDraft({ name: 'Arquivada', neighborhoodId: centro })
+      gone.archive(ARCHIVED_AT)
+      await seed(live)
+      await seed(gone)
+
+      const only = await repository.paginate({
+        ...PAGE,
+        trashed: TRASHED_MODE.ONLY,
+      })
+      const both = await repository.paginate({
+        ...PAGE,
+        trashed: TRASHED_MODE.WITH,
+      })
+
+      assert.deepEqual(
+        only.data.map((each) => each.place.id),
+        [gone.id],
+      )
+      assert.deepEqual(
+        both.data.map((each) => each.place.snapshot().name),
+        ['Arquivada', 'Viva'],
+      )
+      assert.deepEqual(only.data[0]?.place.snapshot().deletedAt, ARCHIVED_AT)
+    })
+
+    test('when finding by id, it returns the place with its neighborhood even in the trash, and null when missing', async ({
+      assert,
+    }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const gone = placeDraft({ neighborhoodId: centro })
+      gone.archive(ARCHIVED_AT)
+      await seed(gone)
+
+      const found = await repository.findAnyRecordById(gone.id)
+      const missing = await repository.findAnyRecordById(randomUUID())
+
+      assert.equal(found?.place.id, gone.id)
+      assert.deepEqual(found?.neighborhood, { slug: 'centro', name: 'Centro' })
+      assert.isNull(missing)
+    })
+
+    test('when saving, it inserts a new place and updates an existing one, keeping the trash', async ({
+      assert,
+    }) => {
+      const { repository, neighborhood: createNeighborhood } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const place = placeDraft({
+        category: PLACE_CATEGORY.EVENT,
+        date: '2027-06-26',
+        name: 'Festival',
+        neighborhoodId: centro,
+      })
+
+      const inserted = recorded(await repository.save(place))
+      place.change({
+        ...place.snapshot(),
+        name: 'Festival dos Bois',
+        date: '2027-06-27',
+        whatsapp: '5597999990001',
+      })
+      place.archive(ARCHIVED_AT)
+      const updated = recorded(await repository.save(place))
+
+      assert.equal(inserted.place.snapshot().date, '2027-06-26')
+      assert.containsSubset(updated.place.snapshot(), {
+        id: place.id,
+        name: 'Festival dos Bois',
+        date: '2027-06-27',
+        whatsapp: '5597999990001',
+        deletedAt: ARCHIVED_AT,
+      })
+      assert.deepEqual(updated.neighborhood, {
+        slug: 'centro',
+        name: 'Centro',
+      })
+      const both = await repository.paginate({
+        ...PAGE,
+        trashed: TRASHED_MODE.WITH,
+      })
+      assert.lengthOf(both.data, 1)
+    })
+
+    test('when deleting, the place is gone for good', async ({ assert }) => {
+      const {
+        repository,
+        neighborhood: createNeighborhood,
+        seed,
+      } = await make()
+      const centro = await createNeighborhood('centro', 'Centro')
+      const gone = placeDraft({ neighborhoodId: centro })
+      const kept = placeDraft({ name: 'Fica', neighborhoodId: centro })
+      await seed(gone)
+      await seed(kept)
+
+      await repository.delete(gone)
+
+      assert.isNull(await repository.findAnyRecordById(gone.id))
+      assert.isNotNull(await repository.findAnyRecordById(kept.id))
     })
   })
 }

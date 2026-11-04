@@ -7,6 +7,11 @@ import { errorBody, page } from '#tests/response-fixtures'
 import { neighborhood, place, placeOf } from '#tests/storefront-fixtures'
 
 /** The public guide: `GET /storefront/places`, with no cookie anywhere in this file. */
+/** A `string` and not the literal: the typed overload refuses the parameter the guide must ignore. */
+function trashedUrl(mode: string): string {
+  return `/storefront/places?trashed=${mode}`
+}
+
 test.group('storefront > places > paginate', (group) => {
   group.each.setup(() => resetDatabase())
 
@@ -102,6 +107,28 @@ test.group('storefront > places > paginate', (group) => {
     response.assertStatus(200)
     assert.deepEqual(
       page(response).data.map((item) => item.name),
+      ['Viva'],
+    )
+  })
+
+  test('when a visitor asks for ?trashed, the guide ignores it and the archived stay hidden', async ({
+    client,
+    assert,
+  }) => {
+    await place({ name: 'Viva' })
+    await place({ name: 'Arquivada', deletedAt: DateTime.now() })
+
+    const only = await client.get(trashedUrl('only'))
+    const both = await client.get(trashedUrl('with'))
+
+    only.assertStatus(200)
+    both.assertStatus(200)
+    assert.deepEqual(
+      page(only).data.map((item) => item.name),
+      ['Viva'],
+    )
+    assert.deepEqual(
+      page(both).data.map((item) => item.name),
       ['Viva'],
     )
   })

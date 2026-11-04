@@ -110,6 +110,16 @@ const tags: TagRule[] = [
     plural: 'donos',
   },
   {
+    prefix: '/administrator/places',
+    name: 'Equipe · Guia',
+    description:
+      'O guia da cidade que a equipe (`ADMINISTRATOR` e `MODERATOR`) mantém: lugares para comer, ' +
+      'beber, eventos e serviços. Lista, cria, edita, arquiva e restaura; a lista mostra a lixeira ' +
+      'com `?trashed`. Excluir de vez é só do `ADMINISTRATOR` e só para o lugar já arquivado.',
+    singular: 'lugar',
+    plural: 'lugares',
+  },
+  {
     prefix: '/administrator/reports',
     name: 'Equipe · Denúncias',
     description:

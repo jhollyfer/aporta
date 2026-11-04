@@ -81,5 +81,19 @@
   "LISTING_PHOTO_NOT_FOUND": "Photo not found on the listing",
   "LISTING_PHOTOS_ORDER_INVALID": "The new order must hold exactly the listing photos",
   "OWNER_LISTING_PHOTO_DELETE_ERROR": "Internal server error",
-  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Internal server error"
+  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Internal server error",
+  "PLACE_NOT_FOUND": "Place not found",
+  "PLACE_NAME_EMPTY": "The place name is empty",
+  "PLACE_EVENT_DATE_REQUIRED": "An event needs a date",
+  "PLACE_DATE_NOT_ALLOWED": "Only an event has a date",
+  "PLACE_DATE_INVALID": "The date does not exist on the calendar",
+  "PLACE_ALREADY_ARCHIVED": "The place is already archived",
+  "PLACE_NOT_ARCHIVED": "The place is not archived",
+  "ADMINISTRATOR_PLACE_PAGINATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_SHOW_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_CREATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_UPDATE_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_ARCHIVE_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_UNARCHIVE_ERROR": "Internal server error",
+  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Internal server error"
 }

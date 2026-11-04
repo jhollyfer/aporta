@@ -6,8 +6,7 @@ import { test } from '@japa/runner'
 import StorefrontPlacePaginateUseCase from './paginate.use-case.ts'
 
 import PlaceMemoryRepository from '#repositories/place/place.memory.repository'
-import PlaceRepository from '#repositories/place/place.repository'
-import { placeDraft } from '#tests/place-fixtures'
+import { FailingPlaceRepository, placeDraft } from '#tests/place-fixtures'
 
 test.group('storefront > places > paginate (unit)', () => {
   test('when listing, it brings the places by name and narrows by category', async ({
@@ -49,11 +48,6 @@ test.group('storefront > places > paginate (unit)', () => {
   test('when the repository fails, it answers 500 with the module code', async ({
     assert,
   }) => {
-    class FailingPlaceRepository extends PlaceRepository {
-      paginate(): never {
-        throw new Error('database down')
-      }
-    }
     const useCase = new StorefrontPlacePaginateUseCase(
       new FailingPlaceRepository(),
     )

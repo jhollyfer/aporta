@@ -31,6 +31,14 @@ export type ScannedRoutes = {
     'administrator.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.listings.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.places.create': { paramsTuple?: []; params?: {} }
+    'administrator.places.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.unarchive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.owners.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
     'administrator.reports.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -56,6 +64,8 @@ export type ScannedRoutes = {
     'owner.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.paginate': { paramsTuple?: []; params?: {} }
     'administrator.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.places.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -76,6 +86,8 @@ export type ScannedRoutes = {
     'owner.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.paginate': { paramsTuple?: []; params?: {} }
     'administrator.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.paginate': { paramsTuple?: []; params?: {} }
+    'administrator.places.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.paginate': { paramsTuple?: []; params?: {} }
     'storages.paginate': { paramsTuple?: []; params?: {} }
     'storages.parts': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -90,6 +102,7 @@ export type ScannedRoutes = {
     'authentication.refresh': { paramsTuple?: []; params?: {} }
     'owner.listings.create': { paramsTuple?: []; params?: {} }
     'owner.listings.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.create': { paramsTuple?: []; params?: {} }
     'storages.create': { paramsTuple?: []; params?: {} }
     'storages.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -98,6 +111,8 @@ export type ScannedRoutes = {
     'owner.listings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'owner.listings.photos.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.unarchive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.owners.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -105,6 +120,9 @@ export type ScannedRoutes = {
     'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'owner.listings.photos.delete': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'administrator.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.listings.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'administrator.places.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

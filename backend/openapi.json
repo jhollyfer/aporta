@@ -42,6 +42,10 @@
       "description": "O selo de \"dono verificado\", que é da conta de quem anuncia e aparece em todos os anúncios dela. Marcar e desmarcar são a mesma chamada, com `verified` verdadeiro ou falso."
     },
     {
+      "name": "Equipe · Guia",
+      "description": "O guia da cidade que a equipe (`ADMINISTRATOR` e `MODERATOR`) mantém: lugares para comer, beber, eventos e serviços. Lista, cria, edita, arquiva e restaura; a lista mostra a lixeira com `?trashed`. Excluir de vez é só do `ADMINISTRATOR` e só para o lugar já arquivado."
+    },
+    {
       "name": "Equipe · Denúncias",
       "description": "A fila de denúncias de golpe feitas na vitrine. A equipe lista por `OPEN` ou `RESOLVED` e fecha cada uma com uma nota; fechar não tira o anúncio do ar, isso é arquivá-lo."
     },
@@ -861,6 +865,768 @@
             }
           }
         }
+      }
+    },
+    "/administrator/places": {
+      "get": {
+        "operationId": "administratorPlacesPaginate",
+        "summary": "Listar lugares",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministratorPlacesPaginateResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlacePaginateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "O guia da cidade para a equipe: os lugares de comer, beber, eventos e serviços, com o filtro `?category` (EAT, DRINK, EVENT, SERVICE) e `?search` por nome e descrição.\n\nSem `?trashed` vêm só os lugares no ar; `?trashed=only` mostra só os arquivados (a tela de restaurar) e `?trashed=with` os dois juntos. Cada item traz `archivedAt`.\n\n`?sort` aceita name e `?direction` aceita asc ou desc. Padrão: por nome, página 1, 20 por página.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "EAT",
+                "DRINK",
+                "EVENT",
+                "SERVICE"
+              ]
+            }
+          },
+          {
+            "name": "trashed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "only",
+                "with"
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "name"
+              ]
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      },
+      "post": {
+        "operationId": "administratorPlacesCreate",
+        "summary": "Cadastrar um lugar no guia",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "201": {
+            "description": "Recurso criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministratorPlacesCreateResponse201"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceCreateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "A equipe acrescenta um lugar ao guia da cidade. O bairro vai pelo `slug`; um bairro que não existe responde `422` apontando `neighborhood`.\n\nUm evento (`EVENT`) precisa de `date` (`AAAA-MM-DD`) e as demais categorias não podem ter data. `whatsapp` é opcional: banco e feira não têm número.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdministratorPlacesCreateBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/administrator/places/{id}": {
+      "get": {
+        "operationId": "administratorPlacesShow",
+        "summary": "Detalhar lugar",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministratorPlacesShowResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceShowErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Um lugar do guia para a equipe, no ar ou arquivado, com a data de arquivamento.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "administratorPlacesUpdate",
+        "summary": "Editar um lugar do guia",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministratorPlacesUpdateResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceUpdateErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Substitui o que a equipe edita num lugar: o corpo leva todos os campos, os mesmos da criação, porque `category` e `date` dependem um do outro (tirar um lugar de `EVENT` sem tirar a data responde `422`). Vale também para o lugar arquivado, que continua arquivado.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdministratorPlacesUpdateBody"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "administratorPlacesArchive",
+        "summary": "Arquivar um lugar do guia",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceArchiveErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Tira o lugar do guia: ele vai para a lixeira, nenhuma leitura pública o devolve e a lista da equipe o mostra em `?trashed=only`.\n\nArquivar o que já foi arquivado responde `409`. Excluir de vez é outra ação, só do ADMINISTRATOR e só para o que já foi arquivado.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      }
+    },
+    "/administrator/places/{id}/permanent": {
+      "delete": {
+        "operationId": "administratorPlacesDelete",
+        "summary": "Excluir um lugar do guia de vez",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceDeleteErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Apaga o lugar **sem volta**. Só o ADMINISTRATOR pode (o moderador recebe `403`) e só o que já foi arquivado: um lugar no guia responde `409` e precisa ser arquivado antes.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
+      }
+    },
+    "/administrator/places/{id}/unarchive": {
+      "put": {
+        "operationId": "administratorPlacesUnarchive",
+        "summary": "Restaurar um lugar arquivado",
+        "tags": [
+          "Equipe · Guia"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: ADMINISTRATOR, MODERATOR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lugar não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404PlaceNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O lugar já está arquivado · O lugar não está arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409PlaceAlreadyArchivedPlaceNotArchived"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · O nome do lugar está vazio · Um evento precisa de data · Só um evento tem data · A data não existe no calendário · Bairro não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500AdministratorPlaceUnarchiveErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Traz o lugar de volta da lixeira para o guia. Restaurar o que não está arquivado responde `409`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMINISTRATOR",
+          "MODERATOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
       }
     },
     "/administrator/reports": {
@@ -4949,6 +5715,496 @@
         ],
         "additionalProperties": false
       },
+      "AdministratorPlacesCreateBody": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "enum": [
+              "EAT",
+              "DRINK",
+              "EVENT",
+              "SERVICE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 600
+          },
+          "neighborhood": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120
+          },
+          "hours": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "whatsapp": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 13
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Data no formato `YYYY-MM-DD`."
+          }
+        },
+        "required": [
+          "category",
+          "name",
+          "description",
+          "neighborhood",
+          "address",
+          "hours"
+        ],
+        "additionalProperties": false
+      },
+      "AdministratorPlacesCreateResponse201": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "EAT",
+              "DRINK",
+              "EVENT",
+              "SERVICE"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "hours": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "archivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "name",
+          "description",
+          "neighborhood",
+          "address",
+          "hours",
+          "whatsapp",
+          "date",
+          "archivedAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdministratorPlacesPaginateResponse200": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "EAT",
+                    "DRINK",
+                    "EVENT",
+                    "SERVICE"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "neighborhood": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "address": {
+                  "type": "string"
+                },
+                "hours": {
+                  "type": "string"
+                },
+                "whatsapp": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "date": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "archivedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "category",
+                "name",
+                "description",
+                "neighborhood",
+                "address",
+                "hours",
+                "whatsapp",
+                "date",
+                "archivedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "AdministratorPlacesShowResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "EAT",
+              "DRINK",
+              "EVENT",
+              "SERVICE"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "hours": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "archivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "name",
+          "description",
+          "neighborhood",
+          "address",
+          "hours",
+          "whatsapp",
+          "date",
+          "archivedAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdministratorPlacesUpdateBody": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "enum": [
+              "EAT",
+              "DRINK",
+              "EVENT",
+              "SERVICE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 600
+          },
+          "neighborhood": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120
+          },
+          "hours": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "whatsapp": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 13
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Data no formato `YYYY-MM-DD`."
+          }
+        },
+        "required": [
+          "category",
+          "name",
+          "description",
+          "neighborhood",
+          "address",
+          "hours"
+        ],
+        "additionalProperties": false
+      },
+      "AdministratorPlacesUpdateResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "EAT",
+              "DRINK",
+              "EVENT",
+              "SERVICE"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "hours": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "archivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "name",
+          "description",
+          "neighborhood",
+          "address",
+          "hours",
+          "whatsapp",
+          "date",
+          "archivedAt"
+        ],
+        "additionalProperties": false
+      },
       "AdministratorReportsPaginateResponse200": {
         "type": "object",
         "properties": {
@@ -5702,6 +6958,40 @@
           "code"
         ]
       },
+      "Error404PlaceNotFound": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              404
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "PLACE_NOT_FOUND"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
       "Error404ReportNotFound": {
         "type": "object",
         "properties": {
@@ -5896,6 +7186,41 @@
             "enum": [
               "LISTING_ALREADY_ARCHIVED",
               "LISTING_PHOTO_DUPLICATED"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error409PlaceAlreadyArchivedPlaceNotArchived": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              409
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "PLACE_ALREADY_ARCHIVED",
+              "PLACE_NOT_ARCHIVED"
             ]
           },
           "errors": {
@@ -6149,6 +7474,46 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "LISTING_REVIEW_NOTE_INVALID",
+              "VALIDATION_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code",
+          "errors"
+        ]
+      },
+      "Error422NeighborhoodNotFoundPlaceDateInvalidPlaceDateNotAllowedPlaceEventDateRequiredPlaceNameEmptyValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              422
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "NEIGHBORHOOD_NOT_FOUND",
+              "PLACE_DATE_INVALID",
+              "PLACE_DATE_NOT_ALLOWED",
+              "PLACE_EVENT_DATE_REQUIRED",
+              "PLACE_NAME_EMPTY",
               "VALIDATION_ERROR"
             ]
           },
@@ -6573,6 +7938,251 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "ADMINISTRATOR_OWNER_VERIFY_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceArchiveErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_ARCHIVE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceCreateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_CREATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceDeleteErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_DELETE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlacePaginateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_PAGINATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceShowErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_SHOW_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceUnarchiveErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_UNARCHIVE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500AdministratorPlaceUpdateErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "ADMINISTRATOR_PLACE_UPDATE_ERROR",
               "SERVER_ERROR"
             ]
           },

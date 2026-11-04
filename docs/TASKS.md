@@ -6,7 +6,7 @@
 > o `tasks.md` da feature em `.specs/features/`; aqui a linha aponta para lá.
 > Atualiza no mesmo commit em que a tarefa começa ou termina.
 
-**Resumo:** 77 tarefas · 50 feitas · 0 em andamento · 4 bloqueadas · 23 a fazer, atualizado 2026-11-03
+**Resumo:** 79 tarefas · 51 feitas · 0 em andamento · 4 bloqueadas · 24 a fazer, atualizado 2026-11-04
 
 Status: `A fazer` · `Em andamento` · `Feita` · `Bloqueada` (com motivo nas notas).
 Prioridade: `Alta` · `Média` · `Baixa`.
@@ -73,7 +73,7 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
 | 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Chamado ao remover foto (5.8); excluir anúncio de vez ainda não existe e usará o mesmo ponto (`DECISIONS.md` #32) |
 
-## Fase 5 · Dono, verificação e moderação (9/9)
+## Fase 5 · Dono, verificação e moderação (10/11)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
@@ -86,6 +86,9 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 5.7 | Canal de denúncia de golpe e WhatsApp institucional | Média | Feita | denúncia pública e fila da equipe; **o WhatsApp institucional continua sem número** (`PRD.md` §8) |
 | 5.8 | Remover e reordenar as fotos do próprio anúncio | Média | Feita | `DELETE /owner/listings/:id/photos/:photoId` (204) e `PUT /owner/listings/:id/photos/order` (200, anúncio inteiro); regras em `Listing.removePhoto` e `Listing.reorderPhotos`; `StorageOrphans.sweep` depois de remover; botões "Subir", "Descer" e "Remover" (com `ConfirmDialog`) na edição; `DECISIONS.md` #33 |
 | 5.9 | Excluir anúncio de vez, só o administrador | Média | Feita | `DELETE /administrator/listings/:id/permanent` (204); 403 ao moderador, 409 `LISTING_NOT_ARCHIVED` se não está arquivado e 409 `LISTING_HAS_REPORTS` se tem denúncia (`DECISIONS.md` #34); fotos saem por `CASCADE` e o bucket por `StorageOrphans.sweep`; botão "Excluir de vez" no painel da equipe, só para o administrador |
+
+| 5.10 | A equipe mantém o guia da cidade: API | Alta | Feita | `administrator/places/`: `GET` (com `?category`, `?search`, `?trashed`), `GET :id`, `POST`, `PUT :id`, `DELETE :id` (arquivar), `PUT :id/unarchive` e `DELETE :id/permanent` (só o administrador, só o arquivado); `DECISIONS.md` #35; a vitrine continua sem o arquivado |
+| 5.11 | A equipe mantém o guia da cidade: painel | Alta | A fazer | `/administrator/places`: lista com aba, busca e arquivados, formulário de criar e editar, arquivar, restaurar e excluir de vez |
 
 ## Fase 6 · E-mail e fila (0/3)
 

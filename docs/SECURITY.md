@@ -205,8 +205,8 @@ C = confidencialidade, I = integridade, D = disponibilidade.
 |---|---|---|
 | visitante | ver busca, detalhe, guia, e abrir o WhatsApp; ler `/storefront` sem sessão | qualquer rota autenticada |
 | `OWNER` | ver e editar a própria conta | `/storages` e a documentação da API |
-| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar anúncio de vez (403 em `DELETE /administrator/listings/:id/permanent`), gerir contas (regra do papel; ainda sem rotas) |
-| `ADMINISTRATOR` | tudo o que a equipe faz e apagar de vez o anúncio arquivado e sem denúncia (`DECISIONS.md` #34) | |
+| `MODERATOR` | `/storages`, documentação da API, a própria conta | apagar de vez anúncio ou lugar do guia (403 em `DELETE /administrator/listings/:id/permanent` e em `DELETE /administrator/places/:id/permanent`), gerir contas (regra do papel; ainda sem rotas) |
+| `ADMINISTRATOR` | tudo o que a equipe faz, apagar de vez o anúncio arquivado e sem denúncia (`DECISIONS.md` #34) e o lugar arquivado (#35) | |
 
 - `/storages` fica fechado à equipe até existir policy de posse por dono (`DECISIONS.md` #2).
 

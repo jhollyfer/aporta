@@ -69,6 +69,8 @@ substantivo no plural, a ação é verbo.
 | administrator | listings | paginate, show, review (aprovar e recusar com motivo), archive | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | administrator | listings | delete (`:id/permanent`, só o arquivado e sem denúncia) | `ADMINISTRATOR` | Feito |
 | administrator | owners | verify (marcar e desmarcar) | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| administrator | places | paginate (com `?trashed`), show, create, update, archive, unarchive | `MODERATOR`, `ADMINISTRATOR` | Feito |
+| administrator | places | delete (`:id/permanent`, só o arquivado) | `ADMINISTRATOR` | Feito |
 | administrator | reports | paginate, resolve | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | storefront | reports | create (denúncia pública, com limite por IP) | visitante sem login | Feito |
 | storefront | listings, neighborhoods, places | listings: paginate, show (por `slug`); neighborhoods e places: paginate | visitante sem login | Feito (só `GET`); o frontend a lê, ver §6 |
@@ -78,7 +80,9 @@ módulos novos saem da árvore da casa quando forem criados.
 
 O grupo `storefront` não tem middleware de propósito, e só tem rota `GET` (`SECURITY.md` §2.5). Cada
 recurso tem um presenter (`listings.presenter.ts`, `neighborhoods.presenter.ts`,
-`places.presenter.ts`) que escolhe campo a campo o que sai.
+`places.presenter.ts`) que escolhe campo a campo o que sai. O lugar tem o formato da vitrine num
+lugar só (`features/_shared.place.presenter.ts`), que o painel da equipe reaproveita e acrescenta
+`archivedAt` (`administrator/places/places.presenter.ts`).
 
 Entidades de domínio (uma pasta por entidade em `app/domain/`) e quem escreve em cada tabela: só o repository da
 entidade dona (`_standards/domain.md` §5).
@@ -91,7 +95,7 @@ entidade dona (`_standards/domain.md` §5).
 | Limites de requisição | `rate_limits` | pelo `@adonisjs/limiter` | contagem por IP, por conta ou por usuário |
 | Anúncio | `listings`, `listing_photos` | `ListingRepository` | nasce `DRAFT`; precisa de título, de ao menos um período e de preço mensal, diário ou os dois, em reais inteiros acima de zero; só `PUBLISHED` fora da lixeira chega à vitrine |
 | Bairro | `neighborhoods` | `NeighborhoodRepository` | nome não vazio, centro com coordenadas válidas, `slug` único mesmo entre os arquivados |
-| Lugar do guia | `places` | `PlaceRepository` | nome não vazio; só o evento (`EVENT`) tem data e o evento exige data |
+| Lugar do guia | `places` | `PlaceRepository` | nome não vazio; só o evento (`EVENT`) tem data, o evento exige data e a data existe no calendário; arquivar o arquivado e restaurar ou apagar o que não está arquivado são recusados (`DECISIONS.md` #35) |
 
 A foto do anúncio não é entidade: é uma posição dentro do `Listing` (`ListingPhotoProps`, com o
 ambiente e sem arquivo). Os três repositories só leem: nenhum tem `save`, e a escrita entra com a
@@ -224,8 +228,8 @@ abandonado é limpo pelo comando `node ace storages:prune` (`ARCHITECTURE.md` §
   `httpOnly` (acesso 1 dia, renovação 7 dias); `POST /authentication/refresh` renova; `POST
   /authentication/sign-out` apaga. O cookie leva `Secure` em produção e `COOKIE_DOMAIN` quando app
   e API estão em hosts diferentes.
-- Papéis (`USER_ROLE`): `ADMINISTRATOR` (nasce só do seeder, único que apaga anúncio de vez: `DELETE /administrator/listings/:id/permanent`, só o arquivado e sem denúncia, `DECISIONS.md` #34), `MODERATOR`
-  (revisa e arquiva anúncios e lugares, sem apagar de vez nem gerir contas) e `OWNER` (dono de
+- Papéis (`USER_ROLE`): `ADMINISTRATOR` (nasce só do seeder, único que apaga de vez anúncio (`DELETE /administrator/listings/:id/permanent`, só o arquivado e sem denúncia, `DECISIONS.md` #34) e lugar do guia (`DELETE /administrator/places/:id/permanent`, só o arquivado, #35)), `MODERATOR`
+  (revisa e arquiva anúncios, mantém o guia de lugares e arquiva lugares, sem apagar de vez nem gerir contas) e `OWNER` (dono de
   imóvel: gere só o que é seu e não opera o painel). Quem opera o painel é `STAFF_USER_ROLES`.
 - O grupo `/storages` exige sessão e papel de equipe: nenhuma ação de arquivo checa posse por dono
   ainda (`DECISIONS.md` #2).

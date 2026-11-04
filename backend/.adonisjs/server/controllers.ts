@@ -37,6 +37,29 @@ export const controllers = {
         Verify: () => import('#features/administrator/owners/verify/verify.controller'),
       },
     },
+    places: {
+      archive: {
+        Archive: () => import('#features/administrator/places/archive/archive.controller'),
+      },
+      create: {
+        Create: () => import('#features/administrator/places/create/create.controller'),
+      },
+      delete: {
+        Delete: () => import('#features/administrator/places/delete/delete.controller'),
+      },
+      paginate: {
+        Paginate: () => import('#features/administrator/places/paginate/paginate.controller'),
+      },
+      show: {
+        Show: () => import('#features/administrator/places/show/show.controller'),
+      },
+      unarchive: {
+        Unarchive: () => import('#features/administrator/places/unarchive/unarchive.controller'),
+      },
+      update: {
+        Update: () => import('#features/administrator/places/update/update.controller'),
+      },
+    },
     reports: {
       paginate: {
         Paginate: () => import('#features/administrator/reports/paginate/paginate.controller'),

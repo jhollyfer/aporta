@@ -18,5 +18,9 @@
   "NEIGHBORHOOD_NOT_FOUND": "Bairro não encontrado",
   "LISTING_REVIEW_NOTE_INVALID": "Escreva o motivo, de 3 a 500 caracteres",
   "REPORT_NOTE_INVALID": "Escreva a nota, de 3 a 500 caracteres",
-  "LISTING_PHOTOS_ORDER_INVALID": "Envie todas as fotos do anúncio, sem repetir nem faltar"
+  "LISTING_PHOTOS_ORDER_INVALID": "Envie todas as fotos do anúncio, sem repetir nem faltar",
+  "PLACE_NAME_EMPTY": "Informe o nome do lugar",
+  "PLACE_EVENT_DATE_REQUIRED": "Informe a data do evento",
+  "PLACE_DATE_NOT_ALLOWED": "Só um evento tem data",
+  "PLACE_DATE_INVALID": "Informe uma data que exista"
 }

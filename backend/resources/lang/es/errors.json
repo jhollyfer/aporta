@@ -81,5 +81,19 @@
   "LISTING_PHOTO_NOT_FOUND": "Foto no encontrada en el anuncio",
   "LISTING_PHOTOS_ORDER_INVALID": "El nuevo orden debe contener exactamente las fotos del anuncio",
   "OWNER_LISTING_PHOTO_DELETE_ERROR": "Error interno del servidor",
-  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Error interno del servidor"
+  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Error interno del servidor",
+  "PLACE_NOT_FOUND": "Lugar no encontrado",
+  "PLACE_NAME_EMPTY": "El nombre del lugar está vacío",
+  "PLACE_EVENT_DATE_REQUIRED": "Un evento necesita fecha",
+  "PLACE_DATE_NOT_ALLOWED": "Solo un evento tiene fecha",
+  "PLACE_DATE_INVALID": "La fecha no existe en el calendario",
+  "PLACE_ALREADY_ARCHIVED": "El lugar ya está archivado",
+  "PLACE_NOT_ARCHIVED": "El lugar no está archivado",
+  "ADMINISTRATOR_PLACE_PAGINATE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_SHOW_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_CREATE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_UPDATE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_ARCHIVE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_UNARCHIVE_ERROR": "Error interno del servidor",
+  "ADMINISTRATOR_PLACE_DELETE_ERROR": "Error interno del servidor"
 }

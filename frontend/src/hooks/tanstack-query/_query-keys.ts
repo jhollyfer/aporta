@@ -2,6 +2,7 @@ import type {
   AdministratorListingPaginatePayload,
   AdministratorPlacePaginatePayload,
   AdministratorReportPaginatePayload,
+  AdministratorUserPaginatePayload,
   OwnerListingPaginatePayload,
   StorefrontListingPaginatePayload,
   StorefrontListingPinsPayload,
@@ -43,7 +44,7 @@ export const queryKeys = {
     },
   },
   /**
-   * O lado da equipe na moderação (`/administrator/*`): a fila de anúncios, o guia de lugares e as denúncias.
+   * O lado da equipe na moderação (`/administrator/*`): a fila de anúncios, o guia de lugares, as denúncias e as contas.
    * Família à parte da do dono, porque a equipe lê **todos** os anúncios, em qualquer
    * estado, e um cache não serve ao outro. O `detail` do anúncio é pelo **id**.
    */
@@ -59,6 +60,10 @@ export const queryKeys = {
     reports: resource<AdministratorReportPaginatePayload>()(
       'administrator',
       'reports',
+    ),
+    users: resource<AdministratorUserPaginatePayload>()(
+      'administrator',
+      'users',
     ),
   },
   /**

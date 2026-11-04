@@ -9,12 +9,15 @@ import {
   AdministratorOwnerVerifyResponse,
   AdministratorPlaceShowResponse,
   AdministratorReportShowResponse,
+  AdministratorUserShowResponse,
 } from '@aporta/shared'
 import type {
   AdministratorListingReviewPayload,
   AdministratorOwnerVerifyPayload,
   AdministratorPlaceWritePayload,
   AdministratorReportResolvePayload,
+  AdministratorUserChangeRolePayload,
+  AdministratorUserChangeStatusPayload,
   Merge,
 } from '@aporta/shared'
 import { useMutation } from '@tanstack/react-query'
@@ -249,6 +252,73 @@ export function useAdministratorPlaceDeleteMutation(
         '/administrator/places/'.concat(encodeURIComponent(id), '/permanent'),
         {
           method: 'DELETE',
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+type UserRoleVariables = Merge<
+  AdministratorUserChangeRolePayload,
+  { id: string }
+>
+
+/**
+ * Muda o papel de uma conta. Só o `ADMINISTRATOR`: a API responde 403 aos outros, e a tela só
+ * existe para ele (`DECISIONS.md` #36). As sessões da conta caem junto.
+ */
+export function useAdministratorUserChangeRoleMutation(
+  options?: MutationProps<AdministratorUserShowResponse, UserRoleVariables>,
+): UseMutationResult<
+  AdministratorUserShowResponse,
+  HTTPError,
+  UserRoleVariables
+> {
+  return useMutation<
+    AdministratorUserShowResponse,
+    HTTPError,
+    UserRoleVariables
+  >({
+    ...options,
+    mutationFn: ({ id, ...payload }) =>
+      request(
+        AdministratorUserShowResponse,
+        '/administrator/users/'.concat(encodeURIComponent(id), '/role'),
+        {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+type UserStatusVariables = Merge<
+  AdministratorUserChangeStatusPayload,
+  { id: string }
+>
+
+/** Suspende (`INACTIVE`) ou reativa (`ACTIVE`) uma conta; suspender derruba as sessões dela. */
+export function useAdministratorUserChangeStatusMutation(
+  options?: MutationProps<AdministratorUserShowResponse, UserStatusVariables>,
+): UseMutationResult<
+  AdministratorUserShowResponse,
+  HTTPError,
+  UserStatusVariables
+> {
+  return useMutation<
+    AdministratorUserShowResponse,
+    HTTPError,
+    UserStatusVariables
+  >({
+    ...options,
+    mutationFn: ({ id, ...payload }) =>
+      request(
+        AdministratorUserShowResponse,
+        '/administrator/users/'.concat(encodeURIComponent(id), '/status'),
+        {
+          method: 'PUT',
+          body: JSON.stringify(payload),
           ...WITH_SESSION,
         },
       ),

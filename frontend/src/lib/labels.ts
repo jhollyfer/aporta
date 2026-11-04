@@ -1,6 +1,7 @@
 import { m } from '#/paraglide/messages'
 
 import type {
+  ActiveStatus,
   ListingPeriod,
   ListingStatus,
   ListingType,
@@ -54,6 +55,11 @@ export const USER_ROLE_LABELS: Record<UserRole, () => string> = {
   OWNER: () => m.label_role_owner(),
   MODERATOR: () => m.label_role_moderator(),
   ADMINISTRATOR: () => m.label_role_administrator(),
+}
+
+export const ACTIVE_STATUS_LABELS: Record<ActiveStatus, () => string> = {
+  ACTIVE: () => m.label_account_active(),
+  INACTIVE: () => m.label_account_inactive(),
 }
 
 export const LISTING_STATUS_LABELS: Record<ListingStatus, () => string> = {

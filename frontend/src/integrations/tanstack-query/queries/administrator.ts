@@ -4,11 +4,14 @@ import {
   AdministratorPlacePaginateResponse,
   AdministratorPlaceShowResponse,
   AdministratorReportPaginateResponse,
+  AdministratorUserPaginateResponse,
+  AdministratorUserShowResponse,
 } from '@aporta/shared'
 import type {
   AdministratorListingPaginatePayload,
   AdministratorPlacePaginatePayload,
   AdministratorReportPaginatePayload,
+  AdministratorUserPaginatePayload,
 } from '@aporta/shared'
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 
@@ -107,6 +110,41 @@ export const administratorPlaceQueryOptions = (
       request(
         AdministratorPlaceShowResponse,
         '/administrator/places/'.concat(encodeURIComponent(id)),
+        { signal, ...WITH_SESSION },
+      ),
+  })
+
+/** As contas como o administrador as lê: filtro de papel e status, busca e página. */
+export const administratorUsersQueryOptions = (
+  params: AdministratorUserPaginatePayload,
+): ResourceQueryOptions<
+  AdministratorUserPaginateResponse,
+  ReturnType<typeof queryKeys.administrator.users.list>
+> =>
+  queryOptions({
+    queryKey: queryKeys.administrator.users.list(params),
+    queryFn: ({ signal }) =>
+      request(
+        AdministratorUserPaginateResponse,
+        '/administrator/users'.concat(queryString(params)),
+        { signal, ...WITH_SESSION },
+      ),
+    placeholderData: keepPreviousData,
+  })
+
+/** Uma conta como o administrador a lê, pelo **id**. */
+export const administratorUserQueryOptions = (
+  id: string,
+): ResourceQueryOptions<
+  AdministratorUserShowResponse,
+  ReturnType<typeof queryKeys.administrator.users.detail>
+> =>
+  queryOptions({
+    queryKey: queryKeys.administrator.users.detail(id),
+    queryFn: ({ signal }) =>
+      request(
+        AdministratorUserShowResponse,
+        '/administrator/users/'.concat(encodeURIComponent(id)),
         { signal, ...WITH_SESSION },
       ),
   })

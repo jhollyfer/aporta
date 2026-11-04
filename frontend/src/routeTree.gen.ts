@@ -23,6 +23,7 @@ import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authent
 import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index'
 import { Route as PrivateAccountIndexRouteImport } from './routes/_private/account/index'
 import { Route as PrivateAdministratorIndexRouteImport } from './routes/_private/administrator/index'
+import { Route as PrivateAdministratorUsersLayoutRouteImport } from './routes/_private/administrator/users/layout'
 import { Route as PublicGuideIndexRouteImport } from './routes/_public/guide/index'
 import { Route as PublicListYourPlaceIndexRouteImport } from './routes/_public/list-your-place/index'
 import { Route as PublicListingsIndexRouteImport } from './routes/_public/listings/index'
@@ -30,10 +31,12 @@ import { Route as PublicListingsSlugRouteImport } from './routes/_public/listing
 import { Route as PrivateAdministratorListingsIndexRouteImport } from './routes/_private/administrator/listings/index'
 import { Route as PrivateAdministratorPlacesIndexRouteImport } from './routes/_private/administrator/places/index'
 import { Route as PrivateAdministratorReportsIndexRouteImport } from './routes/_private/administrator/reports/index'
+import { Route as PrivateAdministratorUsersIndexRouteImport } from './routes/_private/administrator/users/index'
 import { Route as PrivateOwnerListingsIndexRouteImport } from './routes/_private/owner/listings/index'
 import { Route as PrivateAdministratorListingsIdIndexRouteImport } from './routes/_private/administrator/listings/$id/index'
 import { Route as PrivateAdministratorPlacesIdIndexRouteImport } from './routes/_private/administrator/places/$id/index'
 import { Route as PrivateAdministratorPlacesNewIndexRouteImport } from './routes/_private/administrator/places/new/index'
+import { Route as PrivateAdministratorUsersIdIndexRouteImport } from './routes/_private/administrator/users/$id/index'
 import { Route as PrivateOwnerListingsIdIndexRouteImport } from './routes/_private/owner/listings/$id/index'
 
 const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
@@ -113,6 +116,12 @@ const PrivateAdministratorIndexRoute =
     path: '/',
     getParentRoute: () => PrivateAdministratorLayoutRoute,
   } as any)
+const PrivateAdministratorUsersLayoutRoute =
+  PrivateAdministratorUsersLayoutRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => PrivateAdministratorLayoutRoute,
+  } as any)
 const PublicGuideIndexRoute = PublicGuideIndexRouteImport.update({
   id: '/guide/',
   path: '/guide/',
@@ -172,6 +181,16 @@ const PrivateAdministratorReportsIndexRoute =
       (d) => d.Route,
     ),
   )
+const PrivateAdministratorUsersIndexRoute =
+  PrivateAdministratorUsersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PrivateAdministratorUsersLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/administrator/users/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateOwnerListingsIndexRoute =
   PrivateOwnerListingsIndexRouteImport.update({
     id: '/listings/',
@@ -210,6 +229,16 @@ const PrivateAdministratorPlacesNewIndexRoute =
       (d) => d.Route,
     ),
   )
+const PrivateAdministratorUsersIdIndexRoute =
+  PrivateAdministratorUsersIdIndexRouteImport.update({
+    id: '/$id/',
+    path: '/$id/',
+    getParentRoute: () => PrivateAdministratorUsersLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/administrator/users/$id/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateOwnerListingsIdIndexRoute =
   PrivateOwnerListingsIdIndexRouteImport.update({
     id: '/listings/$id/',
@@ -229,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/administrator': typeof PrivateAdministratorLayoutRouteWithChildren
   '/owner': typeof PrivateOwnerLayoutRouteWithChildren
   '/$': typeof PublicSplatRoute
+  '/administrator/users': typeof PrivateAdministratorUsersLayoutRouteWithChildren
   '/listings/$slug': typeof PublicListingsSlugRoute
   '/sign-in/': typeof AuthenticationSignInIndexRoute
   '/sign-up/': typeof AuthenticationSignUpIndexRoute
@@ -240,10 +270,12 @@ export interface FileRoutesByFullPath {
   '/administrator/listings/': typeof PrivateAdministratorListingsIndexRoute
   '/administrator/places/': typeof PrivateAdministratorPlacesIndexRoute
   '/administrator/reports/': typeof PrivateAdministratorReportsIndexRoute
+  '/administrator/users/': typeof PrivateAdministratorUsersIndexRoute
   '/owner/listings/': typeof PrivateOwnerListingsIndexRoute
   '/administrator/listings/$id/': typeof PrivateAdministratorListingsIdIndexRoute
   '/administrator/places/$id/': typeof PrivateAdministratorPlacesIdIndexRoute
   '/administrator/places/new/': typeof PrivateAdministratorPlacesNewIndexRoute
+  '/administrator/users/$id/': typeof PrivateAdministratorUsersIdIndexRoute
   '/owner/listings/$id/': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -264,10 +296,12 @@ export interface FileRoutesByTo {
   '/administrator/listings': typeof PrivateAdministratorListingsIndexRoute
   '/administrator/places': typeof PrivateAdministratorPlacesIndexRoute
   '/administrator/reports': typeof PrivateAdministratorReportsIndexRoute
+  '/administrator/users': typeof PrivateAdministratorUsersIndexRoute
   '/owner/listings': typeof PrivateOwnerListingsIndexRoute
   '/administrator/listings/$id': typeof PrivateAdministratorListingsIdIndexRoute
   '/administrator/places/$id': typeof PrivateAdministratorPlacesIdIndexRoute
   '/administrator/places/new': typeof PrivateAdministratorPlacesNewIndexRoute
+  '/administrator/users/$id': typeof PrivateAdministratorUsersIdIndexRoute
   '/owner/listings/$id': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -282,6 +316,7 @@ export interface FileRoutesById {
   '/_private/owner': typeof PrivateOwnerLayoutRouteWithChildren
   '/_public/$': typeof PublicSplatRoute
   '/_public/': typeof PublicIndexRoute
+  '/_private/administrator/users': typeof PrivateAdministratorUsersLayoutRouteWithChildren
   '/_public/listings/$slug': typeof PublicListingsSlugRoute
   '/_authentication/sign-in/': typeof AuthenticationSignInIndexRoute
   '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
@@ -293,10 +328,12 @@ export interface FileRoutesById {
   '/_private/administrator/listings/': typeof PrivateAdministratorListingsIndexRoute
   '/_private/administrator/places/': typeof PrivateAdministratorPlacesIndexRoute
   '/_private/administrator/reports/': typeof PrivateAdministratorReportsIndexRoute
+  '/_private/administrator/users/': typeof PrivateAdministratorUsersIndexRoute
   '/_private/owner/listings/': typeof PrivateOwnerListingsIndexRoute
   '/_private/administrator/listings/$id/': typeof PrivateAdministratorListingsIdIndexRoute
   '/_private/administrator/places/$id/': typeof PrivateAdministratorPlacesIdIndexRoute
   '/_private/administrator/places/new/': typeof PrivateAdministratorPlacesNewIndexRoute
+  '/_private/administrator/users/$id/': typeof PrivateAdministratorUsersIdIndexRoute
   '/_private/owner/listings/$id/': typeof PrivateOwnerListingsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -309,6 +346,7 @@ export interface FileRouteTypes {
     | '/administrator'
     | '/owner'
     | '/$'
+    | '/administrator/users'
     | '/listings/$slug'
     | '/sign-in/'
     | '/sign-up/'
@@ -320,10 +358,12 @@ export interface FileRouteTypes {
     | '/administrator/listings/'
     | '/administrator/places/'
     | '/administrator/reports/'
+    | '/administrator/users/'
     | '/owner/listings/'
     | '/administrator/listings/$id/'
     | '/administrator/places/$id/'
     | '/administrator/places/new/'
+    | '/administrator/users/$id/'
     | '/owner/listings/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -344,10 +384,12 @@ export interface FileRouteTypes {
     | '/administrator/listings'
     | '/administrator/places'
     | '/administrator/reports'
+    | '/administrator/users'
     | '/owner/listings'
     | '/administrator/listings/$id'
     | '/administrator/places/$id'
     | '/administrator/places/new'
+    | '/administrator/users/$id'
     | '/owner/listings/$id'
   id:
     | '__root__'
@@ -361,6 +403,7 @@ export interface FileRouteTypes {
     | '/_private/owner'
     | '/_public/$'
     | '/_public/'
+    | '/_private/administrator/users'
     | '/_public/listings/$slug'
     | '/_authentication/sign-in/'
     | '/_authentication/sign-up/'
@@ -372,10 +415,12 @@ export interface FileRouteTypes {
     | '/_private/administrator/listings/'
     | '/_private/administrator/places/'
     | '/_private/administrator/reports/'
+    | '/_private/administrator/users/'
     | '/_private/owner/listings/'
     | '/_private/administrator/listings/$id/'
     | '/_private/administrator/places/$id/'
     | '/_private/administrator/places/new/'
+    | '/_private/administrator/users/$id/'
     | '/_private/owner/listings/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -488,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateAdministratorIndexRouteImport
       parentRoute: typeof PrivateAdministratorLayoutRoute
     }
+    '/_private/administrator/users': {
+      id: '/_private/administrator/users'
+      path: '/users'
+      fullPath: '/administrator/users'
+      preLoaderRoute: typeof PrivateAdministratorUsersLayoutRouteImport
+      parentRoute: typeof PrivateAdministratorLayoutRoute
+    }
     '/_public/guide/': {
       id: '/_public/guide/'
       path: '/guide'
@@ -537,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateAdministratorReportsIndexRouteImport
       parentRoute: typeof PrivateAdministratorLayoutRoute
     }
+    '/_private/administrator/users/': {
+      id: '/_private/administrator/users/'
+      path: '/'
+      fullPath: '/administrator/users/'
+      preLoaderRoute: typeof PrivateAdministratorUsersIndexRouteImport
+      parentRoute: typeof PrivateAdministratorUsersLayoutRoute
+    }
     '/_private/owner/listings/': {
       id: '/_private/owner/listings/'
       path: '/listings'
@@ -565,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateAdministratorPlacesNewIndexRouteImport
       parentRoute: typeof PrivateAdministratorLayoutRoute
     }
+    '/_private/administrator/users/$id/': {
+      id: '/_private/administrator/users/$id/'
+      path: '/$id'
+      fullPath: '/administrator/users/$id/'
+      preLoaderRoute: typeof PrivateAdministratorUsersIdIndexRouteImport
+      parentRoute: typeof PrivateAdministratorUsersLayoutRoute
+    }
     '/_private/owner/listings/$id/': {
       id: '/_private/owner/listings/$id/'
       path: '/listings/$id'
@@ -588,7 +654,25 @@ const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
 const AuthenticationLayoutRouteWithChildren =
   AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren)
 
+interface PrivateAdministratorUsersLayoutRouteChildren {
+  PrivateAdministratorUsersIndexRoute: typeof PrivateAdministratorUsersIndexRoute
+  PrivateAdministratorUsersIdIndexRoute: typeof PrivateAdministratorUsersIdIndexRoute
+}
+
+const PrivateAdministratorUsersLayoutRouteChildren: PrivateAdministratorUsersLayoutRouteChildren =
+  {
+    PrivateAdministratorUsersIndexRoute: PrivateAdministratorUsersIndexRoute,
+    PrivateAdministratorUsersIdIndexRoute:
+      PrivateAdministratorUsersIdIndexRoute,
+  }
+
+const PrivateAdministratorUsersLayoutRouteWithChildren =
+  PrivateAdministratorUsersLayoutRoute._addFileChildren(
+    PrivateAdministratorUsersLayoutRouteChildren,
+  )
+
 interface PrivateAdministratorLayoutRouteChildren {
+  PrivateAdministratorUsersLayoutRoute: typeof PrivateAdministratorUsersLayoutRouteWithChildren
   PrivateAdministratorIndexRoute: typeof PrivateAdministratorIndexRoute
   PrivateAdministratorListingsIndexRoute: typeof PrivateAdministratorListingsIndexRoute
   PrivateAdministratorPlacesIndexRoute: typeof PrivateAdministratorPlacesIndexRoute
@@ -600,6 +684,8 @@ interface PrivateAdministratorLayoutRouteChildren {
 
 const PrivateAdministratorLayoutRouteChildren: PrivateAdministratorLayoutRouteChildren =
   {
+    PrivateAdministratorUsersLayoutRoute:
+      PrivateAdministratorUsersLayoutRouteWithChildren,
     PrivateAdministratorIndexRoute: PrivateAdministratorIndexRoute,
     PrivateAdministratorListingsIndexRoute:
       PrivateAdministratorListingsIndexRoute,

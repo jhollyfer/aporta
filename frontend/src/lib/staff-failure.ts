@@ -22,6 +22,9 @@ const GENERAL_REFUSALS: Record<string, () => string> = {
   REPORT_NOT_FOUND: () => m.staff_error_report_not_found(),
   REPORT_ALREADY_RESOLVED: () => m.staff_error_report_resolved(),
   USER_NOT_FOUND: () => m.staff_error_owner_not_verifiable(),
+  USER_OWN_ACCESS_CHANGE: () => m.staff_error_users_own_access(),
+  USER_LAST_ADMINISTRATOR: () => m.staff_error_users_last_administrator(),
+  USER_OWNS_LISTINGS: () => m.staff_error_users_owns_listings(),
   USER_NOT_VERIFIABLE: () => m.staff_error_owner_not_verifiable(),
 }
 

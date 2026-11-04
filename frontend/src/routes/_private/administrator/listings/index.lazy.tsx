@@ -8,12 +8,12 @@ import type { ListingStatus } from '@aporta/shared'
 import { ActionButton } from '#/components/common/action-button'
 import { EmptyState } from '#/components/common/empty-state'
 import { PaginationNav } from '#/components/common/pagination-nav'
+import { QueueSearch } from '#/components/common/queue-search'
 import { SegmentedFilter } from '#/components/common/segmented-filter'
 import { administratorListingsQueryOptions } from '#/integrations/tanstack-query/queries/administrator'
 import { STAFF_LISTING_FILTER_LABELS } from '#/lib/labels'
 import { m } from '#/paraglide/messages'
 
-import { QueueSearch } from './-components/queue-search'
 import { QueueHeader, QueueRow } from './-components/queue-row'
 import { DEFAULT_QUEUE_STATUS, toQueueParams } from './-search'
 
@@ -94,6 +94,7 @@ function RouteComponent(): React.JSX.Element {
       />
 
       <QueueSearch
+        label={m.staff_search_label()}
         value={search.q ?? ''}
         onSearch={(q) => go({ q, page: undefined })}
       />

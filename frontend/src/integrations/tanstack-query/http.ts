@@ -65,6 +65,8 @@ export const HTTP_ERROR_CODE = {
   TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
   /** 404 de `GET /storefront/listings/:slug`: nenhum anúncio publicado com esse endereço. */
   LISTING_NOT_FOUND: 'LISTING_NOT_FOUND',
+  /** 404 de `GET /administrator/places/:id`: nenhum lugar do guia com esse id. */
+  PLACE_NOT_FOUND: 'PLACE_NOT_FOUND',
   /** Local, não vem do servidor: falha de rede normalizada. */
   NETWORK_ERROR: 'NETWORK_ERROR',
   /** Local: resposta de erro sem corpo JSON válido (proxy, HTML de erro). */

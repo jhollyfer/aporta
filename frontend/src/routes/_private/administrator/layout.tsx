@@ -38,6 +38,9 @@ function RouteComponent(): React.JSX.Element {
         <Link to="/administrator/listings" className={cn(TAB)}>
           {m.staff_nav_listings()}
         </Link>
+        <Link to="/administrator/places" className={cn(TAB)}>
+          {m.staff_nav_places()}
+        </Link>
         <Link to="/administrator/reports" className={cn(TAB)}>
           {m.staff_nav_reports()}
         </Link>

@@ -7,11 +7,13 @@
 import {
   AdministratorListingShowResponse,
   AdministratorOwnerVerifyResponse,
+  AdministratorPlaceShowResponse,
   AdministratorReportShowResponse,
 } from '@aporta/shared'
 import type {
   AdministratorListingReviewPayload,
   AdministratorOwnerVerifyPayload,
+  AdministratorPlaceWritePayload,
   AdministratorReportResolvePayload,
   Merge,
 } from '@aporta/shared'
@@ -138,6 +140,115 @@ export function useAdministratorReportResolveMutation(
         {
           method: 'PUT',
           body: JSON.stringify(payload),
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+/** Cadastra um lugar no guia. */
+export function useAdministratorPlaceCreateMutation(
+  options?: MutationProps<
+    AdministratorPlaceShowResponse,
+    AdministratorPlaceWritePayload
+  >,
+): UseMutationResult<
+  AdministratorPlaceShowResponse,
+  HTTPError,
+  AdministratorPlaceWritePayload
+> {
+  return useMutation<
+    AdministratorPlaceShowResponse,
+    HTTPError,
+    AdministratorPlaceWritePayload
+  >({
+    ...options,
+    mutationFn: (payload) =>
+      request(AdministratorPlaceShowResponse, '/administrator/places', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        ...WITH_SESSION,
+      }),
+  })
+}
+
+type PlaceUpdateVariables = Merge<
+  AdministratorPlaceWritePayload,
+  { id: string }
+>
+
+/** Edita um lugar: o `PUT` leva todos os campos, porque categoria e data dependem um do outro. */
+export function useAdministratorPlaceUpdateMutation(
+  options?: MutationProps<AdministratorPlaceShowResponse, PlaceUpdateVariables>,
+): UseMutationResult<
+  AdministratorPlaceShowResponse,
+  HTTPError,
+  PlaceUpdateVariables
+> {
+  return useMutation<
+    AdministratorPlaceShowResponse,
+    HTTPError,
+    PlaceUpdateVariables
+  >({
+    ...options,
+    mutationFn: ({ id, ...payload }) =>
+      request(
+        AdministratorPlaceShowResponse,
+        '/administrator/places/'.concat(encodeURIComponent(id)),
+        {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+/** Tira o lugar do guia (lixeira); o moderador também tem. */
+export function useAdministratorPlaceArchiveMutation(
+  options?: MutationProps<void, string>,
+): UseMutationResult<void, HTTPError, string> {
+  return useMutation<void, HTTPError, string>({
+    ...options,
+    mutationFn: (id) =>
+      requestVoid('/administrator/places/'.concat(encodeURIComponent(id)), {
+        method: 'DELETE',
+        ...WITH_SESSION,
+      }),
+  })
+}
+
+/** Traz um lugar arquivado de volta ao guia. */
+export function useAdministratorPlaceUnarchiveMutation(
+  options?: MutationProps<void, string>,
+): UseMutationResult<void, HTTPError, string> {
+  return useMutation<void, HTTPError, string>({
+    ...options,
+    mutationFn: (id) =>
+      requestVoid(
+        '/administrator/places/'.concat(encodeURIComponent(id), '/unarchive'),
+        {
+          method: 'PUT',
+          ...WITH_SESSION,
+        },
+      ),
+  })
+}
+
+/**
+ * Exclui de vez um lugar já arquivado. Só o `ADMINISTRATOR`: a API responde 403 ao
+ * moderador, e a tela só mostra o botão a quem pode (`DECISIONS.md` #35).
+ */
+export function useAdministratorPlaceDeleteMutation(
+  options?: MutationProps<void, string>,
+): UseMutationResult<void, HTTPError, string> {
+  return useMutation<void, HTTPError, string>({
+    ...options,
+    mutationFn: (id) =>
+      requestVoid(
+        '/administrator/places/'.concat(encodeURIComponent(id), '/permanent'),
+        {
+          method: 'DELETE',
           ...WITH_SESSION,
         },
       ),

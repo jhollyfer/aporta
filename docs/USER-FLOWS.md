@@ -163,6 +163,34 @@ O rascunho é gravado no aparelho 400 ms depois da última tecla, na chave `apor
 | Dono troca nome ou WhatsApp de um anúncio | a conta perde o selo até a equipe verificar de novo |
 | Denúncia de anúncio que não está no ar | 404, igual ao inexistente |
 
+## Equipe mantém o guia da cidade
+
+**Entrada:** a equipe (`ADMINISTRATOR` e `MODERATOR`) entra, abre "Painel" e toca em "Guia".
+**Pré-condição:** sessão de equipe. O dono (`OWNER`) volta para a conta.
+
+| # | Usuário faz | Sistema responde | Tela |
+|---|---|---|---|
+| 1 | abre o guia do painel | lista os lugares que estão no guia público, por nome; aba, busca e página ficam na URL | `/administrator/places` |
+| 2 | troca de aba, busca por nome ou descrição | a lista se refaz; busca sem resultado oferece "Limpar busca" | `/administrator/places?category=EVENT&q=` |
+| 3 | toca em "Novo lugar", preenche e envia | grava e volta para a lista, onde o lugar já aparece; o guia público o mostra | `/administrator/places/new` |
+| 4 | escolhe a aba Eventos | aparece o campo "Dia do evento", obrigatório; nas outras abas ele some | formulário |
+| 5 | toca em "Editar" num lugar, muda e salva | mostra "Alterações salvas"; vale para o lugar arquivado, que continua arquivado | `/administrator/places/:id` |
+| 6 | toca em "Arquivar" e confirma | o lugar sai do guia público e da lista; a tela diz "Lugar arquivado" | lista |
+| 7 | abre "Arquivados" e toca em "Restaurar" | o lugar volta ao guia; a tela diz "Lugar restaurado" | `/administrator/places?archived=true` |
+| 8 | o administrador toca em "Excluir de vez" num arquivado e confirma | pede confirmação ("não tem volta"); apaga o lugar; só o administrador vê o botão | lista de arquivados |
+
+**Caminhos alternativos**
+
+| Situação | Resposta |
+|---|---|
+| Evento sem dia, dia em lugar que não é evento, ou dia que não existe (31 de fevereiro) | 422 no campo "Dia do evento"; a tela repete a regra do evento antes de enviar |
+| Bairro que deixou de existir | 422 no campo "Bairro" |
+| Moderador tenta apagar de vez | 403: só o administrador apaga (`DECISIONS.md` #35); o botão nem aparece |
+| Excluir ou restaurar um lugar que não está arquivado, ou arquivar o arquivado | 409; a tela explica e refaz a lista |
+| Outra pessoa já apagou o lugar | 404 "Esse lugar não existe", com volta para o guia |
+| Visitante com `?trashed` na vitrine | ignorado: o arquivado nunca aparece no guia público |
+
+
 ---
 
 ## Checklist de todo fluxo

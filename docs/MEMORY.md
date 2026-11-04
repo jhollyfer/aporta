@@ -24,6 +24,8 @@
 
 ## Parou em
 
+2026-11-04 (guia pela equipe): tarefas 5.10 e 5.11 feitas (`DECISIONS.md` #35). `administrator/places` (paginate com `?trashed`, show, create, update, archive, unarchive e `:id/permanent` só do administrador) e o painel `/administrator/places` (lista com aba, busca e arquivados; formulário; arquivar, restaurar e excluir de vez). A entidade `Place` ganhou `change`, `archive`, `unarchive` e `ensureErasable`. O texto do lugar é em português só (a tabela não tem três idiomas). `QueueSearch` subiu para `components/common/queue-search`. Falta um teste de navegador (Playwright) do painel do guia.
+
 2026-11-04 (excluir de vez): tarefa 5.9 feita (`DECISIONS.md` #34). `DELETE /administrator/listings/:id/permanent`, só ADMINISTRATOR, só anúncio arquivado e sem denúncia; fotos por `CASCADE` e bucket por `StorageOrphans.sweep`, o chamador que faltava. Botão "Excluir de vez" no painel da equipe. Denúncia mantém `RESTRICT`: anúncio denunciado só chega a arquivado.
 
 2026-11-04 (fotos, remover e reordenar): tarefa 5.8 feita (`DECISIONS.md` #33). `StorageOrphans.sweep` agora tem chamador (remover foto); falta o chamador de "excluir anúncio de vez", que ainda não existe. Antes disso: tarefas 4.2 e 4.5 feitas. Teto e tipos de foto em `shared/` (`DECISIONS.md` #31); `StorageOrphans.sweep` pronto e testado, mas sem chamador (#32). Próximo: remover foto de um anúncio e excluir anúncio de vez devem soltar a referência e chamar o `sweep`.

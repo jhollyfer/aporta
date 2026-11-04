@@ -1,10 +1,13 @@
 import {
   AdministratorListingPaginateResponse,
   AdministratorListingShowResponse,
+  AdministratorPlacePaginateResponse,
+  AdministratorPlaceShowResponse,
   AdministratorReportPaginateResponse,
 } from '@aporta/shared'
 import type {
   AdministratorListingPaginatePayload,
+  AdministratorPlacePaginatePayload,
   AdministratorReportPaginatePayload,
 } from '@aporta/shared'
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
@@ -71,4 +74,39 @@ export const administratorReportsQueryOptions = (
         { signal, ...WITH_SESSION },
       ),
     placeholderData: keepPreviousData,
+  })
+
+/** O guia da cidade como a equipe o lê: com o recorte da lixeira (`trashed`) e o `archivedAt`. */
+export const administratorPlacesQueryOptions = (
+  params: AdministratorPlacePaginatePayload,
+): ResourceQueryOptions<
+  AdministratorPlacePaginateResponse,
+  ReturnType<typeof queryKeys.administrator.places.list>
+> =>
+  queryOptions({
+    queryKey: queryKeys.administrator.places.list(params),
+    queryFn: ({ signal }) =>
+      request(
+        AdministratorPlacePaginateResponse,
+        '/administrator/places'.concat(queryString(params)),
+        { signal, ...WITH_SESSION },
+      ),
+    placeholderData: keepPreviousData,
+  })
+
+/** Um lugar do guia como a equipe o lê, arquivado ou não, pelo **id**. */
+export const administratorPlaceQueryOptions = (
+  id: string,
+): ResourceQueryOptions<
+  AdministratorPlaceShowResponse,
+  ReturnType<typeof queryKeys.administrator.places.detail>
+> =>
+  queryOptions({
+    queryKey: queryKeys.administrator.places.detail(id),
+    queryFn: ({ signal }) =>
+      request(
+        AdministratorPlaceShowResponse,
+        '/administrator/places/'.concat(encodeURIComponent(id)),
+        { signal, ...WITH_SESSION },
+      ),
   })

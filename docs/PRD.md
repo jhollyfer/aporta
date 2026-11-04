@@ -41,9 +41,9 @@ A coluna "Estado" diz o que existe no repositório em 2026-11-02.
 |---|---|---|---|---|
 | 1 | Busca e listagem de imóveis com filtros na URL (tipo, bairro, período, faixa de preço), mapa de apoio e alternância lista/mapa no celular | visitante | `USER-FLOWS.md#procuro-onde-morar` | Pronto, lendo a API com catálogo de exemplo |
 | 2 | Página do imóvel: galeria por ambiente, valores com o que está incluso, regras, dono e "Chamar no WhatsApp" | visitante | `USER-FLOWS.md#procuro-onde-morar` | Pronto, lendo a API com catálogo de exemplo |
-| 3 | Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis) | turista, calouro | `USER-FLOWS.md#guia-da-cidade` | Pronto, lendo a API com catálogo de exemplo |
+| 3 | Guia da cidade em quatro abas (Comer, Beber, Eventos, Serviços úteis) | turista, calouro | `USER-FLOWS.md#guia-da-cidade` | Pronto, lendo a API; a equipe mantém os lugares no painel (`USER-FLOWS.md#equipe-mantém-o-guia-da-cidade`) |
 | 4 | Cadastro do imóvel pelo dono, em seis etapas, com progresso e rascunho salvo | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Formulário pronto; o envio não grava nada |
-| 5 | API de anúncios, bairros e guia | todos | `USER-FLOWS.md#procuro-onde-morar` | Leitura pública pronta (`GET /storefront`); a escrita do dono não existe |
+| 5 | API de anúncios, bairros e guia | todos | `USER-FLOWS.md#procuro-onde-morar` | Leitura pública pronta (`GET /storefront`); a escrita do dono (`/owner`) e a da equipe (`/administrator`, incluindo o guia) estão prontas |
 | 6 | Entrada e área do dono (Meus anúncios) | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Não existe na tela; a sessão existe na API |
 | 7 | Upload de fotos por ambiente | dono | `USER-FLOWS.md#tenho-um-imóvel-para-anunciar` | Upload da API pronto, só para a equipe; a tela não envia |
 | 8 | Verificação do dono e moderação de anúncio | equipe | `USER-FLOWS.md#moderação-futura` | Não existe |
@@ -92,7 +92,7 @@ Só entram métricas que a equipe consegue medir com o que o sistema registra ou
 - [x] Como a conta de dono (`OWNER`) nasce: cadastro aberto, sem confirmação de e-mail por enquanto (`DECISIONS.md` #12). Reabrir quando houver provedor de e-mail.
 - [ ] Quem confere os bairros e as coordenadas? Os seis bairros e os pontos do mapa são aproximados. Quem responde: quem conhece a cidade, indicado pelo dono.
 - [x] Quem fotografa os imóveis? O dono do imóvel envia as próprias fotos; o teto de uma foto é 10 MB (decidido pelo dono do produto, `DECISIONS.md` #31). Reabrir se o produto passar a oferecer fotógrafo.
-- [ ] Os dez lugares do guia são exemplos. Quem cura o guia e com que frequência atualiza, principalmente as datas do festival dos bois-bumbás? Quem responde: dono do produto.
+- [ ] Os dez lugares do guia são exemplos, e a equipe já os mantém no painel (`DECISIONS.md` #35). Quem cura o guia e com que frequência atualiza, principalmente as datas do festival dos bois-bumbás? Quem responde: dono do produto.
 - [ ] Podemos registrar o toque em "Chamar no WhatsApp" para medir contato? Com qual ferramenta, respeitando a LGPD? Quem responde: dono do produto.
 - [ ] Qual o e-mail de segurança e o prazo de resposta a uma vulnerabilidade (`SECURITY.md` §1)? Quem responde: dono do produto.
 - [ ] Qual o orçamento de desempenho para internet lenta e qual a data de lançamento? Quem responde: dono do produto.

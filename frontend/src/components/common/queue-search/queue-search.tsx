@@ -9,18 +9,22 @@ import { m } from '#/paraglide/messages'
 type SearchValues = { q: string }
 
 type QueueSearchProps = {
+  /** O que o campo procura, dito a quem digita ("Buscar por título ou descrição"). */
+  label: string
   /** O texto que está na URL: o campo o mostra, e muda junto com ela (voltar, limpar). */
   value: string
   onSearch: (q: string | undefined) => void
 }
 
 /**
- * A busca da fila por título ou descrição. Existe porque a fila é de todos os donos e cresce:
- * achar "o anúncio da Rua do Porto" paginando de vinte em vinte não é trabalho. Envia ao
+ * A busca de uma lista da equipe. Existe porque a lista cresce: achar "o anúncio da Rua do
+ * Porto" paginando de vinte em vinte não é trabalho. Serve à fila de anúncios (título e
+ * descrição) e ao guia (nome e descrição); o que cada uma procura é o `label`. Envia ao
  * apertar Enter ou o botão (e não a cada tecla): cada tecla seria um pedido à API, e a
  * lista pularia debaixo do dedo enquanto se digita. Texto vazio limpa a busca.
  */
 export function QueueSearch({
+  label,
   value,
   onSearch,
 }: QueueSearchProps): React.JSX.Element {
@@ -42,11 +46,7 @@ export function QueueSearch({
         control={form.control}
         name="q"
         render={({ field }) => (
-          <Field
-            label={m.staff_search_label()}
-            htmlFor="queue-search"
-            className="sm:flex-1"
-          >
+          <Field label={label} htmlFor="queue-search" className="sm:flex-1">
             <Input
               id="queue-search"
               type="search"

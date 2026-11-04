@@ -11,3 +11,10 @@ export const OwnerListingPhotoCreateResponse = OwnerListingShowResponse
 export type OwnerListingPhotoCreateResponse = z.infer<
   typeof OwnerListingPhotoCreateResponse
 >
+
+/** `PUT /owner/listings/:id/photos/order` answers with the whole ad, the gallery in the new order. */
+export const OwnerListingPhotoReorderResponse = OwnerListingShowResponse
+
+export type OwnerListingPhotoReorderResponse = z.infer<
+  typeof OwnerListingPhotoReorderResponse
+>

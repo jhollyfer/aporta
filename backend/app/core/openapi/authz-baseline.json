@@ -18,6 +18,8 @@
   "PUT /owner/listings/{id}": "OWNER",
   "DELETE /owner/listings/{id}": "OWNER",
   "POST /owner/listings/{id}/photos": "OWNER",
+  "PUT /owner/listings/{id}/photos/order": "OWNER",
+  "DELETE /owner/listings/{id}/photos/{photoId}": "OWNER",
   "GET /storages": "ADMINISTRATOR, MODERATOR, OWNER",
   "POST /storages": "ADMINISTRATOR, MODERATOR, OWNER",
   "GET /storages/{id}": "ADMINISTRATOR, MODERATOR, OWNER",

@@ -1434,6 +1434,16 @@
               }
             }
           },
+          "404": {
+            "description": "Foto não encontrada no anúncio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingPhotoNotFound"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
             "content": {
@@ -1445,11 +1455,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1632,11 +1642,11 @@
             }
           },
           "404": {
-            "description": "Anúncio não encontrado",
+            "description": "Anúncio não encontrado · Foto não encontrada no anúncio",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                  "$ref": "#/components/schemas/Error404ListingNotFoundListingPhotoNotFound"
                 }
               }
             }
@@ -1652,11 +1662,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1747,11 +1757,11 @@
             }
           },
           "404": {
-            "description": "Anúncio não encontrado",
+            "description": "Anúncio não encontrado · Foto não encontrada no anúncio",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                  "$ref": "#/components/schemas/Error404ListingNotFoundListingPhotoNotFound"
                 }
               }
             }
@@ -1767,11 +1777,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1861,11 +1871,11 @@
             }
           },
           "404": {
-            "description": "Anúncio não encontrado",
+            "description": "Anúncio não encontrado · Foto não encontrada no anúncio",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error404ListingNotFound"
+                  "$ref": "#/components/schemas/Error404ListingNotFoundListingPhotoNotFound"
                 }
               }
             }
@@ -1881,11 +1891,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1944,6 +1954,246 @@
             }
           }
         }
+      }
+    },
+    "/owner/listings/{id}/photos/order": {
+      "put": {
+        "operationId": "ownerListingsPhotosOrder",
+        "summary": "Reordenar as fotos do anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerListingsPhotosOrderResponse200"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado · Foto não encontrada no anúncio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFoundListingPhotoNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingPhotoReorderErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Recebe os ids das fotos do anúncio, da primeira (a capa) à última, e grava essa ordem. A lista tem de conter **exatamente** as fotos atuais: sem faltar, sem sobrar e sem repetir, senão `422` `LISTING_PHOTOS_ORDER_INVALID` e a galeria fica como estava. Esta rota só move fotos; anexar e remover têm as suas.\n\nAceita até 12 ids. Não muda o estado do anúncio. Responde `200` com o anúncio inteiro, fotos na nova ordem e com a URL assinada de leitura.\n\nAnúncio de outra conta ou arquivado responde o mesmo `404` do que não existe.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerListingsPhotosOrderBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/listings/{id}/photos/{photoId}": {
+      "delete": {
+        "operationId": "ownerListingsPhotosDelete",
+        "summary": "Remover uma foto do anúncio",
+        "tags": [
+          "Dono · Anúncios"
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso, sem corpo"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado. Exige um destes papéis: OWNER.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403AccessDenied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Anúncio não encontrado · Foto não encontrada no anúncio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404ListingNotFoundListingPhotoNotFound"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Arquivo repetido nas fotos do anúncio · Anúncio já arquivado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error409ListingAlreadyArchivedListingPhotoDuplicated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · A nova ordem deve conter exatamente as fotos do anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Tentativas em excesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429TooManyRequests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500OwnerListingPhotoDeleteErrorServerError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Tira a foto da galeria; as seguintes sobem uma posição. Não muda o estado do anúncio (só a edição reenvia um anúncio recusado à fila).\n\nO arquivo só sai do bucket se **nenhuma outra** foto ou conta o referenciar: uma imagem compartilhada com outro anúncio permanece. Se o bucket falhar, a foto continua removida e a varredura de arquivos órfãos termina o trabalho depois.\n\nFoto que o anúncio não tem responde `404` `LISTING_PHOTO_NOT_FOUND`. Anúncio de outra conta ou arquivado responde o mesmo `404` do que não existe.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "x-roles": [
+          "OWNER"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ]
       }
     },
     "/storages": {
@@ -5286,6 +5536,75 @@
           "code"
         ]
       },
+      "Error404ListingNotFoundListingPhotoNotFound": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              404
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "LISTING_NOT_FOUND",
+              "LISTING_PHOTO_NOT_FOUND"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error404ListingPhotoNotFound": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              404
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "LISTING_PHOTO_NOT_FOUND"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
       "Error404ReportNotFound": {
         "type": "object",
         "properties": {
@@ -5632,7 +5951,7 @@
           "errors"
         ]
       },
-      "Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError": {
+      "Error422ListingPeriodsEmptyListingPhotosLimitListingPhotosOrderInvalidListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError": {
         "type": "object",
         "properties": {
           "message": {
@@ -5651,6 +5970,7 @@
             "enum": [
               "LISTING_PERIODS_EMPTY",
               "LISTING_PHOTOS_LIMIT",
+              "LISTING_PHOTOS_ORDER_INVALID",
               "LISTING_PHOTO_TOO_LARGE",
               "LISTING_PHOTO_TYPE_INVALID",
               "LISTING_PRICE_INVALID",
@@ -6435,6 +6755,76 @@
             "description": "Identificador de máquina da falha.",
             "enum": [
               "OWNER_LISTING_PHOTO_CREATE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingPhotoDeleteErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_PHOTO_DELETE_ERROR",
+              "SERVER_ERROR"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Mensagem por campo, quando a falha é atribuível a campos do payload."
+          }
+        },
+        "required": [
+          "message",
+          "status",
+          "code"
+        ]
+      },
+      "Error500OwnerListingPhotoReorderErrorServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, exibível ao usuário."
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              500
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Identificador de máquina da falha.",
+            "enum": [
+              "OWNER_LISTING_PHOTO_REORDER_ERROR",
               "SERVER_ERROR"
             ]
           },
@@ -7699,6 +8089,303 @@
           }
         },
         "required": [
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsPhotosOrderBody": {
+        "type": "object",
+        "properties": {
+          "photoIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 12
+          }
+        },
+        "required": [
+          "photoIds"
+        ],
+        "additionalProperties": false
+      },
+      "OwnerListingsPhotosOrderResponse200": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "HOUSE",
+              "APARTMENT",
+              "KITNET",
+              "ROOM",
+              "HOTEL"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "neighborhood": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "address": {
+            "type": "string"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "daily": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "monthly",
+              "daily"
+            ],
+            "additionalProperties": false
+          },
+          "costs": {
+            "type": "object",
+            "properties": {
+              "water": {
+                "type": "boolean"
+              },
+              "electricity": {
+                "type": "boolean"
+              },
+              "internet": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "water",
+              "electricity",
+              "internet"
+            ],
+            "additionalProperties": false
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEMESTER",
+                "ACADEMIC_YEAR",
+                "MONTHLY",
+                "DAILY"
+              ]
+            }
+          },
+          "minimumStayMonths": {
+            "type": "number"
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "bedrooms": {
+            "type": "number"
+          },
+          "bathrooms": {
+            "type": "number"
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "whatsapp": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              }
+            },
+            "required": [
+              "name",
+              "verified",
+              "whatsapp",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING",
+              "PUBLISHED",
+              "ARCHIVED"
+            ]
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "reviewedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "note",
+                  "reviewedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "environment": {
+                  "type": "string",
+                  "enum": [
+                    "FACADE",
+                    "BEDROOM",
+                    "BATHROOM",
+                    "KITCHEN",
+                    "LIVING"
+                  ]
+                },
+                "storageId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "environment",
+                "storageId",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "type",
+          "title",
+          "description",
+          "neighborhood",
+          "address",
+          "price",
+          "costs",
+          "periods",
+          "minimumStayMonths",
+          "availableFrom",
+          "bedrooms",
+          "bathrooms",
+          "furnished",
+          "rules",
+          "owner",
+          "lat",
+          "lng",
+          "createdAt",
+          "updatedAt",
+          "status",
+          "review",
           "photos"
         ],
         "additionalProperties": false

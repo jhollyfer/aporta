@@ -17,5 +17,6 @@
   "LISTING_PHOTO_TOO_LARGE": "Each photo can be up to 10 MB",
   "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found",
   "LISTING_REVIEW_NOTE_INVALID": "Write the reason, from 3 to 500 characters",
-  "REPORT_NOTE_INVALID": "Write the note, from 3 to 500 characters"
+  "REPORT_NOTE_INVALID": "Write the note, from 3 to 500 characters",
+  "LISTING_PHOTOS_ORDER_INVALID": "Send every photo of the listing, none repeated or missing"
 }

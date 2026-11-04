@@ -186,6 +186,90 @@ test.group('domain > listing', () => {
     assert.deepEqual(listing.snapshot().photos, [first, second])
   })
 
+  test('when a photo is removed, it is handed back and the ones after it move up', ({
+    assert,
+  }) => {
+    const listing = listingDraft()
+    const photos = ['p1', 'p2', 'p3'].map((id) => ({
+      id,
+      environment: PHOTO_ENVIRONMENT.LIVING,
+      storageId: `s-${id}`,
+    }))
+    listing.attachPhotos(photos)
+
+    const removed = listing.removePhoto('p2')
+
+    assert.deepEqual(removed.value, photos[1])
+    assert.deepEqual(
+      listing.snapshot().photos.map((photo) => photo.id),
+      ['p1', 'p3'],
+    )
+  })
+
+  test('when the photo is not in the gallery, removing refuses with LISTING_PHOTO_NOT_FOUND and keeps it', ({
+    assert,
+  }) => {
+    const listing = listingDraft()
+    listing.attachPhotos([
+      { id: 'p1', environment: PHOTO_ENVIRONMENT.LIVING, storageId: 's1' },
+    ])
+
+    assert.deepEqual(listing.removePhoto('outra').value, {
+      code: 'LISTING_PHOTO_NOT_FOUND',
+    })
+    assert.lengthOf(listing.snapshot().photos, 1)
+  })
+
+  test('when the order has exactly the gallery photos, the gallery follows it', ({
+    assert,
+  }) => {
+    const listing = listingDraft()
+    listing.attachPhotos(
+      ['p1', 'p2', 'p3'].map((id) => ({
+        id,
+        environment: PHOTO_ENVIRONMENT.LIVING,
+        storageId: `s-${id}`,
+      })),
+    )
+
+    const result = listing.reorderPhotos(['p3', 'p1', 'p2'])
+
+    assert.isTrue(result.isRight())
+    assert.deepEqual(
+      listing.snapshot().photos.map((photo) => photo.id),
+      ['p3', 'p1', 'p2'],
+    )
+  })
+
+  test('when the order misses, adds or repeats a photo, it refuses with LISTING_PHOTOS_ORDER_INVALID and keeps the gallery', ({
+    assert,
+  }) => {
+    const listing = listingDraft()
+    listing.attachPhotos(
+      ['p1', 'p2'].map((id) => ({
+        id,
+        environment: PHOTO_ENVIRONMENT.LIVING,
+        storageId: `s-${id}`,
+      })),
+    )
+
+    for (const ids of [
+      ['p1'],
+      ['p1', 'p2', 'p3'],
+      ['p1', 'p1'],
+      ['p1', 'x'],
+      [],
+    ]) {
+      assert.deepEqual(listing.reorderPhotos(ids).value, {
+        code: 'LISTING_PHOTOS_ORDER_INVALID',
+      })
+    }
+    assert.deepEqual(
+      listing.snapshot().photos.map((photo) => photo.id),
+      ['p1', 'p2'],
+    )
+  })
+
   test('when the photos would pass the ceiling across calls, it refuses with LISTING_PHOTOS_LIMIT', ({
     assert,
   }) => {

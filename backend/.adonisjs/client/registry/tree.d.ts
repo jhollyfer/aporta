@@ -40,7 +40,10 @@ export interface ApiDefinition {
       show: typeof routes['owner.listings.show']
       update: typeof routes['owner.listings.update']
       archive: typeof routes['owner.listings.archive']
-      photos: typeof routes['owner.listings.photos']
+      photos: typeof routes['owner.listings.photos'] & {
+        order: typeof routes['owner.listings.photos.order']
+        delete: typeof routes['owner.listings.photos.delete']
+      }
     }
   }
   administrator: {

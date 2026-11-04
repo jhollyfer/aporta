@@ -190,6 +190,8 @@ const PT_BR_LABELS = {
 
   // Listing (owner's photos)
   photos: 'as fotos',
+  photoId: 'a foto',
+  photoIds: 'a ordem das fotos',
   storageId: 'o arquivo da foto',
   environment: 'o ambiente da foto',
 
@@ -256,6 +258,8 @@ export const FIELD_LABELS = {
     bedrooms: 'el número de dormitorios',
     bathrooms: 'el número de baños',
     photos: 'las fotos',
+    photoId: 'la foto',
+    photoIds: 'el orden de las fotos',
     storageId: 'el archivo de la foto',
     environment: 'el ambiente de la foto',
     slug: 'la dirección del anuncio',
@@ -314,6 +318,8 @@ export const FIELD_LABELS = {
     bedrooms: 'the number of bedrooms',
     bathrooms: 'the number of bathrooms',
     photos: 'the photos',
+    photoId: 'the photo',
+    photoIds: 'the photo order',
     storageId: 'the photo file',
     environment: 'the photo environment',
     slug: 'the listing address',

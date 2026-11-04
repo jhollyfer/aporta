@@ -183,12 +183,14 @@ router
  * writing an ad here would write it under his own account.
  *
  * No identifier selects the account: the scope is the session. The list is cut to it inside the
- * query, and the four routes that take an `:id` go through `ListingPolicy` in the controller, so
+ * query, and the routes that take an `:id` go through `ListingPolicy` in the controller, so
  * an ad of another account answers the same `404` as one that does not exist. The writes carry
  * a ceiling per user (`listingWriteThrottle`).
  *
  * The photos are files already uploaded through `/storages` (open to the `OWNER` below), tied to
- * the ad by their key: the binary never passes through here.
+ * the ad by their key: the binary never passes through here. Removing and reordering them are two
+ * more routes under the same ad; `photos/order` is declared before `photos/:photoId` so the word
+ * `order` is never read as an identifier.
  */
 router
   .group(() => {
@@ -208,6 +210,18 @@ router
         router
           .post(':id/photos', [controllers.owner.listingPhotos.create.Create])
           .as('photos')
+          .use(listingWriteThrottle)
+        router
+          .put(':id/photos/order', [
+            controllers.owner.listingPhotos.reorder.Reorder,
+          ])
+          .as('photos.order')
+          .use(listingWriteThrottle)
+        router
+          .delete(':id/photos/:photoId', [
+            controllers.owner.listingPhotos.delete.Delete,
+          ])
+          .as('photos.delete')
           .use(listingWriteThrottle)
       })
       .prefix('listings')

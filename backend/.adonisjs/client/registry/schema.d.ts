@@ -281,6 +281,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/owner/listing-photos/create/create.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'owner.listings.photos.order': {
+    methods: ["PUT"]
+    pattern: '/owner/listings/:id/photos/order'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/owner/listing-photos.validator').OwnerListingPhotoReorderValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#core/validator').IdentifierValidator)>|InferInput<(typeof import('#validators/owner/listing-photos.validator').OwnerListingPhotoReorderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/owner/listing-photos/reorder/reorder.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/owner/listing-photos/reorder/reorder.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/owner/listing-photos/reorder/reorder.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'owner.listings.photos.delete': {
+    methods: ["DELETE"]
+    pattern: '/owner/listings/:id/photos/:photoId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/owner/listing-photos.validator').OwnerListingPhotoDeleteValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; photoId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/owner/listing-photos.validator').OwnerListingPhotoDeleteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#features/owner/listing-photos/delete/delete.controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#features/owner/listing-photos/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#features/owner/listing-photos/delete/delete.controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'administrator.listings.paginate': {
     methods: ["GET","HEAD"]
     pattern: '/administrator/listings'

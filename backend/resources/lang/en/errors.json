@@ -74,5 +74,9 @@
   "ADMINISTRATOR_OWNER_VERIFY_ERROR": "Internal server error",
   "ADMINISTRATOR_REPORT_PAGINATE_ERROR": "Internal server error",
   "ADMINISTRATOR_REPORT_RESOLVE_ERROR": "Internal server error",
-  "STOREFRONT_REPORT_CREATE_ERROR": "Internal server error"
+  "STOREFRONT_REPORT_CREATE_ERROR": "Internal server error",
+  "LISTING_PHOTO_NOT_FOUND": "Photo not found on the listing",
+  "LISTING_PHOTOS_ORDER_INVALID": "The new order must hold exactly the listing photos",
+  "OWNER_LISTING_PHOTO_DELETE_ERROR": "Internal server error",
+  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Internal server error"
 }

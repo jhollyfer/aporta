@@ -17,5 +17,6 @@
   "LISTING_PHOTO_TOO_LARGE": "Cada foto pode ter até 10 MB",
   "NEIGHBORHOOD_NOT_FOUND": "Bairro não encontrado",
   "LISTING_REVIEW_NOTE_INVALID": "Escreva o motivo, de 3 a 500 caracteres",
-  "REPORT_NOTE_INVALID": "Escreva a nota, de 3 a 500 caracteres"
+  "REPORT_NOTE_INVALID": "Escreva a nota, de 3 a 500 caracteres",
+  "LISTING_PHOTOS_ORDER_INVALID": "Envie todas as fotos do anúncio, sem repetir nem faltar"
 }

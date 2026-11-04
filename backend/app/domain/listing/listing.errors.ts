@@ -23,6 +23,17 @@ export type ListingPhotoDuplicated = {
   readonly code: 'LISTING_PHOTO_DUPLICATED'
 }
 
+/** A photo id the gallery does not have: removed already, or from another ad. */
+export type ListingPhotoNotFound = { readonly code: 'LISTING_PHOTO_NOT_FOUND' }
+
+/**
+ * A new order that is not exactly the gallery: an id missing, an extra one, a repeated one or one
+ * from another ad. Reordering only moves the photos the ad has; it neither adds nor drops any.
+ */
+export type ListingPhotosOrderInvalid = {
+  readonly code: 'LISTING_PHOTOS_ORDER_INVALID'
+}
+
 /** A listing photo that is not a JPEG, PNG or WebP (`LISTING_PHOTO_MIMETYPES`). */
 export type ListingPhotoTypeInvalid = {
   readonly code: 'LISTING_PHOTO_TYPE_INVALID'
@@ -53,6 +64,8 @@ export type ListingError =
   | ListingPhotoDuplicated
   | ListingPhotoTypeInvalid
   | ListingPhotoTooLarge
+  | ListingPhotoNotFound
+  | ListingPhotosOrderInvalid
   | ListingAlreadyArchived
 
 /**

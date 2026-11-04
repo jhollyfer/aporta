@@ -74,5 +74,9 @@
   "ADMINISTRATOR_OWNER_VERIFY_ERROR": "Erro interno do servidor",
   "ADMINISTRATOR_REPORT_PAGINATE_ERROR": "Erro interno do servidor",
   "ADMINISTRATOR_REPORT_RESOLVE_ERROR": "Erro interno do servidor",
-  "STOREFRONT_REPORT_CREATE_ERROR": "Erro interno do servidor"
+  "STOREFRONT_REPORT_CREATE_ERROR": "Erro interno do servidor",
+  "LISTING_PHOTO_NOT_FOUND": "Foto não encontrada no anúncio",
+  "LISTING_PHOTOS_ORDER_INVALID": "A nova ordem deve conter exatamente as fotos do anúncio",
+  "OWNER_LISTING_PHOTO_DELETE_ERROR": "Erro interno do servidor",
+  "OWNER_LISTING_PHOTO_REORDER_ERROR": "Erro interno do servidor"
 }

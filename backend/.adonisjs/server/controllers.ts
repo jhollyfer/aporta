@@ -77,6 +77,12 @@ export const controllers = {
       create: {
         Create: () => import('#features/owner/listing-photos/create/create.controller'),
       },
+      delete: {
+        Delete: () => import('#features/owner/listing-photos/delete/delete.controller'),
+      },
+      reorder: {
+        Reorder: () => import('#features/owner/listing-photos/reorder/reorder.controller'),
+      },
     },
     listings: {
       archive: {

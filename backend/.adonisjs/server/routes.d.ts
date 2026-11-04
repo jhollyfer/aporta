@@ -25,6 +25,8 @@ export type ScannedRoutes = {
     'owner.listings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'owner.listings.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.photos.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.photos.delete': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'administrator.listings.paginate': { paramsTuple?: []; params?: {} }
     'administrator.listings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -94,12 +96,14 @@ export type ScannedRoutes = {
   PUT: {
     'profile.update': { paramsTuple?: []; params?: {} }
     'owner.listings.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.photos.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.listings.review': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.owners.verify': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'administrator.reports.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'owner.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'owner.listings.photos.delete': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'photoId': ParamValue} }
     'administrator.listings.archive': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'storages.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }

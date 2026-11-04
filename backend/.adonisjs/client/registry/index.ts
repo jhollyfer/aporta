@@ -134,6 +134,18 @@ const routes = {
     tokens: [[0,"owner"],[0,"listings"],[1,"id"],[0,"photos"]],
     types: placeholder as Registry['owner.listings.photos']['types'],
   },
+  'owner.listings.photos.order': {
+    methods: ["PUT"],
+    pattern: '/owner/listings/:id/photos/order',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"],[0,"photos"],[0,"order"]],
+    types: placeholder as Registry['owner.listings.photos.order']['types'],
+  },
+  'owner.listings.photos.delete': {
+    methods: ["DELETE"],
+    pattern: '/owner/listings/:id/photos/:photoId',
+    tokens: [[0,"owner"],[0,"listings"],[1,"id"],[0,"photos"],[1,"photoId"]],
+    types: placeholder as Registry['owner.listings.photos.delete']['types'],
+  },
   'administrator.listings.paginate': {
     methods: ["GET","HEAD"],
     pattern: '/administrator/listings',

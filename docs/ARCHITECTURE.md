@@ -65,7 +65,7 @@ substantivo no plural, a ação é verbo.
 | storage | files | create, complete, parts, show, paginate, download, delete | `ADMINISTRATOR` e `MODERATOR` (tudo) e `OWNER` (só o próprio arquivo) | Feito |
 | documentation | openapi, reference | show | desenvolvedores | Feito |
 | Anúncios do dono | listings | create, paginate, show, update, archive | `OWNER` | Feito |
-| Anúncios do dono | listing-photos | create (liga arquivos enviados a ambientes, até 12) | `OWNER` | Feito |
+| Anúncios do dono | listing-photos | create (liga arquivos enviados a ambientes, até 12), delete (tira uma foto; o binário só sai se nada mais o referencia), reorder (grava a ordem; tem de ser exatamente as fotos do anúncio) | `OWNER` | Feito |
 | administrator | listings | paginate, show, review (aprovar e recusar com motivo), archive | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | administrator | owners | verify (marcar e desmarcar) | `MODERATOR`, `ADMINISTRATOR` | Feito |
 | administrator | reports | paginate, resolve | `MODERATOR`, `ADMINISTRATOR` | Feito |

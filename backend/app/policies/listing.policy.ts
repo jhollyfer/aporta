@@ -13,7 +13,7 @@ import SessionScopedPolicy from '#policies/session-scoped-policy.base'
  * uuid is a real ad, and the list of ads is something a competitor would like to enumerate
  * (`docs/SECURITY.md` §4).
  *
- * Reading, editing, archiving and attaching pictures are four methods and one rule on purpose:
+ * Reading, editing, archiving and the pictures (attach, remove, reorder) are one method each and one rule on purpose:
  * the day one of them needs more (a moderator who may read any ad, an ad under review that cannot
  * be edited) it changes here, in one place, and the controller of each action already asks.
  *
@@ -35,6 +35,14 @@ export default class ListingPolicy extends SessionScopedPolicy {
   }
 
   attachPhotos(actor: Actor, listing: Listing | null): AuthorizerResponse {
+    return this.owned(actor, listing)
+  }
+
+  removePhoto(actor: Actor, listing: Listing | null): AuthorizerResponse {
+    return this.owned(actor, listing)
+  }
+
+  reorderPhotos(actor: Actor, listing: Listing | null): AuthorizerResponse {
     return this.owned(actor, listing)
   }
 

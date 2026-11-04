@@ -18,6 +18,8 @@ import {
 import type {
   ListingAlreadyArchived,
   ListingError,
+  ListingPhotoNotFound,
+  ListingPhotosOrderInvalid,
   ListingPhotoTooLarge,
   ListingPhotoTypeInvalid,
   ListingReviewError,
@@ -330,6 +332,53 @@ export default class Listing {
       return left({ code: 'LISTING_PHOTO_DUPLICATED' })
 
     this.props = { ...this.props, photos: [...this.props.photos, ...photos] }
+
+    return right(this)
+  }
+
+  /**
+   * Takes one picture out of the gallery and hands it back, so the caller knows which file was
+   * let go of. The ones after it move up: the position is the index in the gallery, so there is
+   * no gap to close. A photo the gallery does not have (already removed, or from another ad) is
+   * refused instead of ignored. Like `attachPhotos`, it leaves the status where it is.
+   */
+  removePhoto(
+    photoId: string,
+  ): Either<ListingPhotoNotFound, ListingPhotoProps> {
+    const removed = this.props.photos.find((photo) => photo.id === photoId)
+
+    if (!removed) return left({ code: 'LISTING_PHOTO_NOT_FOUND' })
+
+    this.props = {
+      ...this.props,
+      photos: this.props.photos.filter((photo) => photo.id !== photoId),
+    }
+
+    return right(removed)
+  }
+
+  /**
+   * Puts the gallery in the order given, by photo id. It has to be **exactly** the photos the ad
+   * has: none missing, none extra, none twice. Anything else would be a way to add or drop a
+   * picture through a route that only moves them. The first one is the cover of the ad.
+   */
+  reorderPhotos(
+    ids: ReadonlyArray<string>,
+  ): Either<ListingPhotosOrderInvalid, Listing> {
+    const current = new Map(this.props.photos.map((photo) => [photo.id, photo]))
+    const sorted: ListingPhotoProps[] = []
+
+    for (const id of new Set(ids)) {
+      const photo = current.get(id)
+
+      if (photo) sorted.push(photo)
+    }
+
+    // A repeated or foreign id leaves `sorted` shorter than `ids`; a missing one, shorter than the gallery.
+    if (sorted.length !== ids.length || ids.length !== current.size)
+      return left({ code: 'LISTING_PHOTOS_ORDER_INVALID' })
+
+    this.props = { ...this.props, photos: sorted }
 
     return right(this)
   }

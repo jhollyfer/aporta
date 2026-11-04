@@ -55,6 +55,8 @@
       "bedrooms": "the number of bedrooms",
       "bathrooms": "the number of bathrooms",
       "photos": "the photos",
+      "photoIds": "the photo order",
+      "photoId": "the photo",
       "storageId": "the photo file",
       "environment": "the photo environment"
     },

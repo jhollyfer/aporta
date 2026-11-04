@@ -23,6 +23,14 @@ export type ListingPhotoDuplicated = {
   readonly code: 'LISTING_PHOTO_DUPLICATED'
 }
 
+/** A listing photo that is not a JPEG, PNG or WebP (`LISTING_PHOTO_MIMETYPES`). */
+export type ListingPhotoTypeInvalid = {
+  readonly code: 'LISTING_PHOTO_TYPE_INVALID'
+}
+
+/** A listing photo above the ceiling of one photo (`LISTING_PHOTO_MAX_SIZE`). */
+export type ListingPhotoTooLarge = { readonly code: 'LISTING_PHOTO_TOO_LARGE' }
+
 /** An ad that already left the air cannot leave it again. */
 export type ListingAlreadyArchived = {
   readonly code: 'LISTING_ALREADY_ARCHIVED'
@@ -43,6 +51,8 @@ export type ListingError =
   | ListingPeriodsEmpty
   | ListingPhotosLimit
   | ListingPhotoDuplicated
+  | ListingPhotoTypeInvalid
+  | ListingPhotoTooLarge
   | ListingAlreadyArchived
 
 /**

@@ -51,6 +51,8 @@
   "LISTING_PERIODS_EMPTY": "Select at least one period",
   "LISTING_PHOTOS_LIMIT": "Too many photos on the listing",
   "LISTING_PHOTO_DUPLICATED": "File repeated in the listing photos",
+  "LISTING_PHOTO_TYPE_INVALID": "Listing photo must be JPEG, PNG or WebP",
+  "LISTING_PHOTO_TOO_LARGE": "Listing photo is over 10 MB",
   "LISTING_ALREADY_ARCHIVED": "Listing already archived",
   "NEIGHBORHOOD_NOT_FOUND": "Neighborhood not found",
   "OWNER_LISTING_CREATE_ERROR": "Internal server error",

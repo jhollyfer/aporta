@@ -78,16 +78,16 @@ export default abstract class StorageRepository {
   abstract allUploaded(ids: ReadonlyArray<string>): Promise<boolean>
 
   /**
-   * `allUploaded` and, besides, every file was uploaded by `ownerId` and is one of `mimetypes`.
-   * A file of another account, or of another kind, counts as nonexistent, like a `PENDING` one:
-   * whoever attaches a picture to his ad may only use an image he sent, and answering "not yours"
-   * would confirm that the uuid exists.
+   * The live, already `UPLOADED` files among `ids` (without repetition) that `ownerId` sent. A
+   * file of another account, a `PENDING` one or one that does not exist is simply missing from
+   * the answer: whoever attaches a picture to his ad may only use a file he sent, and telling
+   * "not yours" apart from "not there" would confirm that the uuid exists. The caller compares
+   * the count with the distinct ids it asked for, then judges the kind and size of what came.
    */
-  abstract allUploadedBy(
+  abstract findUploadedBy(
     ids: ReadonlyArray<string>,
     ownerId: string,
-    mimetypes: ReadonlyArray<StorageMimetype>,
-  ): Promise<boolean>
+  ): Promise<Storage[]>
 
   /**
    * The `PENDING` uploads created before `before`, from oldest to

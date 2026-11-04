@@ -13,6 +13,8 @@
   "LISTING_PERIODS_EMPTY": "Seleccione al menos un período",
   "LISTING_PHOTOS_LIMIT": "Demasiadas fotos en el anuncio",
   "LISTING_PHOTO_DUPLICATED": "Ese archivo ya está en las fotos del anuncio",
+  "LISTING_PHOTO_TYPE_INVALID": "Usa una foto JPEG, PNG o WebP",
+  "LISTING_PHOTO_TOO_LARGE": "Cada foto puede pesar hasta 10 MB",
   "NEIGHBORHOOD_NOT_FOUND": "Barrio no encontrado",
   "LISTING_REVIEW_NOTE_INVALID": "Escriba el motivo, de 3 a 500 caracteres",
   "REPORT_NOTE_INVALID": "Escriba la nota, de 3 a 500 caracteres"

@@ -1,7 +1,6 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import {
-  IMAGE_MIMETYPES,
   left,
   right,
   type Actor,
@@ -11,6 +10,7 @@ import {
 } from '@aporta/shared'
 
 import Translation from '#core/translation'
+import Listing from '#domain/listing/listing.entity'
 import HTTPException from '#exceptions/http.exception'
 import ListingPhotoUrls from '#features/_shared.listing-photo-urls'
 import ListingRefusal from '#features/owner/_shared.listing-refusal'
@@ -31,11 +31,13 @@ type Response = Either<HTTPException, OwnerListingPhotoCreateResponse>
  * Puts uploaded pictures on the owner's ad. Who may touch the ad was decided by `ListingPolicy` in
  * the controller; what this checks is the files.
  *
- * The question "are these mine, finished and images" is one repository call
- * (`StorageRepository.allUploadedBy`), asked **before** the write: `storage_id` is a foreign key,
+ * The question "are these mine and finished" is one repository call
+ * (`StorageRepository.findUploadedBy`), asked **before** the write: `storage_id` is a foreign key,
  * and a file of another account is the hole this closes. A file that is not the actor's answers
  * like one that does not exist, so the response cannot be used to learn which uuids are files.
- * The ceiling and the repeated file are the entity's.
+ * Whether each one is a JPEG/PNG/WebP up to 10 MB is `Listing.checkPhotoFile` (its own `422`:
+ * the generic upload accepts more than a photo needs). The ceiling and the repeated file are the
+ * entity's.
  */
 @inject()
 export default class OwnerListingPhotoCreateUseCase {
@@ -59,16 +61,21 @@ export default class OwnerListingPhotoCreateUseCase {
           ),
         )
 
-      const owned = await this.storages.allUploadedBy(
-        photos.map((photo) => photo.storageId),
-        actor.id,
-        IMAGE_MIMETYPES,
-      )
+      const wanted = new Set(photos.map((photo) => photo.storageId))
+      const sent = await this.storages.findUploadedBy([...wanted], actor.id)
 
-      if (!owned)
+      if (sent.length !== wanted.size)
         return left(
           ListingRefusal.http({ code: 'STORAGE_NOT_FOUND', field: 'photos' }),
         )
+
+      // The files are the actor's own, so naming what is wrong with one confirms nothing.
+      for (const file of sent) {
+        const { mimetype, size } = file.snapshot()
+        const fit = Listing.checkPhotoFile({ mimetype, size })
+
+        if (fit.isLeft()) return left(ListingRefusal.http(fit.value))
+      }
 
       const attached = listing.attachPhotos(
         photos.map((photo) => ({

@@ -1,9 +1,4 @@
-import {
-  UPLOAD_STATUS,
-  type Paginated,
-  type StorageMimetype,
-  type TrashedMode,
-} from '@aporta/shared'
+import { UPLOAD_STATUS, type Paginated, type TrashedMode } from '@aporta/shared'
 
 import MemoryRows, { type StoredRow } from '#core/memory-rows'
 import Storage, { type StorageProps } from '#domain/storage/storage.entity'
@@ -84,21 +79,22 @@ export default class StorageMemoryRepository extends StorageRepository {
     )
   }
 
-  allUploadedBy(
+  findUploadedBy(
     ids: ReadonlyArray<string>,
     ownerId: string,
-    mimetypes: ReadonlyArray<StorageMimetype>,
-  ): Promise<boolean> {
+  ): Promise<Storage[]> {
     return Promise.resolve(
-      [...new Set(ids)].every((id) => {
+      [...new Set(ids)].flatMap((id) => {
         const row = this.#rows.get(id)
 
-        return (
-          row?.ownerId === ownerId &&
-          mimetypes.some((mimetype) => mimetype === row.mimetype) &&
-          row.status === UPLOAD_STATUS.UPLOADED &&
-          row.deletedAt === null
+        if (
+          row?.ownerId !== ownerId ||
+          row.status !== UPLOAD_STATUS.UPLOADED ||
+          row.deletedAt !== null
         )
+          return []
+
+        return [this.record(row).storage]
       }),
     )
   }

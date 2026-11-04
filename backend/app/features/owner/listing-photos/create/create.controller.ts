@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { LISTING_PHOTOS_MAX } from '@aporta/shared'
+import { LISTING_PHOTO_MAX_SIZE, LISTING_PHOTOS_MAX } from '@aporta/shared'
 
 import OwnerListingPhotoCreateUseCase from './create.use-case.ts'
 
@@ -18,9 +18,12 @@ export default class OwnerListingPhotoCreateController {
       'Liga arquivos **já enviados** (`POST /storages` e `complete`) ao anúncio, cada um ao ' +
       'ambiente que mostra, no fim da galeria e na ordem do corpo. O binário não passa por aqui: ' +
       'só a chave `storageId` da linha de `storages`.\n\n' +
-      'Cada arquivo precisa estar `UPLOADED`, ser uma imagem e ter sido enviado pela conta da ' +
-      'sessão. Arquivo de outra conta, ainda `PENDING`, de outro tipo ou inexistente responde o ' +
-      'mesmo `422`, para não confirmar a quem sonda que aquele uuid existe.\n\n' +
+      'Cada arquivo precisa estar `UPLOADED` e ter sido enviado pela conta da sessão. Arquivo de ' +
+      'outra conta, ainda `PENDING` ou inexistente responde o mesmo `422` `STORAGE_NOT_FOUND`, ' +
+      'para não confirmar a quem sonda que aquele uuid existe.\n\n' +
+      `A foto é JPEG, PNG ou WebP (\`LISTING_PHOTO_TYPE_INVALID\`) e tem até ${LISTING_PHOTO_MAX_SIZE / (1024 * 1024)} MB ` +
+      '(`LISTING_PHOTO_TOO_LARGE`), ambos `422`: o envio genérico (`POST /storages`) aceita mais ' +
+      'tipos e um teto maior, e é aqui, ao anexar, que se sabe que o arquivo vira foto.\n\n' +
       `O anúncio aceita até ${LISTING_PHOTOS_MAX} fotos no total, contando as que já tem, e não ` +
       'aceita o mesmo arquivo duas vezes. Responde `201` com o anúncio inteiro, fotos na ordem e ' +
       'com a URL assinada de leitura.\n\n' +

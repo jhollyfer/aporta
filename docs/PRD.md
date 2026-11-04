@@ -91,7 +91,7 @@ Só entram métricas que a equipe consegue medir com o que o sistema registra ou
 - [x] A moderação é antes de publicar (`DECISIONS.md` #14). Falta definir quem compõe a equipe (ADMINISTRATOR e MODERATOR). Quem responde: dono do produto.
 - [x] Como a conta de dono (`OWNER`) nasce: cadastro aberto, sem confirmação de e-mail por enquanto (`DECISIONS.md` #12). Reabrir quando houver provedor de e-mail.
 - [ ] Quem confere os bairros e as coordenadas? Os seis bairros e os pontos do mapa são aproximados. Quem responde: quem conhece a cidade, indicado pelo dono.
-- [ ] Quem fotografa os imóveis e qual o tamanho máximo de uma foto? O teto atual de upload (`UPLOAD_MAX_SIZE`, 1 GiB) vale para qualquer arquivo e é alto demais para foto de anúncio. Quem responde: dono do produto.
+- [x] Quem fotografa os imóveis? O dono do imóvel envia as próprias fotos; o teto de uma foto é 10 MB (decidido pelo dono do produto, `DECISIONS.md` #31). Reabrir se o produto passar a oferecer fotógrafo.
 - [ ] Os dez lugares do guia são exemplos. Quem cura o guia e com que frequência atualiza, principalmente as datas do festival dos bois-bumbás? Quem responde: dono do produto.
 - [ ] Podemos registrar o toque em "Chamar no WhatsApp" para medir contato? Com qual ferramenta, respeitando a LGPD? Quem responde: dono do produto.
 - [ ] Qual o e-mail de segurança e o prazo de resposta a uma vulnerabilidade (`SECURITY.md` §1)? Quem responde: dono do produto.

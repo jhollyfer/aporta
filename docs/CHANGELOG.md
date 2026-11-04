@@ -12,6 +12,7 @@ catálogo semeado é de exemplo (telefones fictícios, coordenadas aproximadas).
 
 ### Adicionado
 
+- Foto de anúncio só aceita JPEG, PNG ou WebP, até 10 MB cada. O formulário avisa antes de enviar e a API recusa com 422 (`LISTING_PHOTO_TYPE_INVALID`, `LISTING_PHOTO_TOO_LARGE`) nos três idiomas.
 - Os anúncios de demonstração ganharam fotos (fachada, quarto, banheiro, cozinha e sala), de banco de imagens livre e sem pessoas; anúncio real segue só com as fotos do dono.
 
 ### Corrigido

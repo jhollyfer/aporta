@@ -1,6 +1,10 @@
 import * as React from 'react'
 
-import { IMAGE_MIMETYPES, PHOTO_ENVIRONMENTS } from '@aporta/shared'
+import {
+  LISTING_PHOTO_MAX_SIZE,
+  LISTING_PHOTO_MIMETYPES,
+  PHOTO_ENVIRONMENTS,
+} from '@aporta/shared'
 import type { Merge, PhotoEnvironment } from '@aporta/shared'
 
 import { resumeKey } from '#/lib/upload-resume'
@@ -58,8 +62,8 @@ function suggestEnvironment(
   return PHOTO_ENVIRONMENTS.find((env) => !used.includes(env)) ?? 'BEDROOM'
 }
 
-function isImage(file: File): boolean {
-  return IMAGE_MIMETYPES.some((type) => type === file.type)
+function isPhotoType(file: File): boolean {
+  return LISTING_PHOTO_MIMETYPES.some((type) => type === file.type)
 }
 
 /**
@@ -87,14 +91,20 @@ export function usePhotoDrafts({ max, taken = [] }: Options): PhotoDrafts {
   function add(files: ReadonlyArray<File>): void {
     const next = [...items]
     let notImage = 0
+    let tooLarge = 0
     let duplicated = 0
     let overflow = 0
 
     for (const file of files) {
       const key = resumeKey(file)
 
-      if (!isImage(file)) {
+      if (!isPhotoType(file)) {
         notImage += 1
+        continue
+      }
+
+      if (file.size > LISTING_PHOTO_MAX_SIZE) {
+        tooLarge += 1
         continue
       }
 
@@ -124,7 +134,9 @@ export function usePhotoDrafts({ max, taken = [] }: Options): PhotoDrafts {
     }
 
     setItems(next)
-    setNotice(describeRefusals({ notImage, duplicated, overflow, max }))
+    setNotice(
+      describeRefusals({ notImage, tooLarge, duplicated, overflow, max }),
+    )
   }
 
   function remove(key: string): void {
@@ -167,19 +179,30 @@ export function usePhotoDrafts({ max, taken = [] }: Options): PhotoDrafts {
 }
 
 type Refusals = Merge<
-  { notImage: number; duplicated: number; overflow: number },
+  {
+    notImage: number
+    tooLarge: number
+    duplicated: number
+    overflow: number
+  },
   { max: number }
 >
 
-/** Uma frase só, pela causa mais séria: o limite vence o tipo, que vence a repetição. */
+/** Uma frase só, pela causa mais séria: o limite vence o tipo, que vence o tamanho, que vence a repetição. */
 function describeRefusals({
   notImage,
+  tooLarge,
   duplicated,
   overflow,
   max,
 }: Refusals): string | null {
   if (overflow > 0) return m.photos_notice_limit({ max })
   if (notImage > 0) return m.photos_notice_type()
+  if (tooLarge > 0) {
+    return m.photos_notice_size({
+      max: Math.round(LISTING_PHOTO_MAX_SIZE / (1024 * 1024)),
+    })
+  }
   if (duplicated > 0) return m.photos_notice_duplicated()
   return null
 }

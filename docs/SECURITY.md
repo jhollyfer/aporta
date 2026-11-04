@@ -139,9 +139,10 @@ C = confidencialidade, I = integridade, D = disponibilidade.
   Nitro. A API tem CSP restritiva e HSTS (`backend/config/shield.ts`). O app público pede revisão
   antes do lançamento, principalmente depois que o mapa carregar ladrilhos e a galeria carregar
   fotos de outro domínio.
-- A lista de tipos de arquivo herdou PDF e quatro tipos de áudio da fundação. Foto de anúncio só
-  precisa de imagem: restringir ao entregar o upload de fotos.
-- O teto `UPLOAD_MAX_SIZE` é global (1 GiB no exemplo): foto de anúncio precisa de teto próprio.
+- A lista de tipos do `POST /storages` herdou PDF e quatro tipos de áudio da fundação, e o teto
+  `UPLOAD_MAX_SIZE` é global (1 GiB no exemplo). Foto de anúncio é JPEG, PNG ou WebP até 10 MB, e isso
+  é conferido ao anexar (`DECISIONS.md` #31); mas um dono ainda consegue subir um arquivo grande ao
+  bucket antes da recusa, e esse binário sem uso só sai pelo `StorageOrphans` ou pelo `DELETE /storages/:id`.
 - A origem de `backend/infra/r2-cors.json` já é a do app (`https://aporta.maiyu.com.br`); falta aplicar
   o arquivo no provedor do bucket e conferir o `ETag` exposto.
 - Conferir `CORS_ORIGINS=https://aporta.maiyu.com.br` na API de produção: o navegador chama `/storefront` direto, e a lista não pode virar `*` nem ficar vazia (`ENV.md`).

@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto'
 
 import app from '@adonisjs/core/services/app'
 import {
-  IMAGE_MIMETYPES,
   SORT_DIRECTION,
   STORAGE_MIMETYPE,
   TRASHED_MODE,
@@ -88,9 +87,6 @@ const IMPLEMENTATIONS = {
     }
   },
 } satisfies Record<string, () => Promise<Subject>>
-
-/** The kinds a listing photo may be. */
-const IMAGES = IMAGE_MIMETYPES
 
 const PAGE = {
   page: 1,
@@ -252,7 +248,7 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       assert.isFalse(await repository.allUploaded([randomUUID()]))
     })
 
-    test('when asking for the files of one account, allUploadedBy only accepts live UPLOADED files that account sent', async ({
+    test('when asking for the files of one account, findUploadedBy only returns live UPLOADED files that account sent', async ({
       assert,
     }) => {
       const { ownerId, otherOwnerId, repository } = await make()
@@ -262,29 +258,30 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       const theirs = draftFor(other)({ size: 5 })
       theirs.confirm(5)
       const pending = draftFor(ownerId)()
-      for (const storage of [mine, theirs, pending])
+      const trashed = Storage.restore({
+        ...draftFor(ownerId)({ size: 5 }).snapshot(),
+        status: UPLOAD_STATUS.UPLOADED,
+        deletedAt: ARCHIVED_AT,
+      })
+      for (const storage of [mine, theirs, pending, trashed])
         await repository.save(storage)
 
-      assert.isTrue(await repository.allUploadedBy([], ownerId, IMAGES))
-      assert.isTrue(
-        await repository.allUploadedBy([mine.id, mine.id], ownerId, IMAGES),
-      )
+      const idsOf = async (ids: string[]) =>
+        (await repository.findUploadedBy(ids, ownerId)).map(
+          (storage) => storage.id,
+        )
+
+      assert.deepEqual(await idsOf([]), [])
+      assert.deepEqual(await idsOf([mine.id, mine.id]), [mine.id])
       // Someone else's file is indistinguishable from one that does not exist.
-      assert.isFalse(
-        await repository.allUploadedBy([theirs.id], ownerId, IMAGES),
-      )
-      assert.isFalse(
-        await repository.allUploadedBy([mine.id, theirs.id], ownerId, IMAGES),
-      )
-      assert.isFalse(
-        await repository.allUploadedBy([pending.id], ownerId, IMAGES),
-      )
-      assert.isFalse(
-        await repository.allUploadedBy([randomUUID()], ownerId, IMAGES),
-      )
+      assert.deepEqual(await idsOf([theirs.id]), [])
+      assert.deepEqual(await idsOf([mine.id, theirs.id]), [mine.id])
+      assert.deepEqual(await idsOf([pending.id]), [])
+      assert.deepEqual(await idsOf([trashed.id]), [])
+      assert.deepEqual(await idsOf([randomUUID()]), [])
     })
 
-    test("when asking for images only, allUploadedBy refuses the account's own file of another kind", async ({
+    test("when the account's file is of another kind, findUploadedBy still returns it with its mimetype and size", async ({
       assert,
     }) => {
       const { ownerId, repository } = await make()
@@ -295,13 +292,14 @@ for (const [name, make] of Object.entries(IMPLEMENTATIONS)) {
       manual.confirm(5)
       await repository.save(manual)
 
-      assert.isFalse(
-        await repository.allUploadedBy([manual.id], ownerId, IMAGES),
-      )
-      assert.isTrue(
-        await repository.allUploadedBy([manual.id], ownerId, [
-          STORAGE_MIMETYPE.PDF,
-        ]),
+      const found = await repository.findUploadedBy([manual.id], ownerId)
+
+      assert.deepEqual(
+        found.map((storage) => {
+          const { mimetype, size } = storage.snapshot()
+          return [mimetype, size]
+        }),
+        [[STORAGE_MIMETYPE.PDF, 5]],
       )
     })
 

@@ -24,6 +24,8 @@
 
 ## Parou em
 
+2026-11-04 (fotos): tarefas 4.2 e 4.5 feitas. Teto e tipos de foto em `shared/` (`DECISIONS.md` #31); `StorageOrphans.sweep` pronto e testado, mas sem chamador (#32). Próximo: remover foto de um anúncio e excluir anúncio de vez devem soltar a referência e chamar o `sweep`.
+
 2026-11-04 (depois): as fotos da demonstração caíam no CSP em produção. O `STORAGE_PUBLIC_URL` estava com o host do endpoint R2, mas sem `STORAGE_FORCE_PATH_STYLE` o SDK assina `https://aporta.<conta>.r2.cloudflarestorage.com/...`. Doc corrigida (`ENV.md`, `frontend/src/env.ts`); a correção da régua está na branch `docs/regua-storage-public-url` do `maiyu-pattern`, sem push (o classificador recusou o push direto na `main` do upstream). Falta o dono trocar o valor no Coolify.
 
 2026-11-04: os anúncios de demonstração têm fotos (tarefa 7.21, `DECISIONS.md` #30). São 34 fotos CC0 do Openverse, sem rosto, em `backend/database/data/demo-photos.ts`; o `ListingSeeder` baixa, grava no bucket por `StorageContract.put` e liga o `storage_id`, e sem rede deixa o slot vazio. Rotas conferidas a pedido do dono: backend e frontend já estão inteiros em inglês (caminho, parâmetro e valor), sem redirect de caminho antigo; nada a renomear. Ambiente que funcionou: Postgres 16 do sistema na 5432 (`DATABASE_URL` sobrescrito no shell, o `.env.test` aponta 5435), `s3rver` na 9006 com `STORAGE_KEY=S3RVER` e `STORAGE_SECRET=S3RVER`, e o seed com `NODE_USE_ENV_PROXY=1` e `NODE_EXTRA_CA_CERTS` porque o `fetch` do Node ignora o proxy da sessão na nuvem.

@@ -278,7 +278,9 @@ quebra sem erro no log.
 - O limitador de requisições usa o Postgres: cada tentativa de login e cada passo de upload gera
   escrita no banco. Uma só instância da API e o banco comum bastam para a escala de uma cidade; mais
   réplicas funcionam porque o estado está no banco, não na memória.
-- O teto de upload (`UPLOAD_MAX_SIZE`) é global e hoje vale 1 GiB no exemplo; foto de anúncio
-  precisa de teto próprio (`PRD.md` §8).
+- O teto de upload (`UPLOAD_MAX_SIZE`) é global e hoje vale 1 GiB no exemplo. A foto de anúncio tem
+  o dela (JPEG, PNG ou WebP, 10 MB), conferido ao anexar e no seletor do formulário
+  (`DECISIONS.md` #31); o binário que perde a última referência sai por `StorageOrphans`
+  (`features/_shared.storage-orphans.ts`, #32).
 - O mapa carrega ladrilhos públicos do OpenStreetMap, sujeitos à política de uso deles; tráfego
   alto pede um provedor próprio de ladrilhos.

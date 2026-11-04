@@ -63,15 +63,15 @@ paginação da listagem. Parte dos tipos `Listing`, `Neighborhood` e `Place` de 
 | 3.8 | E2E do backend e linha na matriz do `TEST-PLAN.md` para cada rota nova | Alta | Feita | as quatro rotas de `/storefront`, `TEST-PLAN.md` §3 e §3.1; o `POST` do dono leva as linhas dele |
 | 3.9 | Paginar a listagem e o mapa: hoje `/listings` pede `perPage=100` (o teto da API, `MAX_PER_PAGE`) e mostra todos os pins de uma vez; passando de 100 anúncios publicados os pins e os cards cobrem só os 100 primeiros, e o sitemap, os bairros e as abas do guia têm o mesmo corte | Média | Feita | listagem paginada (12 ou 24 por página, `page` na URL) e mapa pela janela visível em `GET /storefront/listings/pins`, com teto de 500 e aviso para aproximar; sitemap, bairros e abas do guia ainda cortam em 100 (`ARCHITECTURE.md` §10) |
 
-## Fase 4 · Fotos dos anúncios (3/5)
+## Fase 4 · Fotos dos anúncios (5/5)
 
 | # | Tarefa | Prioridade | Status | Notas |
 |---|---|---|---|---|
 | 4.1 | Policy de posse por dono nas ações de `/storages` e só então abrir o grupo ao `OWNER` | Alta | Feita | `StoragePolicy`: equipe vê tudo, `OWNER` só o próprio arquivo, o resto é 404; as variantes de upload do `OWNER` não foram provadas (sem MinIO) |
-| 4.2 | Teto de upload próprio para foto e lista de tipos só de imagem | Alta | A fazer | hoje o teto é global e a lista herdou PDF e áudio |
+| 4.2 | Teto de upload próprio para foto e lista de tipos só de imagem | Alta | Feita | `LISTING_PHOTO_MIMETYPES` (JPEG, PNG, WebP) e `LISTING_PHOTO_MAX_SIZE` (10 MB) em `shared/`; a recusa é ao anexar (`POST /owner/listings/:id/photos`, 422 `LISTING_PHOTO_TYPE_INVALID` e `LISTING_PHOTO_TOO_LARGE`) e o seletor do front recusa antes de enviar; `POST /storages` e o avatar seguem com a lista e o teto genéricos (`DECISIONS.md` #31) |
 | 4.3 | Passo de fotos do cadastro envia por ambiente pelo fluxo multipart | Alta | Feita | escrita e testada no navegador até a escolha, prévia e remoção; **o envio ao bucket não foi exercitado** (sem MinIO), nem o CORS do bucket expondo `ETag` |
 | 4.4 | Foto no anúncio e leitura por URL assinada na vitrine | Alta | Feita | `photos[].url` assinada em `listings` e detalhe; o teste com bucket real fica para o CI com MinIO |
-| 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | A fazer | |
+| 4.5 | Apagar o objeto do bucket quando o anúncio sai | Média | Feita | `StorageOrphans.sweep` (`features/_shared.storage-orphans.ts`) apaga binário e linha só do arquivo sem referência; arquivar não apaga (restaurável). Ainda sem chamador: remover foto e excluir anúncio de vez usam o ponto (`DECISIONS.md` #32) |
 
 ## Fase 5 · Dono, verificação e moderação (7/7)
 

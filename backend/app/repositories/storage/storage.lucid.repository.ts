@@ -4,7 +4,6 @@ import {
   UPLOAD_STATUS,
   z,
   type Paginated,
-  type StorageMimetype,
   type TrashedMode,
 } from '@aporta/shared'
 import { DateTime } from 'luxon'
@@ -145,23 +144,21 @@ export default class StorageLucidRepository extends StorageRepository {
     return rows.length === distinct.length
   }
 
-  async allUploadedBy(
+  async findUploadedBy(
     ids: ReadonlyArray<string>,
     ownerId: string,
-    mimetypes: ReadonlyArray<StorageMimetype>,
-  ): Promise<boolean> {
+  ): Promise<Storage[]> {
     const distinct = [...new Set(ids)]
 
-    if (distinct.length === 0) return true
+    if (distinct.length === 0) return []
 
     const rows = await StorageModel.query()
       .whereIn('id', distinct)
       .where('ownerId', ownerId)
-      .whereIn('mimetype', [...mimetypes])
       .where('status', UPLOAD_STATUS.UPLOADED)
       .withScopes((scopes) => scopes.notDeleted())
 
-    return rows.length === distinct.length
+    return rows.map((row) => this.toEntity(row))
   }
 
   async findAbandoned(before: Date): Promise<StorageRecord[]> {

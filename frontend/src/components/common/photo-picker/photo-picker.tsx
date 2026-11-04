@@ -7,7 +7,7 @@ import {
   X,
 } from '@phosphor-icons/react'
 
-import { IMAGE_MIMETYPES, PHOTO_ENVIRONMENTS } from '@aporta/shared'
+import { LISTING_PHOTO_MIMETYPES, PHOTO_ENVIRONMENTS } from '@aporta/shared'
 
 import { Input } from '#/components/ui/input'
 import { Progress } from '#/components/ui/progress'
@@ -170,7 +170,7 @@ export function PhotoPicker({
         <Input
           id={inputId}
           type="file"
-          accept={IMAGE_MIMETYPES.join(',')}
+          accept={LISTING_PHOTO_MIMETYPES.join(',')}
           multiple
           disabled={disabled || full}
           onChange={(event) => {

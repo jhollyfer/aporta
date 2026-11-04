@@ -4,7 +4,9 @@ import {
   LISTING_PHOTOS_MAX,
   LISTING_STATUS,
   PHOTO_ENVIRONMENT,
+  LISTING_PHOTO_MAX_SIZE,
   STORAGE_MIMETYPE,
+  type StorageMimetype,
 } from '@aporta/shared'
 import { test } from '@japa/runner'
 
@@ -53,12 +55,11 @@ function subject() {
   /** A finished upload by `ownerId`, whose file the listing read can sign. */
   async function uploaded(
     ownerId: string,
-    mimetype:
-      | typeof STORAGE_MIMETYPE.PNG
-      | typeof STORAGE_MIMETYPE.PDF = STORAGE_MIMETYPE.PNG,
+    mimetype: StorageMimetype = STORAGE_MIMETYPE.PNG,
+    size = 5,
   ) {
-    const file = storageDraft({ ownerId, mimetype, size: 5 })
-    file.confirm(5)
+    const file = storageDraft({ ownerId, mimetype, size })
+    file.confirm(size)
     await storages.save(file)
     world.listings.putFile(storageFile(file.id))
 
@@ -100,17 +101,16 @@ test.group('owner > listing-photos > create (unit)', () => {
     )
   })
 
-  test("when a file is another account's, still PENDING, not an image or unknown, it answers the same 422 and attaches nothing", async ({
+  test("when a file is another account's, still PENDING or unknown, it answers the same 422 and attaches nothing", async ({
     assert,
   }) => {
     const { actor, entity, listings, storages, uploaded, useCase } = subject()
     const mine = await uploaded(actor.id)
     const foreign = await uploaded(actorDraft().id)
-    const manual = await uploaded(actor.id, STORAGE_MIMETYPE.PDF)
     const pending = storageDraft({ ownerId: actor.id })
     await storages.save(pending)
 
-    for (const storageId of [foreign.id, manual.id, pending.id, randomUUID()]) {
+    for (const storageId of [foreign.id, pending.id, randomUUID()]) {
       const result = await useCase.execute({
         id: entity.id,
         actor,
@@ -130,6 +130,70 @@ test.group('owner > listing-photos > create (unit)', () => {
 
     const stored = await listings.findById(entity.id)
     assert.deepEqual(stored?.snapshot().photos, [])
+  })
+
+  test('when the own file is not a JPEG, PNG or WebP, or is above 10 MB, it answers its own 422 and attaches nothing', async ({
+    assert,
+  }) => {
+    const { actor, entity, listings, uploaded, useCase } = subject()
+    const mine = await uploaded(actor.id)
+    const refused = [
+      [
+        'LISTING_PHOTO_TYPE_INVALID',
+        await uploaded(actor.id, STORAGE_MIMETYPE.PDF),
+      ],
+      [
+        'LISTING_PHOTO_TYPE_INVALID',
+        await uploaded(actor.id, STORAGE_MIMETYPE.GIF),
+      ],
+      [
+        'LISTING_PHOTO_TOO_LARGE',
+        await uploaded(
+          actor.id,
+          STORAGE_MIMETYPE.JPEG,
+          LISTING_PHOTO_MAX_SIZE + 1,
+        ),
+      ],
+    ] as const
+
+    for (const [code, file] of refused) {
+      const result = await useCase.execute({
+        id: entity.id,
+        actor,
+        photos: [
+          { storageId: mine.id, environment: PHOTO_ENVIRONMENT.FACADE },
+          { storageId: file.id, environment: PHOTO_ENVIRONMENT.KITCHEN },
+        ],
+      })
+
+      assert.containsSubset(result.value, {
+        status: 422,
+        code,
+      })
+      assert.property(result.value, 'errors')
+    }
+
+    const stored = await listings.findById(entity.id)
+    assert.deepEqual(stored?.snapshot().photos, [])
+  })
+
+  test('when the file is exactly 10 MB and WebP, it is accepted', async ({
+    assert,
+  }) => {
+    const { actor, entity, uploaded, useCase } = subject()
+    const file = await uploaded(
+      actor.id,
+      STORAGE_MIMETYPE.WEBP,
+      LISTING_PHOTO_MAX_SIZE,
+    )
+
+    const result = await useCase.execute({
+      id: entity.id,
+      actor,
+      photos: [{ storageId: file.id, environment: PHOTO_ENVIRONMENT.FACADE }],
+    })
+
+    assert.isTrue(result.isRight())
   })
 
   test('when the ad would pass the ceiling, it answers 422 LISTING_PHOTOS_LIMIT', async ({

@@ -29,7 +29,7 @@ boot quando falta, conforme o schema.
 | `CORS_ORIGINS` | api | não no schema; **obrigatória em produção** | não | origens do navegador autorizadas, separadas por vírgula. Em desenvolvimento a API aceita qualquer origem; fora dele, ausente é lista vazia e recusa toda chamada de outra origem. Nunca `*`: a API usa cookie. A barreira de `Origin` das escritas usa a mesma lista | `https://aporta.maiyu.com.br` |
 | `DATABASE_URL` | api | sim | **sim** | conexão com o PostgreSQL | `postgres://aporta:aporta@localhost:5435/aporta` |
 | `DATABASE_SSL` | api | não | não | TLS na conexão. **Ausente é TLS desligado.** Banco na rede privada da aplicação costuma não falar TLS; banco gerenciado, fora dela, exige `true` | `false` |
-| `UPLOAD_MAX_SIZE` | api | sim | não | teto por arquivo, em bytes, sem default no código. Hoje 1 GiB no exemplo; foto de anúncio precisa de teto próprio (`PRD.md` §8) | `1073741824` |
+| `UPLOAD_MAX_SIZE` | api | sim | não | teto por arquivo, em bytes, sem default no código. Hoje 1 GiB no exemplo. Foto de anúncio tem teto próprio de 10 MB, que não é variável: é a constante `LISTING_PHOTO_MAX_SIZE` de `shared/` (`DECISIONS.md` #31) | `1073741824` |
 | `STORAGE_KEY` | api | sim | **sim** | usuário de escopo mínimo do bucket (criado pelo `minio-setup` no local) | `aporta` |
 | `STORAGE_SECRET` | api | sim | **sim** | senha desse usuário | `aporta-secret` (só local) |
 | `STORAGE_BUCKET` | api | sim | não | nome do bucket, privado | `aporta` |

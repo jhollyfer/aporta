@@ -1445,11 +1445,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1652,11 +1652,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1767,11 +1767,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1881,11 +1881,11 @@
             }
           },
           "422": {
-            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Bairro não encontrado · Arquivo não encontrado",
+            "description": "Dados inválidos · Título do anúncio vazio · Informe o valor do aluguel · Valor inválido: use reais inteiros acima de zero · Selecione ao menos um período · Fotos demais no anúncio · Foto do anúncio deve ser JPEG, PNG ou WebP · Foto do anúncio acima de 10 MB · Bairro não encontrado · Arquivo não encontrado",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
+                  "$ref": "#/components/schemas/Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError"
                 }
               }
             }
@@ -1911,7 +1911,7 @@
             }
           }
         },
-        "description": "Liga arquivos **já enviados** (`POST /storages` e `complete`) ao anúncio, cada um ao ambiente que mostra, no fim da galeria e na ordem do corpo. O binário não passa por aqui: só a chave `storageId` da linha de `storages`.\n\nCada arquivo precisa estar `UPLOADED`, ser uma imagem e ter sido enviado pela conta da sessão. Arquivo de outra conta, ainda `PENDING`, de outro tipo ou inexistente responde o mesmo `422`, para não confirmar a quem sonda que aquele uuid existe.\n\nO anúncio aceita até 12 fotos no total, contando as que já tem, e não aceita o mesmo arquivo duas vezes. Responde `201` com o anúncio inteiro, fotos na ordem e com a URL assinada de leitura.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe.",
+        "description": "Liga arquivos **já enviados** (`POST /storages` e `complete`) ao anúncio, cada um ao ambiente que mostra, no fim da galeria e na ordem do corpo. O binário não passa por aqui: só a chave `storageId` da linha de `storages`.\n\nCada arquivo precisa estar `UPLOADED` e ter sido enviado pela conta da sessão. Arquivo de outra conta, ainda `PENDING` ou inexistente responde o mesmo `422` `STORAGE_NOT_FOUND`, para não confirmar a quem sonda que aquele uuid existe.\n\nA foto é JPEG, PNG ou WebP (`LISTING_PHOTO_TYPE_INVALID`) e tem até 10 MB (`LISTING_PHOTO_TOO_LARGE`), ambos `422`: o envio genérico (`POST /storages`) aceita mais tipos e um teto maior, e é aqui, ao anexar, que se sabe que o arquivo vira foto.\n\nO anúncio aceita até 12 fotos no total, contando as que já tem, e não aceita o mesmo arquivo duas vezes. Responde `201` com o anúncio inteiro, fotos na ordem e com a URL assinada de leitura.\n\nAnúncio de outra conta responde o mesmo `404` do que não existe.",
         "security": [
           {
             "cookieAuth": []
@@ -5632,7 +5632,7 @@
           "errors"
         ]
       },
-      "Error422ListingPeriodsEmptyListingPhotosLimitListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError": {
+      "Error422ListingPeriodsEmptyListingPhotosLimitListingPhotoTooLargeListingPhotoTypeInvalidListingPriceInvalidListingPriceRequiredListingTitleEmptyNeighborhoodNotFoundStorageNotFoundValidationError": {
         "type": "object",
         "properties": {
           "message": {
@@ -5651,6 +5651,8 @@
             "enum": [
               "LISTING_PERIODS_EMPTY",
               "LISTING_PHOTOS_LIMIT",
+              "LISTING_PHOTO_TOO_LARGE",
+              "LISTING_PHOTO_TYPE_INVALID",
               "LISTING_PRICE_INVALID",
               "LISTING_PRICE_REQUIRED",
               "LISTING_TITLE_EMPTY",

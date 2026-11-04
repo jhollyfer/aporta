@@ -1,5 +1,7 @@
 import {
   LISTING_PHOTOS_MAX,
+  LISTING_PHOTO_MAX_SIZE,
+  LISTING_PHOTO_MIMETYPES,
   LISTING_STATUS,
   REVIEW_NOTE_MAX,
   REVIEW_NOTE_MIN,
@@ -16,6 +18,8 @@ import {
 import type {
   ListingAlreadyArchived,
   ListingError,
+  ListingPhotoTooLarge,
+  ListingPhotoTypeInvalid,
   ListingReviewError,
 } from './listing.errors.ts'
 
@@ -287,6 +291,25 @@ export default class Listing {
     if (same) return this.props.owner
 
     return { name: contact.name, whatsapp: contact.whatsapp, verifiedAt: null }
+  }
+
+  /**
+   * Whether a finished file may be a listing photo: JPEG, PNG or WebP, up to
+   * `LISTING_PHOTO_MAX_SIZE`. Asked of each file before `attachPhotos`, because the generic
+   * upload (`POST /storages`) accepts more types and a bigger ceiling than a photo of a room
+   * needs, and only here is it known that the file is going to be a photo.
+   */
+  static checkPhotoFile(file: {
+    readonly mimetype: string
+    readonly size: number
+  }): Either<ListingPhotoTypeInvalid | ListingPhotoTooLarge, null> {
+    if (!LISTING_PHOTO_MIMETYPES.some((type) => type === file.mimetype))
+      return left({ code: 'LISTING_PHOTO_TYPE_INVALID' })
+
+    if (file.size > LISTING_PHOTO_MAX_SIZE)
+      return left({ code: 'LISTING_PHOTO_TOO_LARGE' })
+
+    return right(null)
   }
 
   /**

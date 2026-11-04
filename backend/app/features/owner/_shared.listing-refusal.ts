@@ -60,6 +60,18 @@ export default class ListingRefusal {
         'LISTING_PHOTO_DUPLICATED',
         { photos: Translation.t('fields.LISTING_PHOTO_DUPLICATED') },
       ),
+    LISTING_PHOTO_TYPE_INVALID: () =>
+      HTTPException.UnprocessableEntity(
+        Translation.t('errors.LISTING_PHOTO_TYPE_INVALID'),
+        'LISTING_PHOTO_TYPE_INVALID',
+        { photos: Translation.t('fields.LISTING_PHOTO_TYPE_INVALID') },
+      ),
+    LISTING_PHOTO_TOO_LARGE: () =>
+      HTTPException.UnprocessableEntity(
+        Translation.t('errors.LISTING_PHOTO_TOO_LARGE'),
+        'LISTING_PHOTO_TOO_LARGE',
+        { photos: Translation.t('fields.LISTING_PHOTO_TOO_LARGE') },
+      ),
     LISTING_ALREADY_ARCHIVED: () =>
       HTTPException.Conflict(
         Translation.t('errors.LISTING_ALREADY_ARCHIVED'),

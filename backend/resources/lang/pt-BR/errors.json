@@ -51,6 +51,8 @@
   "LISTING_PERIODS_EMPTY": "Selecione ao menos um período",
   "LISTING_PHOTOS_LIMIT": "Fotos demais no anúncio",
   "LISTING_PHOTO_DUPLICATED": "Arquivo repetido nas fotos do anúncio",
+  "LISTING_PHOTO_TYPE_INVALID": "Foto do anúncio deve ser JPEG, PNG ou WebP",
+  "LISTING_PHOTO_TOO_LARGE": "Foto do anúncio acima de 10 MB",
   "LISTING_ALREADY_ARCHIVED": "Anúncio já arquivado",
   "NEIGHBORHOOD_NOT_FOUND": "Bairro não encontrado",
   "OWNER_LISTING_CREATE_ERROR": "Erro interno do servidor",

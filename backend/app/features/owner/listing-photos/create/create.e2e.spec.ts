@@ -1,4 +1,5 @@
 import {
+  LISTING_PHOTO_MAX_SIZE,
   LISTING_PHOTOS_MAX,
   LISTING_STATUS,
   UPLOAD_STATUS,
@@ -102,7 +103,7 @@ test.group('owner > listing-photos > create', (group) => {
     )
   })
 
-  test("when a file is another account's, still PENDING, a PDF or unknown, answers the same 422 and attaches nothing", async ({
+  test("when a file is another account's, still PENDING or unknown, answers the same 422 and attaches nothing", async ({
     client,
     assert,
   }) => {
@@ -118,14 +119,6 @@ test.group('owner > listing-photos > create', (group) => {
       (await storageRecord({ ownerId: other.userId })).id,
       (await storageRecord({ ownerId: userId, status: UPLOAD_STATUS.PENDING }))
         .id,
-      (
-        await storageRecord({
-          ownerId: userId,
-          mimetype: 'application/pdf',
-          filename: 'manual.pdf',
-          path: 'manual.pdf',
-        })
-      ).id,
       '00000000-0000-4000-8000-000000000000',
     ]
 
@@ -145,13 +138,57 @@ test.group('owner > listing-photos > create', (group) => {
       answers.push(errorBody(response))
     }
 
-    // The four refusals are one: a probe learns nothing about which uuids are files.
+    // The three refusals are one: a probe learns nothing about which uuids are files.
     assert.lengthOf(new Set(answers.map((each) => JSON.stringify(each))), 1)
     assert.equal(answers[0]?.code, 'STORAGE_NOT_FOUND')
     assert.property(answers[0]?.errors ?? {}, 'photos')
     assert.lengthOf(
       await ListingPhotoModel.query().where('listingId', ad.id),
       0,
+    )
+  })
+
+  test("when the account's own file is not a JPEG, PNG or WebP, or is above 10 MB, answers its own 422 and attaches nothing", async ({
+    client,
+    assert,
+  }) => {
+    const centro = await neighborhood()
+    const { session, userId } = await authenticateAsOwnerAccount(client)
+    const ad = await listingWithStatus(LISTING_STATUS.PENDING, {
+      neighborhoodId: centro.id,
+      ownerId: userId,
+    })
+    const refused = [
+      ['LISTING_PHOTO_TYPE_INVALID', { mimetype: 'application/pdf' }],
+      ['LISTING_PHOTO_TYPE_INVALID', { mimetype: 'image/gif' }],
+      ['LISTING_PHOTO_TOO_LARGE', { size: LISTING_PHOTO_MAX_SIZE + 1 }],
+    ] as const
+
+    for (const [code, attributes] of refused) {
+      const file = await storageRecord({ ownerId: userId, ...attributes })
+
+      const response = await client
+        .post(url(ad.id))
+        .cookies(session)
+        .json({ photos: [{ storageId: file.id, environment: 'FACADE' }] })
+
+      response.assertStatus(422)
+      assert.equal(errorBody(response).code, code)
+      assert.property(errorBody(response).errors ?? {}, 'photos')
+    }
+
+    const exact = await storageRecord({
+      ownerId: userId,
+      size: LISTING_PHOTO_MAX_SIZE,
+    })
+    const accepted = await client
+      .post(url(ad.id))
+      .cookies(session)
+      .json({ photos: [{ storageId: exact.id, environment: 'FACADE' }] })
+    accepted.assertStatus(201)
+    assert.lengthOf(
+      await ListingPhotoModel.query().where('listingId', ad.id),
+      1,
     )
   })
 

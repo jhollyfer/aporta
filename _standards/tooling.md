@@ -515,7 +515,10 @@ adotar o config de uma lib oficial reduz a chance de o próximo projeto divergir
 sync cobra (`code-diverge:`, `DECISIONS.md` #280). O `@adonisjs/prettier-config` não entra: ele traz
 `printWidth: 100`, e o mesmo arquivo sairia formatado diferente em cada projeto. Projeto que ainda está com `semi: true` migra na
 próxima reformatação em massa (`MIGRATIONS.md`), não num commit avulso. O CI roda
-`prettier --check` (§7).
+`prettier --check` (§7), pelo script `format:check`: `backend/`, `frontend/` e `shared/` têm, cada
+um, `"format": "prettier --write ."` e `"format:check": "prettier --check ."`, e o `check` do
+pacote inclui `format:check`. Sem o script, o `pnpm --filter ./<app> format:check` do workflow cai
+em `pnpm exec`, falha em 20 ms e não diz o motivo (`DECISIONS.md` #284).
 
 ---
 
